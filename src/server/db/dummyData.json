@@ -22,8 +22,10 @@
             "skills": {
                 "languages": [
                     "JavaScript",
-                    "Python"
-                ]
+                    "TypeScript"
+                ],
+                "frameworks": [],
+                "databases": []
             },
             "xPosition": 10,
             "yPosition": 20,
@@ -36,10 +38,12 @@
             "name": "Agent 2",
             "status": "active",
             "skills": {
-                "frameworks": [
-                    "React",
+                "languages": [
+                    "Python",
                     "Django"
-                ]
+                ],
+                "frameworks": [],
+                "databases": []
             },
             "xPosition": 30,
             "yPosition": 40,
@@ -55,7 +59,9 @@
                 "databases": [
                     "PostgreSQL",
                     "MongoDB"
-                ]
+                ],
+                "languages": [],
+                "frameworks": []
             },
             "xPosition": 50,
             "yPosition": 60,
