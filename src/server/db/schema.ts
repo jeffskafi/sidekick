@@ -12,7 +12,7 @@ import {
   unique
 } from "drizzle-orm/pg-core";
 
-export const createTable = pgTableCreator((name) => `ai_management_${name}`);
+export const createTable = pgTableCreator((name) => `command-center_${name}`);
 
 // Enums
 export const taskStatusEnum = pgEnum('task_status', ['todo', 'in_progress', 'done', 'failed', 'exception']);
