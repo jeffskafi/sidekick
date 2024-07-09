@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { AnyPgColumn, PgColumn } from "drizzle-orm/pg-core";
 import {
   index,
   pgTableCreator,
@@ -7,9 +8,8 @@ import {
   varchar,
   text,
   integer,
-  jsonb,
   pgEnum,
-  unique
+  unique,
 } from "drizzle-orm/pg-core";
 
 export const createTable = pgTableCreator((name) => `command-center_${name}`);
@@ -34,6 +34,41 @@ export const projects = createTable(
   }
 );
 
+// Skills
+export const skills = createTable(
+  "skill",
+  {
+    id: serial("id").primaryKey(),
+    name: varchar("name", { length: 256 }).notNull(),
+    description: text("description"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .$onUpdate(() => new Date()),
+  },
+  (table) => ({
+    nameIndex: index("skill_name_idx").on(table.name),
+  })
+);
+
+// AgentSkills (junction table)
+export const agentSkills = createTable(
+  "agent_skill",
+  {
+    id: serial("id").primaryKey(),
+    agentId: integer("agent_id").notNull().references(() => agents.id),
+    skillId: integer("skill_id").notNull().references(() => skills.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => ({
+    agentSkillIndex: index("agent_skill_idx").on(table.agentId, table.skillId),
+    uniqueAgentSkill: unique().on(table.agentId, table.skillId),
+  })
+);
+
 // Agents
 export const agents = createTable(
   "agent",
@@ -42,7 +77,6 @@ export const agents = createTable(
     projectId: integer("project_id").references(() => projects.id).notNull(),
     name: varchar("name", { length: 256 }).notNull(),
     status: agentStatusEnum("status").notNull().default('idle'),
-    skills: jsonb("skills"),
     xPosition: integer("x_position").notNull().default(0),
     yPosition: integer("y_position").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
