@@ -1,15 +1,15 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import ClientOnly from "../components/ClientOnly";
+import ClientOnly from "../_components/ClientOnly";
 import { db } from "../server/db";
 import { agents, skills, agentSkills } from "../server/db/schema";
 import { eq } from "drizzle-orm";
-import type { Agent } from "../components/AgentCanvasWrapper";
-import { AddAgentButton } from "../components/AddAgentButton";
-import { AddProjectButton } from "../components/AddProjectButton";
+import type { Agent } from "../_components/AgentCanvasWrapper";
+import { AddAgentButton } from "../_components/AddAgentButton";
+import { AddProjectButton } from "../_components/AddProjectButton";
 
 const AgentCanvasWrapper = dynamic(
-  () => import("../components/AgentCanvasWrapper"),
+  () => import("../_components/AgentCanvasWrapper"),
   {
     ssr: false,
   }
@@ -75,7 +75,7 @@ function HomePageClient({ agents }: { agents: Agent[] }) {
     <main className="flex min-h-screen flex-col bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <div className="container mx-auto flex px-4 py-8">
         <div className="w-3/4 pr-4">
-          <h1 className="mb-8 text-4xl font-bold">Command Center Dashboard</h1>
+          <h1 className="mb-8 text-4xl font-bold">Dashboard</h1>
           <div className="flex space-x-4 mb-4">
             <AddProjectButton />
             <AddAgentButton />

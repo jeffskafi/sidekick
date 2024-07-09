@@ -11,8 +11,8 @@ import {
 } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
-  title: "Command Center",
-  description: "Command Center",
+  title: "Synergy",
+  description: "Synergy",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
