@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Stage, Layer, Circle, Text, Rect, Label, Tag } from 'react-konva';
+import { Stage, Layer, Circle, Text, Rect, Label } from 'react-konva';
 import type Konva from 'konva';
 
 export interface Agent {

@@ -1,4 +1,5 @@
-import { useEffect, useState, ReactNode, HTMLAttributes } from "react";
+import { useEffect, useState } from "react";
+import type { ReactNode, HTMLAttributes } from "react";
 
 export default function ClientOnly({
   children,
