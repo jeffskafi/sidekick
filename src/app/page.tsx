@@ -5,6 +5,8 @@ import { db } from "../server/db";
 import { agents, skills, agentSkills } from "../server/db/schema";
 import { eq } from "drizzle-orm";
 import type { Agent } from "../components/AgentCanvasWrapper";
+import { AddAgentButton } from "../components/AddAgentButton";
+import { AddProjectButton } from "../components/AddProjectButton";
 
 const AgentCanvasWrapper = dynamic(
   () => import("../components/AgentCanvasWrapper"),
@@ -74,6 +76,10 @@ function HomePageClient({ agents }: { agents: Agent[] }) {
       <div className="container mx-auto flex px-4 py-8">
         <div className="w-3/4 pr-4">
           <h1 className="mb-8 text-4xl font-bold">Command Center Dashboard</h1>
+          <div className="flex space-x-4 mb-4">
+            <AddProjectButton />
+            <AddAgentButton />
+          </div>
           <ClientOnly>
             <Suspense fallback={<div>Loading...</div>}>
               <AgentCanvasWrapper agents={agents} />
