@@ -1,0 +1,154 @@
+{
+    "projects": [
+        {
+            "id": 1,
+            "name": "Project Alpha",
+            "createdAt": "2023-05-01T10:00:00Z",
+            "updatedAt": "2023-05-01T10:00:00Z"
+        },
+        {
+            "id": 2,
+            "name": "Project Beta",
+            "createdAt": "2023-05-02T11:00:00Z",
+            "updatedAt": "2023-05-02T11:00:00Z"
+        }
+    ],
+    "agents": [
+        {
+            "id": 1,
+            "projectId": 1,
+            "name": "Agent 1",
+            "status": "idle",
+            "skills": {
+                "languages": [
+                    "JavaScript",
+                    "Python"
+                ]
+            },
+            "xPosition": 10,
+            "yPosition": 20,
+            "createdAt": "2023-05-01T10:30:00Z",
+            "updatedAt": "2023-05-01T10:30:00Z"
+        },
+        {
+            "id": 2,
+            "projectId": 1,
+            "name": "Agent 2",
+            "status": "active",
+            "skills": {
+                "frameworks": [
+                    "React",
+                    "Django"
+                ]
+            },
+            "xPosition": 30,
+            "yPosition": 40,
+            "createdAt": "2023-05-01T11:00:00Z",
+            "updatedAt": "2023-05-01T11:00:00Z"
+        },
+        {
+            "id": 3,
+            "projectId": 2,
+            "name": "Agent 3",
+            "status": "idle",
+            "skills": {
+                "databases": [
+                    "PostgreSQL",
+                    "MongoDB"
+                ]
+            },
+            "xPosition": 50,
+            "yPosition": 60,
+            "createdAt": "2023-05-02T12:00:00Z",
+            "updatedAt": "2023-05-02T12:00:00Z"
+        }
+    ],
+    "crews": [
+        {
+            "id": 1,
+            "projectId": 1,
+            "name": "Frontend Crew",
+            "type": "sequential",
+            "createdAt": "2023-05-01T12:00:00Z",
+            "updatedAt": "2023-05-01T12:00:00Z"
+        },
+        {
+            "id": 2,
+            "projectId": 2,
+            "name": "Backend Crew",
+            "type": "hierarchical",
+            "createdAt": "2023-05-02T13:00:00Z",
+            "updatedAt": "2023-05-02T13:00:00Z"
+        }
+    ],
+    "crewAgents": [
+        {
+            "id": 1,
+            "crewId": 1,
+            "agentId": 1,
+            "createdAt": "2023-05-01T12:30:00Z"
+        },
+        {
+            "id": 2,
+            "crewId": 1,
+            "agentId": 2,
+            "createdAt": "2023-05-01T12:31:00Z"
+        },
+        {
+            "id": 3,
+            "crewId": 2,
+            "agentId": 3,
+            "createdAt": "2023-05-02T13:30:00Z"
+        }
+    ],
+    "stories": [
+        {
+            "id": 1,
+            "projectId": 1,
+            "crewId": 1,
+            "description": "Implement user authentication",
+            "createdAt": "2023-05-01T14:00:00Z",
+            "updatedAt": "2023-05-01T14:00:00Z"
+        },
+        {
+            "id": 2,
+            "projectId": 2,
+            "crewId": 2,
+            "description": "Set up database schema",
+            "createdAt": "2023-05-02T15:00:00Z",
+            "updatedAt": "2023-05-02T15:00:00Z"
+        }
+    ],
+    "tasks": [
+        {
+            "id": 1,
+            "projectId": 1,
+            "description": "Design login form",
+            "status": "todo",
+            "agentId": 1,
+            "storyId": 1,
+            "createdAt": "2023-05-01T14:30:00Z",
+            "updatedAt": "2023-05-01T14:30:00Z"
+        },
+        {
+            "id": 2,
+            "projectId": 1,
+            "description": "Implement JWT",
+            "status": "in_progress",
+            "agentId": 2,
+            "storyId": 1,
+            "createdAt": "2023-05-01T15:00:00Z",
+            "updatedAt": "2023-05-01T15:00:00Z"
+        },
+        {
+            "id": 3,
+            "projectId": 2,
+            "description": "Create user table",
+            "status": "done",
+            "agentId": 3,
+            "storyId": 2,
+            "createdAt": "2023-05-02T16:00:00Z",
+            "updatedAt": "2023-05-02T16:00:00Z"
+        }
+    ]
+}
