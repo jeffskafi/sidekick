@@ -4,12 +4,12 @@ import ClientOnly from "../_components/ClientOnly";
 import { db } from "../server/db";
 import { agents, skills, agentSkills } from "../server/db/schema";
 import { eq } from "drizzle-orm";
-import type { Agent } from "../_components/AgentCanvasWrapper";
+import type { Agent } from "../_components/AgentCanvas/AgentCanvasWrapper";
 import { AddAgentButton } from "../_components/AddAgentButton";
 import { AddProjectButton } from "../_components/AddProjectButton";
 
 const AgentCanvasWrapper = dynamic(
-  () => import("../_components/AgentCanvasWrapper"),
+  () => import("../_components/AgentCanvas/AgentCanvasWrapper"),
   {
     ssr: false,
   }

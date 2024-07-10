@@ -5,8 +5,8 @@ import { Stage, Layer, Circle, Text, Group, Rect } from "react-konva";
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
 import type { Agent } from "./AgentCanvasWrapper";
-import { useCanvasScaling } from "../hooks/useCanvasScaling";
-import { useAgentSelection } from "../hooks/useAgentSelection";
+import { useCanvasScaling } from "../../hooks/useCanvasScaling";
+import { useAgentSelection } from "../../hooks/useAgentSelection";
 import ContextMenu from "./ContextMenu";
 
 interface AgentCanvasProps {

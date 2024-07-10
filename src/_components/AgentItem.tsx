@@ -5,7 +5,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "~/components/ui/context-menu"
-import type { Agent } from "./AgentCanvasWrapper";
+import type { Agent } from "./AgentCanvas/AgentCanvasWrapper";
 
 interface AgentItemProps {
   agent: Agent;

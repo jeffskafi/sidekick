@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import AgentCanvas from './AgentCanvas';
-import AgentSidebar from './AgentSidebar';
+import AgentSidebar from '../AgentSidebar';
 
 export interface Agent {
   id: number;

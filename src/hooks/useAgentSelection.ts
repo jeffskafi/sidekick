@@ -1,6 +1,6 @@
 // useAgentSelection.ts
 import { useState, useCallback, useEffect } from 'react';
-import type { Agent } from '../_components/AgentCanvasWrapper';
+import type { Agent } from '../_components/AgentCanvas/AgentCanvasWrapper';
 
 export function useAgentSelection(agents: Agent[], onSelect: (agents: Agent[]) => void) {
     const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
