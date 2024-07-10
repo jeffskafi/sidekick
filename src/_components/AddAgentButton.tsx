@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from "~/components/ui/button";
 
 export function AddAgentButton() {
   const [isLoading, setIsLoading] = useState(false);
@@ -36,8 +37,12 @@ export function AddAgentButton() {
   };
 
   return (
-    <button onClick={handleAddAgent} disabled={isLoading}>
+    <Button 
+      variant="default"
+      onClick={handleAddAgent} 
+      disabled={isLoading}
+    >
       {isLoading ? 'Adding...' : 'Add Agent'}
-    </button>
+    </Button>
   );
 }
