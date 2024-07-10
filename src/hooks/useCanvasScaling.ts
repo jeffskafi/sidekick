@@ -8,10 +8,13 @@ export function useCanvasScaling(containerRef: RefObject<HTMLDivElement>) {
 
     const updateStageSize = useCallback(() => {
         if (containerRef.current) {
-            setStageSize({
-                width: containerRef.current.offsetWidth,
-                height: containerRef.current.offsetHeight,
-            });
+            const { offsetWidth, offsetHeight } = containerRef.current;
+            setStageSize({ width: offsetWidth, height: offsetHeight });
+            
+            // Calculate and set scale based on container size
+            // This is just an example; adjust the logic as needed
+            const newScale = Math.min(offsetWidth / 1000, offsetHeight / 600);
+            setScale(newScale);
         }
     }, [containerRef]);
 
