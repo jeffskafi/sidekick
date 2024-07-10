@@ -73,13 +73,13 @@ export default async function HomePage() {
 function HomePageClient({ agents }: { agents: Agent[] }) {
   return (
     <main className="flex min-h-screen flex-col bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container mx-auto flex px-4 py-8">
-        <div className="w-3/4 pr-4">
-          <h1 className="mb-8 text-4xl font-bold">Dashboard</h1>
-          <div className="flex space-x-4 mb-4">
-            <AddProjectButton />
-            <AddAgentButton />
-          </div>
+      <div className="container mx-auto flex flex-col px-4 py-8 h-screen">
+        <h1 className="mb-8 text-4xl font-bold">Dashboard</h1>
+        <div className="flex space-x-4 mb-4">
+          <AddProjectButton />
+          <AddAgentButton />
+        </div>
+        <div className="flex-grow">
           <ClientOnly>
             <Suspense fallback={<div>Loading...</div>}>
               <AgentCanvasWrapper agents={agents} />

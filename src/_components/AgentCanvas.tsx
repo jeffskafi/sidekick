@@ -1,143 +1,128 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Stage, Layer, Circle, Text, Rect, Label } from 'react-konva';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Stage, Layer, Circle, Text, Group, Rect } from 'react-konva';
 import type Konva from 'konva';
-
-export interface Agent {
-  id: number;
-  projectId: number;
-  name: string;
-  status: string;
-  skills: string[];
-  xPosition: number;
-  yPosition: number;
-  createdAt: Date;
-  updatedAt: Date | null;
-}
+import { KonvaEventObject } from 'konva/lib/Node';
+import type { Agent } from './AgentCanvasWrapper';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "~/components/ui/context-menu";
 
 interface AgentCanvasProps {
   agents: Agent[];
   onSelect: (agent: Agent | Agent[]) => void;
+  onEdit: (agent: Agent) => void;
+  onDelete: (agentId: number) => void;
 }
 
-const AgentCanvas: React.FC<AgentCanvasProps> = ({ agents, onSelect }) => {
-  const [stageSize, setStageSize] = useState({ width: window.innerWidth - 300, height: 600 });
-  const [agentPositions, setAgentPositions] = useState<Record<number, { x: number, y: number }>>({});
-  const [selectionArea, setSelectionArea] = useState<{ start: { x: number, y: number } | null, end: { x: number, y: number } | null }>({ start: null, end: null });
+const AgentCanvas: React.FC<AgentCanvasProps> = ({ agents, onSelect, onEdit, onDelete }) => {
+  const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
+  const [selectionArea, setSelectionArea] = useState<{ start: { x: number, y: number } | null, end: { x: number, y: number } | null }>({ start: null, end: null });
+  const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number, y: number } | null>(null);
+  const [contextMenuAgent, setContextMenuAgent] = useState<Agent | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const stageRef = useRef<Konva.Stage>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleResize = () => setStageSize({ width: window.innerWidth - 300, height: 600 });
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const resizeStage = () => {
+      if (containerRef.current) {
+        setStageSize({
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight,
+        });
+      }
+    };
+
+    resizeStage();
+    window.addEventListener('resize', resizeStage);
+    return () => window.removeEventListener('resize', resizeStage);
   }, []);
 
-  useEffect(() => {
-    const positions = agents.reduce((acc, agent) => {
-      acc[agent.id] = { x: agent.xPosition, y: agent.yPosition };
-      return acc;
-    }, {} as Record<number, { x: number, y: number }>);
-    setAgentPositions(positions);
-  }, [agents]);
-
-  const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>, agent: Agent) => {
-    const { x, y } = e.target.position();
-    setAgentPositions(prev => ({ ...prev, [agent.id]: { x, y } }));
-    onSelect({ ...agent, xPosition: x, yPosition: y });
-  };
-
-  const handleSelect = (agent: Agent) => {
+  const handleAgentClick = useCallback((agent: Agent, event: KonvaEventObject<MouseEvent>) => {
+    event.cancelBubble = true;
+    setSelectedAgents([agent]);
     onSelect(agent);
-  };
+  }, [onSelect]);
 
-  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (e.evt.button !== 0) return;
-
-    const stage = e.target.getStage()!;
-    const pointerPosition = stage.getPointerPosition()!;
-    const { x, y } = pointerPosition;
-
-    // Check if clicked on an agent
-    const clickedAgent = agents.find(agent => {
-      const agentPos = agentPositions[agent.id] ?? { x: agent.xPosition, y: agent.yPosition };
-      return Math.abs(agentPos.x - x) < 10 && Math.abs(agentPos.y - y) < 10;
-    });
-
-    if (clickedAgent) {
-      // Handle single agent selection
-      setSelectedAgents([clickedAgent]);
-    } else {
-      // Start area selection
-      setSelectionArea({ start: { x, y }, end: { x, y } });
+  const handleStageMouseDown = useCallback((e: KonvaEventObject<MouseEvent>) => {
+    if (e.target === e.target.getStage()) {
+      setSelectionArea({ start: e.target.getStage().getPointerPosition()!, end: null });
       setIsDragging(true);
     }
-  };
+  }, []);
 
-  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (!isDragging) return;
-    const { x, y } = e.target.getStage()!.getPointerPosition()!;
-    setSelectionArea(prev => ({ ...prev, end: { x, y } }));
-  };
-
-  const handleMouseUp = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (e.evt.button !== 0) return;
-
+  const handleStageMouseMove = useCallback((e: KonvaEventObject<MouseEvent>) => {
     if (isDragging) {
-      // Finish area selection
-      setIsDragging(false);
-      if (selectionArea.start && selectionArea.end) {
-        const selected = agents.filter(agent => {
-          const { x, y } = agentPositions[agent.id] ?? { x: agent.xPosition, y: agent.yPosition };
-          const start = selectionArea.start!;
-          const end = selectionArea.end!;
-          return (
-            x >= Math.min(start.x, end.x) &&
-            x <= Math.max(start.x, end.x) &&
-            y >= Math.min(start.y, end.y) &&
-            y <= Math.max(start.y, end.y)
-          );
-        });
+      setSelectionArea(prev => ({ ...prev, end: e.target.getStage()!.getPointerPosition()! }));
+    }
+  }, [isDragging]);
 
-        setSelectedAgents(selected);
-        onSelect(selected);
-      }
+  const handleStageMouseUp = useCallback(() => {
+    if (isDragging) {
+      setIsDragging(false);
+      const selected = agents.filter(agent => {
+        if (!selectionArea.start || !selectionArea.end) return false;
+        const x1 = Math.min(selectionArea.start.x, selectionArea.end.x);
+        const x2 = Math.max(selectionArea.start.x, selectionArea.end.x);
+        const y1 = Math.min(selectionArea.start.y, selectionArea.end.y);
+        const y2 = Math.max(selectionArea.start.y, selectionArea.end.y);
+        return agent.xPosition >= x1 && agent.xPosition <= x2 && agent.yPosition >= y1 && agent.yPosition <= y2;
+      });
+      setSelectedAgents(selected);
+      onSelect(selected);
       setSelectionArea({ start: null, end: null });
     }
+  }, [agents, isDragging, onSelect, selectionArea]);
+
+  const handleDragEnd = (e: KonvaEventObject<DragEvent>, agent: Agent) => {
+    const node = e.target;
+    const updatedAgent = { ...agent, xPosition: node.x(), yPosition: node.y() };
+    onSelect(updatedAgent);
   };
 
+  const handleContextMenu = useCallback((e: KonvaEventObject<PointerEvent>, agent: Agent) => {
+    e.evt.preventDefault();
+    const stage = stageRef.current;
+    if (stage) {
+      const pointerPosition = stage.getPointerPosition();
+      if (pointerPosition) {
+        setContextMenuPosition(pointerPosition);
+        setContextMenuAgent(agent);
+      }
+    }
+  }, []);
+
   return (
-    <div className="agent-canvas-container">
+    <div ref={containerRef} style={{ width: '100%', height: '600px', background: '#f0f0f0', position: 'relative' }}>
       <Stage
+        ref={stageRef}
         width={stageSize.width}
         height={stageSize.height}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseDown={handleStageMouseDown}
+        onMouseMove={handleStageMouseMove}
+        onMouseUp={handleStageMouseUp}
+        onContextMenu={(e) => e.evt.preventDefault()}
       >
         <Layer>
-          <Rect
-            x={0}
-            y={0}
-            width={stageSize.width}
-            height={stageSize.height}
-            fill="#f0f0f0"
-            shadowBlur={10}
-            shadowColor="rgba(0, 0, 0, 0.2)"
-          />
           {agents.map((agent) => (
-            <Label
+            <Group
               key={agent.id}
-              x={agentPositions[agent.id]?.x ?? agent.xPosition}
-              y={agentPositions[agent.id]?.y ?? agent.yPosition}
+              x={agent.xPosition}
+              y={agent.yPosition}
               draggable
+              onClick={(e) => handleAgentClick(agent, e)}
               onDragEnd={(e) => handleDragEnd(e, agent)}
+              onContextMenu={(e) => handleContextMenu(e, agent)}
             >
               <Circle
                 radius={30}
                 fill={agent.status === 'idle' ? '#3498db' : '#e74c3c'}
-                onClick={() => handleSelect(agent)}
                 stroke={selectedAgents.some(a => a.id === agent.id) ? 'yellow' : 'black'}
                 strokeWidth={selectedAgents.some(a => a.id === agent.id) ? 4 : 1}
               />
@@ -150,9 +135,9 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({ agents, onSelect }) => {
                 y={40}
                 offsetX={30}
               />
-            </Label>
+            </Group>
           ))}
-          {isDragging && selectionArea.start && selectionArea.end && (
+          {selectionArea.start && selectionArea.end && (
             <Rect
               x={Math.min(selectionArea.start.x, selectionArea.end.x)}
               y={Math.min(selectionArea.start.y, selectionArea.end.y)}
@@ -164,6 +149,29 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({ agents, onSelect }) => {
           )}
         </Layer>
       </Stage>
+      {contextMenuPosition && contextMenuAgent && (
+        <ContextMenu>
+          <ContextMenuTrigger>
+            <div
+              style={{
+                position: 'fixed',
+                top: contextMenuPosition.y,
+                left: contextMenuPosition.x,
+                width: 1,
+                height: 1,
+              }}
+            />
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onClick={() => { onEdit(contextMenuAgent); setContextMenuPosition(null); }}>
+              Edit
+            </ContextMenuItem>
+            <ContextMenuItem onClick={() => { onDelete(contextMenuAgent.id); setContextMenuPosition(null); }}>
+              Delete
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      )}
     </div>
   );
 };

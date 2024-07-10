@@ -27,10 +27,25 @@ export default function AgentCanvasWrapper({ agents }: AgentCanvasWrapperProps) 
     setSelectedAgents(Array.isArray(agents) ? agents : [agents]);
   };
 
+  const handleEditAgent = (agent: Agent) => {
+    console.log('Edit agent:', agent);
+    // Implement edit functionality here
+  };
+
+  const handleDeleteAgent = (agentId: number) => {
+    console.log('Delete agent:', agentId);
+    // Implement delete functionality here
+  };
+
   return (
-    <>
-      <AgentCanvas agents={agents} onSelect={handleSelectAgents} />
+    <div className="relative w-full h-full">
+      <AgentCanvas 
+        agents={agents} 
+        onSelect={handleSelectAgents}
+        onEdit={handleEditAgent}
+        onDelete={handleDeleteAgent}
+      />
       <AgentSidebar selectedAgents={selectedAgents} />
-    </>
+    </div>
   );
 }
