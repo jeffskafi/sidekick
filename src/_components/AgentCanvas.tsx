@@ -3,14 +3,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Stage, Layer, Circle, Text, Group, Rect } from 'react-konva';
 import type Konva from 'konva';
-import { KonvaEventObject } from 'konva/lib/Node';
+import type { KonvaEventObject } from 'konva/lib/Node';
 import type { Agent } from './AgentCanvasWrapper';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "~/components/ui/context-menu";
+import styles from './ContextMenu.module.css';
 
 interface AgentCanvasProps {
   agents: Agent[];
@@ -23,8 +18,7 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({ agents, onSelect, onEdit, onD
   const [stageSize, setStageSize] = useState({ width: 0, height: 0 });
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
   const [selectionArea, setSelectionArea] = useState<{ start: { x: number, y: number } | null, end: { x: number, y: number } | null }>({ start: null, end: null });
-  const [contextMenuPosition, setContextMenuPosition] = useState<{ x: number, y: number } | null>(null);
-  const [contextMenuAgent, setContextMenuAgent] = useState<Agent | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, agent: Agent } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,6 +48,7 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({ agents, onSelect, onEdit, onD
     if (e.target === e.target.getStage()) {
       setSelectionArea({ start: e.target.getStage().getPointerPosition()!, end: null });
       setIsDragging(true);
+      setContextMenu(null);
     }
   }, []);
 
@@ -88,14 +83,21 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({ agents, onSelect, onEdit, onD
 
   const handleContextMenu = useCallback((e: KonvaEventObject<PointerEvent>, agent: Agent) => {
     e.evt.preventDefault();
-    const stage = stageRef.current;
-    if (stage) {
+    if (stageRef.current) {
+      const stage = stageRef.current;
       const pointerPosition = stage.getPointerPosition();
       if (pointerPosition) {
-        setContextMenuPosition(pointerPosition);
-        setContextMenuAgent(agent);
+        setContextMenu({
+          x: pointerPosition.x,
+          y: pointerPosition.y,
+          agent: agent
+        });
       }
     }
+  }, []);
+
+  const handleStageClick = useCallback(() => {
+    setContextMenu(null);
   }, []);
 
   return (
@@ -107,7 +109,7 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({ agents, onSelect, onEdit, onD
         onMouseDown={handleStageMouseDown}
         onMouseMove={handleStageMouseMove}
         onMouseUp={handleStageMouseUp}
-        onContextMenu={(e) => e.evt.preventDefault()}
+        onClick={handleStageClick}
       >
         <Layer>
           {agents.map((agent) => (
@@ -149,28 +151,18 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({ agents, onSelect, onEdit, onD
           )}
         </Layer>
       </Stage>
-      {contextMenuPosition && contextMenuAgent && (
-        <ContextMenu>
-          <ContextMenuTrigger>
-            <div
-              style={{
-                position: 'fixed',
-                top: contextMenuPosition.y,
-                left: contextMenuPosition.x,
-                width: 1,
-                height: 1,
-              }}
-            />
-          </ContextMenuTrigger>
-          <ContextMenuContent>
-            <ContextMenuItem onClick={() => { onEdit(contextMenuAgent); setContextMenuPosition(null); }}>
-              Edit
-            </ContextMenuItem>
-            <ContextMenuItem onClick={() => { onDelete(contextMenuAgent.id); setContextMenuPosition(null); }}>
-              Delete
-            </ContextMenuItem>
-          </ContextMenuContent>
-        </ContextMenu>
+      {contextMenu && (
+        <div className={styles.contextMenu} style={{
+          top: contextMenu.y,
+          left: contextMenu.x,
+        }}>
+          <div className={styles.contextMenuItem} onClick={() => { onEdit(contextMenu.agent); setContextMenu(null); }}>
+            Assign Task
+          </div>
+          <div className={styles.contextMenuItem} onClick={() => { onDelete(contextMenu.agent.id); setContextMenu(null); }}>
+            Delete {contextMenu.agent.name}
+          </div>
+        </div>
       )}
     </div>
   );
