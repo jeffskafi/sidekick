@@ -9,6 +9,7 @@ import {
   SignedOut,
   UserButton
 } from '@clerk/nextjs';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: "Synergy",
@@ -23,15 +24,23 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
         <body>
-          <header>
-            <SignedOut>
-              <SignInButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+          <header className="bg-primary text-primary-foreground p-4">
+            <div className="container mx-auto flex justify-between items-center">
+              <Link href="/" className="text-2xl font-bold">Synergy</Link>
+              <nav>
+                <Link href="/settings" className="mr-4">Settings</Link>
+                <SignedOut>
+                  <SignInButton />
+                </SignedOut>
+                <SignedIn>
+                  <UserButton />
+                </SignedIn>
+              </nav>
+            </div>
           </header>
-          {children}
+          <main className="container mx-auto mt-8">
+            {children}
+          </main>
         </body>
       </html>
     </ClerkProvider>

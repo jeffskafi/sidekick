@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AgentCanvas from './AgentCanvas';
 import AgentSidebar from '../AgentSidebar';
 import { useRouter } from 'next/navigation';
@@ -11,10 +11,14 @@ interface AgentCanvasWrapperProps {
   agents: Agent[];
 }
 
-export default function AgentCanvasWrapper({ agents }: AgentCanvasWrapperProps) {
+export default function AgentCanvasWrapper({ agents: initialAgents }: AgentCanvasWrapperProps) {
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
-  const [agentList, setAgentList] = useState<Agent[]>(agents);
+  const [agentList, setAgentList] = useState<Agent[]>(initialAgents);
   const router = useRouter();
+
+  useEffect(() => {
+    setAgentList(initialAgents);
+  }, [initialAgents]);
 
   const handleSelectAgents = (agents: Agent | Agent[]) => {
     setSelectedAgents(Array.isArray(agents) ? agents : [agents]);
