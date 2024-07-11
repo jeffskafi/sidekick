@@ -28,9 +28,21 @@ export default function AgentCanvasWrapper({ agents: initialAgents }: AgentCanva
     console.log('Edit agent:', agent);
     // Implement edit functionality here
   };
-
-  const handleDeleteAgent = (agentId: number) => {
-    setAgentList(prevAgents => prevAgents.filter(agent => agent.id !== agentId));
+  const handleDeleteAgent = async (agentId: number) => {
+    try {
+      const response = await fetch(`/api/agents?id=${agentId}`, {
+        method: 'DELETE',
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to delete agent');
+      }
+  
+      setAgentList(prevAgents => prevAgents.filter(agent => agent.id !== agentId));
+      router.refresh();
+    } catch (error) {
+      console.error('Error deleting agent:', error);
+    }
   };
 
   const handleUpdateAgent = (updatedAgent: Agent) => {
