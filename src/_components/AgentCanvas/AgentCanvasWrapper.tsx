@@ -3,18 +3,9 @@
 import { useState } from 'react';
 import AgentCanvas from './AgentCanvas';
 import AgentSidebar from '../AgentSidebar';
-
-export interface Agent {
-  id: number;
-  projectId: number;
-  name: string;
-  status: string;
-  xPosition: number;
-  yPosition: number;
-  createdAt: Date;
-  updatedAt: Date | null;
-  skills: string[];
-}
+import { useRouter } from 'next/navigation';
+import { insertAgentSchema } from '../../server/db/schema';
+import type { Agent, NewAgent } from '../../server/db/schema';
 
 interface AgentCanvasWrapperProps {
   agents: Agent[];
@@ -23,6 +14,7 @@ interface AgentCanvasWrapperProps {
 export default function AgentCanvasWrapper({ agents }: AgentCanvasWrapperProps) {
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
   const [agentList, setAgentList] = useState<Agent[]>(agents);
+  const router = useRouter();
 
   const handleSelectAgents = (agents: Agent | Agent[]) => {
     setSelectedAgents(Array.isArray(agents) ? agents : [agents]);
@@ -45,19 +37,37 @@ export default function AgentCanvasWrapper({ agents }: AgentCanvasWrapperProps) 
     );
   };
 
-  const handleAddAgent = () => {
-    const newAgent: Agent = {
-      id: Date.now(), // Temporary ID, should be replaced with a proper ID from the backend
-      projectId: 1, // Assuming a default project ID
-      name: `Agent ${agentList.length + 1}`,
-      status: 'idle',
-      xPosition: Math.random() * 500, // Random position
-      yPosition: Math.random() * 500,
-      createdAt: new Date(),
-      updatedAt: null,
-      skills: [],
-    };
-    setAgentList(prevAgents => [...prevAgents, newAgent]);
+  const handleAddAgent = async () => {
+    try {
+      const newAgentData: NewAgent = {
+        projectId: 1, // Replace with actual project ID
+        name: `Agent ${agentList.length + 1}`,
+        xPosition: Math.random() * 500,
+        yPosition: Math.random() * 500,
+      };
+
+      // Validate new agent data
+      insertAgentSchema.parse(newAgentData);
+
+      const response = await fetch('/api/agents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newAgentData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add agent');
+      }
+
+      const newAgent: Agent = await response.json() as Agent;
+
+      setAgentList(prevAgents => [...prevAgents, newAgent]);
+      router.refresh();
+    } catch (error) {
+      console.error('Error adding agent:', error);
+    }
   };
 
   return (

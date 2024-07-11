@@ -4,9 +4,9 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Stage, Layer, Circle, Text, Group, Rect } from "react-konva";
 import type Konva from "konva";
 import type { KonvaEventObject } from "konva/lib/Node";
-import type { Agent } from "./AgentCanvasWrapper";
-import { useCanvasScaling } from "../../hooks/useCanvasScaling";
-import { useAgentSelection } from "../../hooks/useAgentSelection";
+import type { Agent } from "~/server/db/schema";
+import { useCanvasScaling } from "~/hooks/useCanvasScaling";
+import { useAgentSelection } from "~/hooks/useAgentSelection";
 import ContextMenu from "./ContextMenu";
 
 interface AgentCanvasProps {
@@ -147,23 +147,6 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
     onUpdateAgent(updatedAgent);
   };
 
-  const handleContextMenu = useCallback(
-    (e: KonvaEventObject<PointerEvent>, agent: Agent | null) => {
-      e.evt.preventDefault();
-      e.evt.stopPropagation();
-      const stage = e.target.getStage();
-      if (stage) {
-        const pointerPosition = stage.getPointerPosition();
-        if (pointerPosition) {
-          setContextMenuPosition({ x: e.evt.clientX, y: e.evt.clientY });
-          setContextMenuAgent(agent);
-          setShowContextMenu(true);
-        }
-      }
-    },
-    []
-  );
-
   const handleStageClick = useCallback(
     (e: KonvaEventObject<MouseEvent>) => {
       if (isRightClicking) {
@@ -217,12 +200,10 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
                 radius={30}
                 fill={agent.status === "idle" ? "#3498db" : "#e74c3c"}
                 stroke={
-                  selectedAgents.some((a) => a.id === agent.id)
-                    ? "yellow"
-                    : "black"
+                  selectedAgents.some((a: Agent) => a.id === agent.id) ? "4" : "1"
                 }
                 strokeWidth={
-                  selectedAgents.some((a) => a.id === agent.id) ? 4 : 1
+                  selectedAgents.some((a: Agent) => a.id === agent.id) ? 4 : 1
                 }
               />
               <Text

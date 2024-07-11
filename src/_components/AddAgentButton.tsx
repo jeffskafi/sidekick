@@ -7,11 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 
-interface AddAgentButtonProps {
-  triggerRefresh: () => void;
-}
-
-export function AddAgentButton({ triggerRefresh }: AddAgentButtonProps) {
+export function AddAgentButton() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agentName, setAgentName] = useState('');
@@ -39,7 +35,6 @@ export function AddAgentButton({ triggerRefresh }: AddAgentButtonProps) {
       }
 
       setIsOpen(false);
-      triggerRefresh();
       router.refresh();
     } catch (error) {
       console.error('Error adding agent:', error);

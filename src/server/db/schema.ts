@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { AnyPgColumn, PgColumn } from "drizzle-orm/pg-core";
+import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import {
   index,
   pgTableCreator,
@@ -11,6 +11,7 @@ import {
   pgEnum,
   unique,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 
 export const createTable = pgTableCreator((name) => `command-center_${name}`);
 
@@ -172,3 +173,11 @@ export const tasks = createTable(
     statusIndex: index("task_status_idx").on(table.status),
   })
 );
+
+// Export Zod schemas
+export const insertAgentSchema = createInsertSchema(agents);
+export const selectAgentSchema = createSelectSchema(agents);
+
+// Export types
+export type Agent = InferSelectModel<typeof agents>;
+export type NewAgent = InferInsertModel<typeof agents>;
