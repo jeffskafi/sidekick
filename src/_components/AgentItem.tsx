@@ -5,13 +5,18 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "~/components/ui/context-menu"
-import type { Agent } from "./AgentCanvasWrapper";
+import type { Agent } from "./AgentCanvas/AgentCanvasWrapper";
 
 interface AgentItemProps {
   agent: Agent;
   onEdit: (agent: Agent) => void;
   onDelete: (agentId: number) => void;
 }
+
+const getAgentStyle = (agent: Agent): React.CSSProperties => ({
+  left: `${agent.xPosition}px`,
+  top: `${agent.yPosition}px`,
+});
 
 export function AgentItem({ agent, onEdit, onDelete }: AgentItemProps) {
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -24,10 +29,7 @@ export function AgentItem({ agent, onEdit, onDelete }: AgentItemProps) {
     <ContextMenu>
       <ContextMenuTrigger 
         className="flex items-center justify-center w-20 h-20 bg-primary text-primary-foreground rounded-full cursor-pointer absolute"
-        style={{
-          left: `${agent.xPosition}px`,
-          top: `${agent.yPosition}px`,
-        }}
+        style={getAgentStyle(agent)}
         onContextMenu={handleContextMenu}
       >
         {agent.name}

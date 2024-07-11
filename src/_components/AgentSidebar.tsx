@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { Agent } from './AgentCanvas'; // Use import type
+import type { Agent } from './AgentCanvas/AgentCanvas'; // Use import type
 
 interface AgentSidebarProps {
   selectedAgents: Agent[];
