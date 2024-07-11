@@ -1,0 +1,30 @@
+.contextMenu {
+  position: absolute;
+  background-color: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  padding: 4px 0;
+  min-width: 160px;
+}
+
+.contextMenuItem {
+  padding: 8px 16px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s;
+}
+
+.contextMenuItem:hover {
+  background-color: #333;
+}
+
+.contextMenuSeparator {
+  height: 1px;
+  background-color: #444;
+  margin: 4px 0;
+}
