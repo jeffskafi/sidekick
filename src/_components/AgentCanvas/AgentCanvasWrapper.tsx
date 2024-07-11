@@ -39,7 +39,6 @@ export default function AgentCanvasWrapper({ agents: initialAgents }: AgentCanva
       }
   
       setAgentList(prevAgents => prevAgents.filter(agent => agent.id !== agentId));
-      router.refresh();
     } catch (error) {
       console.error('Error deleting agent:', error);
     }
@@ -80,7 +79,6 @@ export default function AgentCanvasWrapper({ agents: initialAgents }: AgentCanva
       const newAgent: Agent = await response.json() as Agent;
 
       setAgentList(prevAgents => [...prevAgents, newAgent]);
-      router.refresh();
     } catch (error) {
       console.error('Error adding agent:', error);
     }
