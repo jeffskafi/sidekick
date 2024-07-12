@@ -1,29 +1,84 @@
-# Create T3 App
+# Synergy
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Synergy is a powerful project management and AI agent collaboration platform built with Next.js, TypeScript, and Tailwind CSS.
 
-## What's next? How do I make an app with this?
+## Features
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- User authentication with Clerk
+- Project creation and management
+- AI agent canvas for visual collaboration
+- Task and story management
+- Subscription handling with Stripe integration
+- Responsive design with dark mode support
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Tech Stack
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+- Drizzle ORM with PostgreSQL
+- Clerk for authentication
+- Stripe for payments
+- Konva for canvas rendering
 
-## Learn More
+## Getting Started
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+1. Clone the repository
+2. Install dependencies:
+   ```
+   pnpm install
+   ```
+3. Set up environment variables:
+   - Copy `.env.example` to `.env.local`
+   - Fill in the required environment variables
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+4. Set up the database:
+   ```
+   pnpm db:push
+   ```
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+5. Run the development server:
+   ```
+   pnpm dev
+   ```
 
-## How do I deploy this?
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+## Project Structure
+
+- `src/app`: Next.js app router pages
+- `src/_components`: React components
+- `src/server/db`: Database schema and configuration
+- `src/styles`: Global styles and Tailwind configuration
+- `src/lib`: Utility functions and hooks
+
+## Database Schema
+
+The project uses Drizzle ORM with PostgreSQL. The main entities are:
+
+- Projects
+- Agents
+- Crews
+- Stories
+- Tasks
+- Skills
+
+## Authentication
+
+Authentication is handled by Clerk. The middleware ensures that protected routes are only accessible to authenticated users
+
+## Deployment
+
+The project is configured for deployment on Vercel. Make sure to set up the required environment variables in your Vercel project settings.
+
+## Contributing
+
+1. Fork the repository
+2. Create a new branch: `git checkout -b feature/your-feature-name`
+3. Make your changes and commit them: `git commit -m 'Add some feature'`
+4. Push to the branch: `git push origin feature/your-feature-name`
+5. Submit a pull request
+
+## License
+
+[MIT License](LICENSE)
