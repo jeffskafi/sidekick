@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import ClientOnly from "../_components/ClientOnly";
 import { db } from "../server/db";
 import { agents, skills, agentSkills } from "../server/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { Agent } from "~/server/db/schema";
 import { AddProjectButton } from "../_components/AddProjectButton";
 
@@ -15,7 +15,7 @@ const AgentCanvasWrapper = dynamic(
 );
 
 async function getAgents(): Promise<Agent[]> {
-  const agentsWithSkills: Agent[] = await db
+  const agentsWithSkills = await db
     .select({
       id: agents.id,
       projectId: agents.projectId,
@@ -25,12 +25,15 @@ async function getAgents(): Promise<Agent[]> {
       yPosition: agents.yPosition,
       createdAt: agents.createdAt,
       updatedAt: agents.updatedAt,
+      skills: sql<string[]>`array_agg(${skills.name})`,
     })
     .from(agents)
     .leftJoin(agentSkills, eq(agents.id, agentSkills.agentId))
-    .leftJoin(skills, eq(agentSkills.skillId, skills.id));
+    .leftJoin(skills, eq(agentSkills.skillId, skills.id))
+    .groupBy(agents.id)
+    .orderBy(agents.id);
 
-  return Object.values(agentsWithSkills);
+  return agentsWithSkills;
 }
 
 export default async function HomePage() {
