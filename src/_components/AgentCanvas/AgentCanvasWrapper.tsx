@@ -46,13 +46,30 @@ export default function AgentCanvasWrapper({ agents: initialAgents }: AgentCanva
     }
   };
 
-  const handleUpdateAgent = (updatedAgent: Agent) => {
-    setAgentList(prevAgents =>
-      prevAgents.map(agent =>
-        agent.id === updatedAgent.id ? updatedAgent : agent
-      )
-    );
-    // You might want to add an API call here to persist the changes
+  const handleUpdateAgent = async (updatedAgent: Agent) => {
+    try {
+      const response = await fetch('/api/agents', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedAgent),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update agent');
+      }
+
+      const updatedAgentFromServer = await response.json() as Agent;
+
+      setAgentList(prevAgents =>
+        prevAgents.map(agent =>
+          agent.id === updatedAgentFromServer.id ? updatedAgentFromServer : agent
+        )
+      );
+    } catch (error) {
+      console.error('Error updating agent:', error);
+    }
   };
 
   return (

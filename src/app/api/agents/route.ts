@@ -117,3 +117,32 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Failed to delete agent' }, { status: 500 });
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const updatedAgent = await request.json() as Agent;
+
+    if (!updatedAgent.id) {
+      return NextResponse.json({ error: 'Agent ID is required' }, { status: 400 });
+    }
+
+    const result = await db
+      .update(agents)
+      .set({
+        xPosition: updatedAgent.xPosition,
+        yPosition: updatedAgent.yPosition,
+        // Add other fields you want to update here
+      })
+      .where(eq(agents.id, updatedAgent.id))
+      .returning();
+
+    if (result.length === 0) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(result[0], { status: 200 });
+  } catch (error) {
+    console.error('Error updating agent:', error);
+    return NextResponse.json({ error: 'Failed to update agent' }, { status: 500 });
+  }
+}
