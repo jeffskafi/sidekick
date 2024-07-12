@@ -1,22 +1,23 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY is not set');
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2024-06-20',
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
 
 export async function POST(request: Request) {
   try {
-    const { priceId } = await request.json();
-
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('STRIPE_SECRET_KEY is not set');
-    }
+    const body = await request.json() as { priceId: string };
+    const priceId = body.priceId;
 
     if (!priceId) {
-      throw new Error('Price ID is required');
+      return NextResponse.json({ error: 'Price ID is required' }, { status: 400 });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -30,6 +31,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ id: session.id });
   } catch (error) {
     console.error('Error in create-checkout-session:', error);
-    return NextResponse.json({ error: (error as Error).message }, { status: 500 });
+    if (error instanceof Stripe.errors.StripeError) {
+      return NextResponse.json({ error: error.message }, { status: error.statusCode ?? 500 });
+    }
+    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
