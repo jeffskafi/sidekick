@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import ClientOnly from "../_components/ClientOnly";
 import { db } from "../server/db";
 import { agents, skills, agentSkills } from "../server/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { Agent } from "~/server/db/schema";
 import { AddProjectButton } from "../_components/AddProjectButton";
 
@@ -15,7 +15,7 @@ const AgentCanvasWrapper = dynamic(
 );
 
 async function getAgents(): Promise<Agent[]> {
-  const agentsWithSkills = await db
+  const agentsQuery = db
     .select({
       id: agents.id,
       projectId: agents.projectId,
@@ -25,15 +25,32 @@ async function getAgents(): Promise<Agent[]> {
       yPosition: agents.yPosition,
       createdAt: agents.createdAt,
       updatedAt: agents.updatedAt,
-      skills: sql<string[]>`array_agg(${skills.name})`,
     })
     .from(agents)
-    .leftJoin(agentSkills, eq(agents.id, agentSkills.agentId))
-    .leftJoin(skills, eq(agentSkills.skillId, skills.id))
-    .groupBy(agents.id)
     .orderBy(agents.id);
 
-  return agentsWithSkills;
+  const skillsQuery = db
+    .select({
+      agentId: agentSkills.agentId,
+      skillName: skills.name,
+    })
+    .from(agentSkills)
+    .innerJoin(skills, eq(agentSkills.skillId, skills.id));
+
+  const [agentsResult, skillsResult] = await Promise.all([agentsQuery, skillsQuery]);
+
+  const skillsMap = new Map<number, string[]>();
+  for (const { agentId, skillName } of skillsResult) {
+    if (!skillsMap.has(agentId)) {
+      skillsMap.set(agentId, []);
+    }
+    skillsMap.get(agentId)!.push(skillName);
+  }
+
+  return agentsResult.map(agent => ({
+    ...agent,
+    skills: skillsMap.get(agent.id) ?? [],
+  }));
 }
 
 export default async function HomePage() {
