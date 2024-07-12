@@ -52,6 +52,7 @@ export default function AgentCanvasWrapper({ agents: initialAgents }: AgentCanva
         agent.id === updatedAgent.id ? updatedAgent : agent
       )
     );
+    // You might want to add an API call here to persist the changes
   };
 
   return (

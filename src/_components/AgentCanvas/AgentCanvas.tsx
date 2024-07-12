@@ -8,6 +8,7 @@ import type { Agent } from "~/server/db/schema";
 import { useCanvasScaling } from "~/hooks/useCanvasScaling";
 import { useAgentSelection } from "~/hooks/useAgentSelection";
 import ContextMenu from "./ContextMenu";
+import { easeInOut } from "./movement";
 
 interface AgentCanvasProps {
   agents: Agent[];
@@ -139,24 +140,44 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
     [agents, isDragging, handleSelect, selectionArea]
   );
 
-  const handleDragEnd = (e: KonvaEventObject<DragEvent>, agent: Agent) => {
-    const node = e.target;
-    const updatedAgent = { ...agent, xPosition: node.x(), yPosition: node.y() };
-    onUpdateAgent(updatedAgent);
-  };
-
   const handleStageClick = useCallback(
     (e: KonvaEventObject<MouseEvent>) => {
       if (isRightClicking) {
         setIsRightClicking(false);
         return;
       }
-      if (e.target === e.target.getStage()) {
+      const stage = e.target.getStage();
+      if (stage) {
+        const pointerPosition = stage.getPointerPosition();
+        if (pointerPosition && selectedAgents.length > 0) {
+          // Move selected agents to the clicked position with animation
+          selectedAgents.forEach((agent: Agent) => {
+            const group = stage.findOne(`#agent-${agent.id}`) as Konva.Group | null;
+            if (group) {
+              group.to({
+                x: pointerPosition.x,
+                y: pointerPosition.y,
+                duration: 0.15, // Animation duration in seconds
+                easing: (t: number, b: number, c: number, d: number) =>
+                  easeInOut(t, b, c, d), // Easing function for smooth movement
+                onFinish: () => {
+                  const updatedAgent: Agent = {
+                    ...agent,
+                    xPosition: pointerPosition.x,
+                    yPosition: pointerPosition.y,
+                  };
+                  onUpdateAgent(updatedAgent);
+                },
+              });
+            }
+          });
+        }
+      } else if (e.target === stage) {
         handleSelect([], false);
         setShowContextMenu(false);
       }
     },
-    [handleSelect, isRightClicking]
+    [handleSelect, isRightClicking, selectedAgents, onUpdateAgent]
   );
 
   const closeContextMenu = useCallback(() => {
@@ -185,13 +206,12 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
           {agents.map((agent) => (
             <Group
               key={agent.id}
+              id={`agent-${agent.id}`}
               x={agent.xPosition}
               y={agent.yPosition}
-              draggable
               onClick={(e) => {
                 if (!isRightClicking) handleAgentClick(agent, e);
               }}
-              onDragEnd={(e) => handleDragEnd(e, agent)}
               onContextMenu={(e) => handleRightClick(e, agent)}
             >
               <Circle
