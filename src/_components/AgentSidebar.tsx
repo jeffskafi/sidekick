@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { Agent } from './AgentCanvas/AgentCanvas'; // Use import type
+import type { Agent } from '~/server/db/schema';
 
 interface AgentSidebarProps {
   selectedAgents: Agent[];
@@ -23,7 +23,7 @@ const AgentSidebar: React.FC<AgentSidebarProps> = ({ selectedAgents }) => {
         <p>Position: ({agent.xPosition}, {agent.yPosition})</p>
         <h3 className="text-lg font-semibold mt-4">Skills:</h3>
         <ul>
-          {agent.skills.map((skill, index) => (
+          {agent.skills?.map((skill, index) => (
             <li key={index}>{skill}</li>
           ))}
         </ul>

@@ -1,12 +1,11 @@
 import React from "react";
-import type { Agent } from "./AgentCanvasWrapper";
+import type { Agent } from "~/server/db/schema";
 
 interface ContextMenuProps {
   position: { x: number; y: number };
   agent: Agent | null;
   onEdit: (agent: Agent) => void;
   onDelete: (agentId: number) => void;
-  onAddAgent: () => void;
   onClose: () => void;
 }
 
@@ -15,7 +14,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   agent,
   onEdit,
   onDelete,
-  onAddAgent,
   onClose,
 }) => {
   return (
@@ -57,7 +55,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
           <div
             className="p-2 cursor-pointer hover:bg-green-100 rounded-md text-green-700"
             onClick={() => {
-              onAddAgent();
               onClose();
             }}
           >

@@ -1,23 +1,29 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import type { Agent } from "~/server/db/schema";
 
-export function AddAgentButton() {
+interface AddAgentButtonProps {
+  onAgentAdded: (newAgent: Agent) => void;
+  initialPosition?: { x: number; y: number };
+}
+
+export function AddAgentButton({ onAgentAdded, initialPosition }: AddAgentButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agentName, setAgentName] = useState('');
-  const [agentSkill, setAgentSkill] = useState('');
-  const router = useRouter();
+  const [agentSkills, setAgentSkills] = useState('');
 
   const handleAddAgent = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      const skillsArray = agentSkills.split(',').map(skill => skill.trim()).filter(Boolean);
+
       const response = await fetch('/api/agents', {
         method: 'POST',
         headers: {
@@ -25,8 +31,10 @@ export function AddAgentButton() {
         },
         body: JSON.stringify({
           name: agentName,
-          skill: agentSkill,
+          skills: skillsArray,
           projectId: 1, // Replace with actual project ID or selection
+          xPosition: initialPosition?.x ?? 0,
+          yPosition: initialPosition?.y ?? 0,
         }),
       });
 
@@ -34,8 +42,11 @@ export function AddAgentButton() {
         throw new Error('Failed to add agent');
       }
 
+      const newAgent: Agent = await response.json() as Agent;
+      onAgentAdded(newAgent);
       setIsOpen(false);
-      router.refresh();
+      setAgentName('');
+      setAgentSkills('');
     } catch (error) {
       console.error('Error adding agent:', error);
       // Handle error (e.g., show an error message to the user)
@@ -67,14 +78,15 @@ export function AddAgentButton() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="skill" className="text-right">
-                Skill
+              <Label htmlFor="skills" className="text-right">
+                Skills
               </Label>
               <Input
-                id="skill"
-                value={agentSkill}
-                onChange={(e) => setAgentSkill(e.target.value)}
+                id="skills"
+                value={agentSkills}
+                onChange={(e) => setAgentSkills(e.target.value)}
                 className="col-span-3"
+                placeholder="Enter skills separated by commas"
               />
             </div>
           </div>

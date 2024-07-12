@@ -15,7 +15,6 @@ interface AgentCanvasProps {
   onEdit: (agent: Agent) => void;
   onDelete: (agentId: number) => void;
   onUpdateAgent: (agent: Agent) => void;
-  onAddAgent: () => void;
 }
 
 const AgentCanvas: React.FC<AgentCanvasProps> = ({
@@ -24,7 +23,6 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
   onEdit,
   onDelete,
   onUpdateAgent,
-  onAddAgent,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scale, stageSize, updateStageSize } = useCanvasScaling(containerRef);
@@ -235,7 +233,6 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
           agent={contextMenuAgent}
           onEdit={onEdit}
           onDelete={onDelete}
-          onAddAgent={onAddAgent}
           onClose={closeContextMenu}
         />
       )}

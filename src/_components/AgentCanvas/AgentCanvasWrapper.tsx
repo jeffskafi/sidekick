@@ -3,22 +3,24 @@
 import { useState, useEffect } from 'react';
 import AgentCanvas from './AgentCanvas';
 import AgentSidebar from '../AgentSidebar';
-import { useRouter } from 'next/navigation';
-import { insertAgentSchema } from '../../server/db/schema';
-import type { Agent, NewAgent } from '../../server/db/schema';
+import { AddAgentButton } from '../AddAgentButton';
+import type { Agent } from '../../server/db/schema';
 
 interface AgentCanvasWrapperProps {
   agents: Agent[];
 }
 
 export default function AgentCanvasWrapper({ agents: initialAgents }: AgentCanvasWrapperProps) {
-  const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
   const [agentList, setAgentList] = useState<Agent[]>(initialAgents);
-  const router = useRouter();
+  const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
 
   useEffect(() => {
     setAgentList(initialAgents);
   }, [initialAgents]);
+
+  const handleAgentAdded = (newAgent: Agent) => {
+    setAgentList(prevAgents => [...prevAgents, newAgent]);
+  };
 
   const handleSelectAgents = (agents: Agent | Agent[]) => {
     setSelectedAgents(Array.isArray(agents) ? agents : [agents]);
@@ -52,38 +54,6 @@ export default function AgentCanvasWrapper({ agents: initialAgents }: AgentCanva
     );
   };
 
-  const handleAddAgent = async () => {
-    try {
-      const newAgentData: NewAgent = {
-        projectId: 1, // Replace with actual project ID
-        name: `Agent ${agentList.length + 1}`,
-        xPosition: Math.random() * 500,
-        yPosition: Math.random() * 500,
-      };
-
-      // Validate new agent data
-      insertAgentSchema.parse(newAgentData);
-
-      const response = await fetch('/api/agents', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newAgentData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add agent');
-      }
-
-      const newAgent: Agent = await response.json() as Agent;
-
-      setAgentList(prevAgents => [...prevAgents, newAgent]);
-    } catch (error) {
-      console.error('Error adding agent:', error);
-    }
-  };
-
   return (
     <div className="relative w-full h-full">
       <AgentCanvas 
@@ -92,9 +62,9 @@ export default function AgentCanvasWrapper({ agents: initialAgents }: AgentCanva
         onEdit={handleEditAgent}
         onDelete={handleDeleteAgent}
         onUpdateAgent={handleUpdateAgent}
-        onAddAgent={handleAddAgent}
       />
       <AgentSidebar selectedAgents={selectedAgents} />
+      <AddAgentButton onAgentAdded={handleAgentAdded} />
     </div>
   );
 }

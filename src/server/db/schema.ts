@@ -179,5 +179,5 @@ export const insertAgentSchema = createInsertSchema(agents);
 export const selectAgentSchema = createSelectSchema(agents);
 
 // Export types
-export type Agent = InferSelectModel<typeof agents>;
+export type Agent = InferSelectModel<typeof agents> & { skills?: string[] };
 export type NewAgent = InferInsertModel<typeof agents>;
