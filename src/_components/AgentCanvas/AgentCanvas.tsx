@@ -49,9 +49,10 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
   const handleAgentClick = useCallback(
     (agent: Agent, event: KonvaEventObject<MouseEvent>) => {
       event.cancelBubble = true;
-      handleSelect(agent, event.evt.ctrlKey || event.evt.metaKey);
+      const isCtrlPressed = event.evt.ctrlKey || event.evt.metaKey;
+      handleSelect(agent, isCtrlPressed);
     },
-    [handleSelect]
+    [handleSelect],
   );
 
   const handleRightClick = useCallback(
@@ -76,7 +77,7 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
         }
       }
     },
-    [handleSelect]
+    [handleSelect],
   );
 
   const handleStageMouseDown = useCallback(
@@ -85,7 +86,7 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
         handleRightClick(e, null);
         return;
       }
-      if (e.target === e.target.getStage()) {
+      if (e.target === e.target.getStage() && selectedAgents.length === 0) {
         setSelectionArea({
           start: e.target.getStage().getPointerPosition()!,
           end: null,
@@ -95,7 +96,7 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
         setContextMenuAgent(null);
       }
     },
-    [handleRightClick]
+    [handleRightClick, selectedAgents.length],
   );
 
   const handleStageMouseMove = useCallback(
@@ -107,7 +108,7 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
         }));
       }
     },
-    [isDragging]
+    [isDragging],
   );
 
   const handleStageMouseUp = useCallback(
@@ -129,7 +130,7 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
               agent.xPosition >= x1 &&
               agent.xPosition <= x2 &&
               agent.yPosition >= y1 &&
-              agent.yPosition <= y2
+              agent.yPosition <= y2,
           );
 
           handleSelect(selected, false);
@@ -137,7 +138,35 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
         setSelectionArea({ start: null, end: null });
       }
     },
-    [agents, isDragging, handleSelect, selectionArea]
+    [agents, isDragging, handleSelect, selectionArea],
+  );
+
+  const moveAgents = useCallback(
+    (agentsToMove: Agent[], newPosition: { x: number; y: number }) => {
+      const stage = stageRef.current;
+      if (stage) {
+        agentsToMove.forEach((agent: Agent) => {
+          const group = stage.findOne(`#agent-${agent.id}`) as Konva.Group | null;
+          if (group) {
+            group.to({
+              x: newPosition.x,
+              y: newPosition.y,
+              duration: 0.15,
+              easing: easeInOut,
+              onFinish: () => {
+                const updatedAgent: Agent = {
+                  ...agent,
+                  xPosition: newPosition.x,
+                  yPosition: newPosition.y,
+                };
+                onUpdateAgent(updatedAgent);
+              },
+            });
+          }
+        });
+      }
+    },
+    [onUpdateAgent]
   );
 
   const handleStageClick = useCallback(
@@ -147,37 +176,15 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
         return;
       }
       const stage = e.target.getStage();
-      if (stage) {
+      if (stage && e.target === stage) {
         const pointerPosition = stage.getPointerPosition();
         if (pointerPosition && selectedAgents.length > 0) {
-          // Move selected agents to the clicked position with animation
-          selectedAgents.forEach((agent: Agent) => {
-            const group = stage.findOne(`#agent-${agent.id}`) as Konva.Group | null;
-            if (group) {
-              group.to({
-                x: pointerPosition.x,
-                y: pointerPosition.y,
-                duration: 0.15, // Animation duration in seconds
-                easing: (t: number, b: number, c: number, d: number) =>
-                  easeInOut(t, b, c, d), // Easing function for smooth movement
-                onFinish: () => {
-                  const updatedAgent: Agent = {
-                    ...agent,
-                    xPosition: pointerPosition.x,
-                    yPosition: pointerPosition.y,
-                  };
-                  onUpdateAgent(updatedAgent);
-                },
-              });
-            }
-          });
+          console.log("Moving agents to:", pointerPosition);
+          moveAgents(selectedAgents, pointerPosition);
         }
-      } else if (e.target === stage) {
-        handleSelect([], false);
-        setShowContextMenu(false);
       }
     },
-    [handleSelect, isRightClicking, selectedAgents, onUpdateAgent]
+    [isRightClicking, selectedAgents, moveAgents]
   );
 
   const closeContextMenu = useCallback(() => {
@@ -218,7 +225,9 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
                 radius={30}
                 fill={agent.status === "idle" ? "#3498db" : "#e74c3c"}
                 stroke={
-                  selectedAgents.some((a: Agent) => a.id === agent.id) ? "4" : "1"
+                  selectedAgents.some((a: Agent) => a.id === agent.id)
+                    ? "4"
+                    : "1"
                 }
                 strokeWidth={
                   selectedAgents.some((a: Agent) => a.id === agent.id) ? 4 : 1
