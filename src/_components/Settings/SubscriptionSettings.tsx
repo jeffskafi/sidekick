@@ -1,40 +1,64 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import SettingsSection from './SettingsSection';
 import { useStripe } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 interface CheckoutSession {
   id: string;
 }
 
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
 export default function SubscriptionSettings() {
-  const stripe = useStripe();
+  const [error, setError] = useState<string | null>(null);
 
   const handleUpgrade = async () => {
-    if (!stripe) return;
+    setError(null);
+    const stripe = await stripePromise;
+    if (!stripe) {
+      setError('Stripe failed to load');
+      return;
+    }
 
-    // Call your backend to create a Checkout Session
-    const response = await fetch('/api/create-checkout-session', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ priceId: 'your_price_id_here' }),
-    });
+    if (!process.env.NEXT_PUBLIC_STRIPE_PRICE_ID) {
+      setError('Stripe Price ID is not set');
+      return;
+    }
 
-    const session = await response.json() as CheckoutSession;
+    try {
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID }),
+      });
 
-    // Redirect to Checkout
-    const result = await stripe.redirectToCheckout({
-      sessionId: session.id,
-    });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
 
-    if (result.error) {
-      // Handle any errors from Stripe
-      console.error(result.error);
+      const session = await response.json() as CheckoutSession;
+
+      if (!session.id) {
+        throw new Error('Session ID is missing from the response');
+      }
+
+      const result = await stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (result.error) {
+        throw result.error;
+      }
+    } catch (error) {
+      console.error('Error in handleUpgrade:', error);
+      setError((error as Error).message);
     }
   };
 
@@ -58,6 +82,7 @@ export default function SubscriptionSettings() {
           <Button variant="outline" className="mt-2 w-full">Update Payment Method</Button>
         </div>
         <Button className="w-full" onClick={handleUpgrade}>Upgrade to Pro</Button>
+        {error && <p className="text-red-500">{error}</p>}
       </div>
     </SettingsSection>
   );
