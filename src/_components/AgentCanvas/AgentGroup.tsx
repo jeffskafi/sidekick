@@ -8,6 +8,7 @@ interface AgentGroupProps {
   agent: Agent;
   isSelected: boolean;
   onClick: (agent: Agent, isMultiSelect: boolean) => void;
+  onDoubleClick: (agent: Agent) => void;
   onContextMenu: (e: KonvaEventObject<MouseEvent>, agent: Agent) => void;
 }
 
@@ -15,11 +16,17 @@ const AgentGroup: React.FC<AgentGroupProps> = ({
   agent,
   isSelected,
   onClick,
+  onDoubleClick,
   onContextMenu,
 }) => {
   const handleClick = (e: KonvaEventObject<MouseEvent>) => {
     console.log("Agent clicked", agent);
     onClick(agent, e.evt.ctrlKey || e.evt.metaKey);
+  };
+
+  const handleDoubleClick = (e: KonvaEventObject<MouseEvent>) => {
+    e.cancelBubble = true;
+    onDoubleClick(agent);
   };
 
   const handleContextMenu = (e: KonvaEventObject<MouseEvent>) => {
@@ -34,6 +41,7 @@ const AgentGroup: React.FC<AgentGroupProps> = ({
       x={agent.xPosition}
       y={agent.yPosition}
       onClick={handleClick}
+      onDblClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       draggable={false}
     >

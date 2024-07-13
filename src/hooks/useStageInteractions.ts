@@ -8,7 +8,6 @@ export function useStageInteractions(
   handleSelect: (agentOrAgents: Agent | Agent[], isMultiSelect: boolean) => void,
   moveAgents: (agentsToMove: Agent[], newPosition: { x: number; y: number }, stage: Konva.Stage) => void,
   selectedAgents: Agent[],
-  stageRef: React.RefObject<Konva.Stage>
 ) {
   const [isDragging, setIsDragging] = useState(false);
   const [isRightClicking, setIsRightClicking] = useState(false);

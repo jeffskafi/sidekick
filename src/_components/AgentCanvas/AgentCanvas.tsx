@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import type Konva from "konva";
 import type { Agent } from "~/server/db/schema";
@@ -11,6 +11,16 @@ import { useStageInteractions } from "~/hooks/useStageInteractions";
 import { useContextMenu } from "~/hooks/useContextMenu";
 import ContextMenu from "./ContextMenu";
 import AgentGroup from "./AgentGroup";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerClose,
+} from "~/components/ui/drawer";
+import { Button } from "~/components/ui/button";
 
 interface AgentCanvasProps {
   agents: Agent[];
@@ -34,8 +44,6 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
   const stageRef = useRef<Konva.Stage>(null);
 
   const {
-    isDragging,
-    isRightClicking,
     selectionArea,
     handleStageMouseDown,
     handleStageMouseMove,
@@ -43,11 +51,26 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
   } = useStageInteractions(
     handleSelect,
     moveAgents,
-    selectedAgents,
-    stageRef
+    selectedAgents
   );
 
   const { contextMenu, handleContextMenu, closeContextMenu } = useContextMenu();
+
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+
+  const handleAgentSelect = useCallback((agent: Agent, isMultiSelect: boolean) => {
+    handleSelect(agent, isMultiSelect);
+  }, [handleSelect]);
+
+  const handleAgentDoubleClick = useCallback((agent: Agent) => {
+    setSelectedAgent(agent);
+  }, []);
+
+  const handleDrawerOpenChange = useCallback((open: boolean) => {
+    if (!open) {
+      setSelectedAgent(null);
+    }
+  }, []);
 
   useEffect(() => {
     updateStageSize();
@@ -76,7 +99,8 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
               key={agent.id}
               agent={agent}
               isSelected={selectedAgents.some((a) => a.id === agent.id)}
-              onClick={handleSelect}
+              onClick={handleAgentSelect}
+              onDoubleClick={handleAgentDoubleClick}
               onContextMenu={handleContextMenu}
             />
           ))}
@@ -94,13 +118,35 @@ const AgentCanvas: React.FC<AgentCanvasProps> = ({
       </Stage>
       {contextMenu.isOpen && contextMenu.position && (
         <ContextMenu
-          position={contextMenu.position}
+          position={{
+            x: contextMenu.position.x * scale,
+            y: contextMenu.position.y * scale,
+          }}
           agent={contextMenu.agent}
           onEdit={onEdit}
           onDelete={onDelete}
           onClose={closeContextMenu}
         />
       )}
+      <Drawer open={!!selectedAgent} onOpenChange={handleDrawerOpenChange}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>{selectedAgent?.name}</DrawerTitle>
+            <DrawerDescription>Agent Details</DrawerDescription>
+          </DrawerHeader>
+          <div className="p-4">
+            <p>ID: {selectedAgent?.id}</p>
+            <p>Status: {selectedAgent?.status}</p>
+            <p>Position: ({selectedAgent?.xPosition}, {selectedAgent?.yPosition})</p>
+          </div>
+          <DrawerFooter>
+            <Button onClick={() => onEdit(selectedAgent!)}>Edit Agent</Button>
+            <DrawerClose asChild>
+              <Button variant="outline">Close</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };
