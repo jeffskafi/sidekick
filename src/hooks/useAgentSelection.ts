@@ -6,21 +6,24 @@ export function useAgentSelection(agents: Agent[], onSelect: (agents: Agent[]) =
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
 
   const handleSelect = useCallback((agentOrAgents: Agent | Agent[], isMultiSelect: boolean) => {
+    console.log("Handling selection", agentOrAgents, isMultiSelect);
     setSelectedAgents(prev => {
       if (Array.isArray(agentOrAgents)) {
-        return agentOrAgents;
-      }
-      if (isMultiSelect) {
-        return prev.some(a => a.id === agentOrAgents.id)
-          ? prev.filter(a => a.id !== agentOrAgents.id)
-          : [...prev, agentOrAgents];
+        return isMultiSelect ? [...prev, ...agentOrAgents] : agentOrAgents;
       } else {
-        return [agentOrAgents];
+        if (isMultiSelect) {
+          return prev.some(a => a.id === agentOrAgents.id)
+            ? prev.filter(a => a.id !== agentOrAgents.id)
+            : [...prev, agentOrAgents];
+        } else {
+          return [agentOrAgents];
+        }
       }
     });
   }, []);
 
   useEffect(() => {
+    console.log("Selected agents updated", selectedAgents);
     onSelect(selectedAgents);
   }, [selectedAgents, onSelect]);
 
