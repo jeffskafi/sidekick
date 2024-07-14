@@ -12,7 +12,7 @@ async function seedSkills() {
   await client.connect();
 
   try {
-    const skills = JSON.parse(fs.readFileSync('util/linkedin_skills.json', 'utf8'));
+    const skills = JSON.parse(fs.readFileSync('util/search/data/linkedin_skills_unique.json', 'utf8'));
     
     const pipeline = client.multi();
     for (let i = 0; i < skills.length; i++) {
