@@ -5,6 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Popover, PopoverTrigger } from "~/components/ui/popover";
 import type { Agent } from "~/server/db/schema";
 
 interface AddAgentButtonProps {
@@ -12,35 +13,44 @@ interface AddAgentButtonProps {
   initialPosition?: { x: number; y: number };
 }
 
-interface SkillsResponse {
-  results: string[];
+interface Skill {
+  id: string; 
+  name: string;
 }
 
-export function AddAgentButton({ onAgentAdded, initialPosition }: AddAgentButtonProps) {
+export function AddAgentButton(props: AddAgentButtonProps) {
+  const { onAgentAdded, initialPosition } = props;
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agentName, setAgentName] = useState('');
-  const [agentSkills, setAgentSkills] = useState('');
-  const [skills, setSkills] = useState<string[]>([]);
+  const [agentSkills, setAgentSkills] = useState<{ id: string; name: string }[]>([]);
+  const [skills, setSkills] = useState<{ id: string; name: string }[]>([]);
   const [skillQuery, setSkillQuery] = useState('');
+  const [isSkillsOpen, setIsSkillsOpen] = useState(false);
 
   const fetchSkills = useCallback(
-    debounce(async (query: string) => {
-      try {
-        const response = await fetch(`/api/skills?query=${encodeURIComponent(query)}`);
-        const data = await response.json() as SkillsResponse;
-        setSkills(data.results);
-      } catch (error) {
-        console.error('Error fetching skills:', error);
-        setSkills([]);
-      }
-    }, 50),
+    (query: string) => {
+      const debouncedFetchSkills = debounce(async () => {
+        try {
+          const response = await fetch(`/api/skills?query=${encodeURIComponent(query)}`);
+          const data = await response.json() as Skill[];
+          setSkills(data || []);
+        } catch (error) {
+          setSkills([]);
+        }
+      }, 10);
+
+      void debouncedFetchSkills();
+    },
     []
   );
 
   useEffect(() => {
     if (skillQuery) {
-      void fetchSkills(skillQuery);
+      fetchSkills(skillQuery);
+      setIsSkillsOpen(true);
+    } else {
+      setIsSkillsOpen(false);
     }
   }, [skillQuery, fetchSkills]);
 
@@ -48,8 +58,6 @@ export function AddAgentButton({ onAgentAdded, initialPosition }: AddAgentButton
     e.preventDefault();
     setIsLoading(true);
     try {
-      const skillsArray = agentSkills.split(',').map(skill => skill.trim()).filter(Boolean);
-
       const response = await fetch('/api/agents', {
         method: 'POST',
         headers: {
@@ -57,7 +65,7 @@ export function AddAgentButton({ onAgentAdded, initialPosition }: AddAgentButton
         },
         body: JSON.stringify({
           name: agentName,
-          skills: skillsArray,
+          skills: agentSkills.map(skill => skill.name),
           projectId: 1, // Replace with actual project ID or selection
           xPosition: initialPosition?.x ?? 0,
           yPosition: initialPosition?.y ?? 0,
@@ -72,13 +80,16 @@ export function AddAgentButton({ onAgentAdded, initialPosition }: AddAgentButton
       onAgentAdded(newAgent);
       setIsOpen(false);
       setAgentName('');
-      setAgentSkills('');
+      setAgentSkills([]);
     } catch (error) {
-      console.error('Error adding agent:', error);
       // Handle error (e.g., show an error message to the user)
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSkillQuery(e.currentTarget.value);
   };
 
   return (
@@ -100,29 +111,61 @@ export function AddAgentButton({ onAgentAdded, initialPosition }: AddAgentButton
               value={agentName}
               onChange={(e) => setAgentName(e.target.value)}
               className="col-span-3"
+              autoComplete="off"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="skills" className="text-right">
               Skills
             </Label>
-            <Input
-              id="skills"
-              value={agentSkills}
-              onChange={(e) => {
-                setAgentSkills(e.target.value);
-                setSkillQuery(e.target.value);
-              }}
-              className="col-span-3"
-              placeholder="Enter skills separated by commas"
-            />
+            <Popover open={isSkillsOpen} onOpenChange={setIsSkillsOpen}>
+              <PopoverTrigger asChild>
+                <div className="col-span-3 relative">
+                  <Input
+                    id="skills"
+                    value={skillQuery}
+                    onChange={handleSkillInputChange}
+                    className="w-full rounded-md border border-gray-300 bg-white py-2 px-4 text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter skills"
+                    autoComplete="off"
+                  />
+                  {isSkillsOpen && skillQuery && (
+                    <div className="absolute z-10 mt-2 w-full rounded-md border border-gray-300 bg-white py-2 shadow-lg">
+                      {skills.length > 0 ? (
+                        skills.map((skill, index) => (
+                          <div
+                            key={index}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => {
+                              setAgentSkills((prevSkills) => {
+                                const skillsArray = prevSkills.map(s => s.name);
+                                if (!skillsArray.includes(skill.name)) {
+                                  return [...prevSkills, skill];
+                                }
+                                return prevSkills;
+                              });
+                              setSkillQuery('');
+                              setIsSkillsOpen(false);
+                            }}
+                          >
+                            {skill.name}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2">No skills found.</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </PopoverTrigger>
+            </Popover>
           </div>
           <div>
-            <Label className="text-right">Available Skills:</Label>
+            <Label className="text-right">Selected Skills:</Label>
             <div className="mt-2">
-              {skills.map((skill, index) => (
+              {agentSkills.map((skill, index) => (
                 <span key={index} className="mr-2">
-                  {skill}
+                  {skill.name}
                 </span>
               ))}
             </div>
@@ -137,19 +180,19 @@ export function AddAgentButton({ onAgentAdded, initialPosition }: AddAgentButton
     </Dialog>
   );
 }
-
-function debounce<T extends (...args: any[]) => any>(
+function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
   func: T,
   delay: number
-): (...args: Parameters<T>) => void {
+): T {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  return (...args) => {
+  return ((...args) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
     timeoutId = setTimeout(() => {
       func(...args);
     }, delay);
-  };
+    return func;
+  }) as T;
 }
