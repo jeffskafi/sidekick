@@ -71,10 +71,10 @@ export function useStageInteractions(
           moveAgents(selectedAgents, endPos, stage);
         }
       } else if (isDragging) {
-        const x1 = Math.min(dragStartPosition.current.x, endPos.x);
-        const x2 = Math.max(dragStartPosition.current.x, endPos.x);
-        const y1 = Math.min(dragStartPosition.current.y, endPos.y);
-        const y2 = Math.max(dragStartPosition.current.y, endPos.y);
+        const x1 = Math.min(dragStartPosition.current.x, endPos.x) / stage.scaleX();
+        const x2 = Math.max(dragStartPosition.current.x, endPos.x) / stage.scaleX();
+        const y1 = Math.min(dragStartPosition.current.y, endPos.y) / stage.scaleY();
+        const y2 = Math.max(dragStartPosition.current.y, endPos.y) / stage.scaleY();
 
         const newSelectedAgents = agents.filter(
           (agent) =>

@@ -28,13 +28,13 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected }) => {
       <Circle
         radius={30}
         fill={agent.status === "idle" ? "#3498db" : "#e74c3c"}
-        stroke={isSelected ? "4" : "1"}
+        stroke={isSelected ? "yellow" : "white"}
         strokeWidth={isSelected ? 4 : 1}
       />
       <Text
         text={`${agent.name} (${Math.round(agent.xPosition)},${Math.round(agent.yPosition)})`}
         fontSize={14}
-        fill="black"
+        fill="white"
         width={60}
         align="center"
         y={40}

@@ -10,16 +10,18 @@ export function useAgentMovement(onUpdateAgent: (agent: Agent) => void) {
       agentsToMove.forEach((agent: Agent) => {
         const group = stage.findOne(`#agent-${agent.id}`);
         if (group) {
+          const newX = newPosition.x / stage.scaleX();
+          const newY = newPosition.y / stage.scaleY();
           group.to({
-            x: newPosition.x,
-            y: newPosition.y,
+            x: newX,
+            y: newY,
             duration: 0.15,
             easing: easeInOut,
             onFinish: () => {
               const updatedAgent: Agent = {
                 ...agent,
-                xPosition: newPosition.x,
-                yPosition: newPosition.y,
+                xPosition: newX,
+                yPosition: newY,
               };
               onUpdateAgent(updatedAgent);
             },

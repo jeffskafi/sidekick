@@ -23,7 +23,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
-        <body>
+        <body className="min-h-screen flex flex-col">
           <header className="bg-primary text-primary-foreground p-4">
             <div className="container mx-auto flex justify-between items-center">
               <Link href="/" className="text-2xl font-bold">Synergy</Link>
@@ -38,7 +38,7 @@ export default function RootLayout({
               </nav>
             </div>
           </header>
-          <main className="container mx-auto mt-8">
+          <main className="flex-grow">
             {children}
           </main>
         </body>

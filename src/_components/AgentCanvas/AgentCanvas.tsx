@@ -10,11 +10,15 @@ import { useAgentMovement } from '~/hooks/useAgentMovement';
 import AgentGroup from './AgentGroup';
 import type { Agent } from '~/server/db/schema';
 
-export default function AgentCanvas() {
+interface AgentCanvasProps {
+  className?: string;
+}
+
+export default function AgentCanvas({ className }: AgentCanvasProps) {
   const { agents, selectedAgents, selectAgents, updateAgent } = useAgentContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scale, stageSize } = useCanvasScaling(containerRef);
-  const { selectionArea, startSelection, updateSelection, endSelection } = useSelectionArea();
+  const { selectionArea, startSelection, updateSelection, endSelection } = useSelectionArea(scale);
   const moveAgents = useAgentMovement(updateAgent);
 
   const handleSelect = useCallback(
@@ -42,7 +46,7 @@ export default function AgentCanvas() {
   } : null;
 
   return (
-    <div ref={containerRef} className="flex-grow bg-gray-800">
+    <div ref={containerRef} className={`flex-grow bg-gray-900 ${className}`}>
       <Stage
         width={stageSize.width}
         height={stageSize.height}
