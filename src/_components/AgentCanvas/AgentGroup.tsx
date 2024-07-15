@@ -2,18 +2,22 @@
 import React from "react";
 import { Group, Circle, Text } from "react-konva";
 import type { Agent } from "~/server/db/schema";
-import { useAgentContext } from "~/contexts/AgentContext";
+import './agentCanvasStyles.css';
+
 
 interface AgentGroupProps {
   agent: Agent;
   isSelected: boolean;
+  onSelect: (agent: Agent) => void;
 }
 
-const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected }) => {
-  const { selectAgents } = useAgentContext();
+const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect }) => {
+  const handleTap = () => {
+    onSelect(agent);
+  };
 
   const handleClick = () => {
-    selectAgents([agent]);
+    onSelect(agent);
   };
 
   return (
@@ -23,11 +27,11 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected }) => {
       x={agent.xPosition}
       y={agent.yPosition}
       onClick={handleClick}
-      draggable={false}
+      onTap={handleTap}
     >
       <Circle
         radius={30}
-        fill={agent.status === "idle" ? "#3498db" : "#e74c3c"}
+        fill={agent.status === "idle" ? "blue" : "red"}
         stroke={isSelected ? "yellow" : "white"}
         strokeWidth={isSelected ? 4 : 1}
       />

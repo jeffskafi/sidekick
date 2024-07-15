@@ -28,7 +28,14 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
     [selectAgents]
   );
 
-  const { handleStageMouseDown, handleStageMouseMove, handleStageMouseUp } = useStageInteractions(
+  const {
+    handleStageMouseDown,
+    handleStageTouchStart,
+    handleStageMouseMove,
+    handleStageTouchMove,
+    handleStageMouseUp,
+    handleStageTouchEnd,
+  } = useStageInteractions(
     handleSelect,
     moveAgents,
     selectedAgents,
@@ -46,15 +53,18 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
   } : null;
 
   return (
-    <div ref={containerRef} className={`flex-grow bg-gray-800 ${className}`}>
+    <div ref={containerRef} className={`flex-grow bg-gray-800 no-scroll ${className}`}>
       <Stage
         width={stageSize.width}
         height={stageSize.height}
         scaleX={scale}
         scaleY={scale}
         onMouseDown={handleStageMouseDown}
+        onTouchStart={handleStageTouchStart}
         onMouseMove={handleStageMouseMove}
+        onTouchMove={handleStageTouchMove}
         onMouseUp={handleStageMouseUp}
+        onTouchEnd={handleStageTouchEnd}
       >
         <Layer>
           {agents.map((agent) => (
@@ -62,6 +72,7 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
               key={agent.id}
               agent={agent}
               isSelected={selectedAgents.some((a) => a.id === agent.id)}
+              onSelect={handleSelect}
             />
           ))}
           {selectionRect && (
