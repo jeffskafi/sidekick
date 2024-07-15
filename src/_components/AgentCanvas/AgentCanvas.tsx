@@ -46,7 +46,7 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
   } : null;
 
   return (
-    <div ref={containerRef} className={`flex-grow bg-gray-900 ${className}`}>
+    <div ref={containerRef} className={`flex-grow bg-gray-800 ${className}`}>
       <Stage
         width={stageSize.width}
         height={stageSize.height}
