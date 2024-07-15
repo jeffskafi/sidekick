@@ -1,13 +1,10 @@
 'use client';
 
 import React from 'react';
-import type { Agent } from '~/server/db/schema';
+import { useAgentContext } from '~/contexts/AgentContext';
 
-interface AgentSidebarProps {
-  selectedAgents: Agent[];
-}
-
-const AgentSidebar: React.FC<AgentSidebarProps> = ({ selectedAgents }) => {
+const AgentSidebar: React.FC = () => {
+  const {selectedAgents} = useAgentContext();
   if (selectedAgents.length === 0) {
     return <div className="p-4">Select one or more agents to see details</div>;
   }

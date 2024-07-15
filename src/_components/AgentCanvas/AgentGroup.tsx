@@ -2,36 +2,18 @@
 import React from "react";
 import { Group, Circle, Text } from "react-konva";
 import type { Agent } from "~/server/db/schema";
-import type { KonvaEventObject } from "konva/lib/Node";
+import { useAgentContext } from "~/contexts/AgentContext";
 
 interface AgentGroupProps {
   agent: Agent;
   isSelected: boolean;
-  onClick: (agent: Agent, isMultiSelect: boolean) => void;
-  onDoubleClick: (agent: Agent) => void;
-  onContextMenu: (e: KonvaEventObject<MouseEvent>, agent: Agent) => void;
 }
 
-const AgentGroup: React.FC<AgentGroupProps> = ({
-  agent,
-  isSelected,
-  onClick,
-  onDoubleClick,
-  onContextMenu,
-}) => {
-  const handleClick = (e: KonvaEventObject<MouseEvent>) => {
-    console.log("Agent clicked", agent);
-    onClick(agent, e.evt.ctrlKey || e.evt.metaKey);
-  };
+const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected }) => {
+  const { selectAgents } = useAgentContext();
 
-  const handleDoubleClick = (e: KonvaEventObject<MouseEvent>) => {
-    e.cancelBubble = true;
-    onDoubleClick(agent);
-  };
-
-  const handleContextMenu = (e: KonvaEventObject<MouseEvent>) => {
-    e.evt.preventDefault();
-    onContextMenu(e, agent);
+  const handleClick = () => {
+    selectAgents([agent]);
   };
 
   return (
@@ -41,8 +23,6 @@ const AgentGroup: React.FC<AgentGroupProps> = ({
       x={agent.xPosition}
       y={agent.yPosition}
       onClick={handleClick}
-      onDblClick={handleDoubleClick}
-      onContextMenu={handleContextMenu}
       draggable={false}
     >
       <Circle

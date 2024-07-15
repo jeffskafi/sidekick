@@ -1,18 +1,14 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import ClientOnly from "../_components/ClientOnly";
 import { db } from "../server/db";
 import { agents, skills, agentSkills } from "../server/db/schema";
 import { eq } from "drizzle-orm";
 import type { Agent } from "~/server/db/schema";
 import { AddProjectButton } from "../_components/AddProjectButton";
+import { AgentProvider } from "../contexts/AgentContext";
 
-const AgentCanvasWrapper = dynamic(
-  () => import("../_components/AgentCanvas/AgentCanvasWrapper"),
-  {
-    ssr: false,
-  }
-);
+const DynamicAgentCanvas = dynamic(() => import("../_components/AgentCanvas/AgentCanvas"), { ssr: false });
+const DynamicAgentSidebar = dynamic(() => import("../_components/AgentSidebar"), { ssr: false });
 
 async function getAgents(): Promise<Agent[]> {
   const agentsQuery = db
@@ -54,27 +50,26 @@ async function getAgents(): Promise<Agent[]> {
 }
 
 export default async function HomePage() {
-  const agents = await getAgents();
+  const initialAgents = await getAgents();
 
-  return <HomePageClient initialAgents={agents} />;
-}
-
-function HomePageClient({ initialAgents }: { initialAgents: Agent[] }) {
   return (
-    <main className="flex min-h-screen flex-col bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container mx-auto flex flex-col px-4 py-8 h-screen">
-        <h1 className="mb-8 text-4xl font-bold">Dashboard</h1>
-        <div className="flex space-x-4 mb-4">
-          <AddProjectButton />
-        </div>
-        <div className="flex-grow">
-          <ClientOnly>
-            <Suspense fallback={<div>Loading...</div>}>
-              <AgentCanvasWrapper agents={initialAgents} />
+    <AgentProvider initialAgents={initialAgents}>
+      <main className="flex min-h-screen flex-col bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+        <div className="container mx-auto flex flex-col px-4 py-8 h-screen">
+          <h1 className="mb-8 text-4xl font-bold">Dashboard</h1>
+          <div className="flex space-x-4 mb-4">
+            <AddProjectButton />
+          </div>
+          <div className="flex flex-grow">
+            <Suspense fallback={<div>Loading Canvas...</div>}>
+              <DynamicAgentCanvas />
             </Suspense>
-          </ClientOnly>
+            <Suspense fallback={<div>Loading Sidebar...</div>}>
+              <DynamicAgentSidebar />
+            </Suspense>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </AgentProvider>
   );
 }
