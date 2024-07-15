@@ -6,11 +6,8 @@ import { eq } from "drizzle-orm";
 import type { Agent } from "~/server/db/schema";
 import { AddProjectButton } from "../_components/AddProjectButton";
 import { AgentProvider } from "../contexts/AgentContext";
-import { Drawer, DrawerContent, DrawerTrigger } from "~/components/ui/drawer";
 
 const DynamicAgentCanvas = dynamic(() => import("../_components/AgentCanvas/AgentCanvas"), { ssr: false });
-const DynamicAgentSidebar = dynamic(() => import("../_components/AgentSidebar"), { ssr: false });
-const DynamicAgentDrawer = dynamic(() => import("../_components/AgentDrawer"), { ssr: false });
 import { AgentInfoDrawer } from "../_components/AgentInfoDrawer";
 
 async function getAgents(): Promise<Agent[]> {
@@ -66,9 +63,6 @@ export default async function HomePage() {
           <div className="flex flex-grow">
             <Suspense fallback={<div>Loading Canvas...</div>}>
               <DynamicAgentCanvas />
-            </Suspense>
-            <Suspense fallback={<div>Loading Sidebar...</div>}>
-              <DynamicAgentSidebar />
             </Suspense>
           </div>
           <AgentInfoDrawer />

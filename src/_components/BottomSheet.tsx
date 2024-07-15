@@ -84,8 +84,14 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         zIndex: 50,
         y,
         touchAction: "none",
+        backdropFilter: "blur(10px)",
+        backgroundColor: "rgba(255, 255, 255, 0.7)",
+        border: "1px solid rgba(255, 255, 255, 0.5)",
+        borderTopLeftRadius: "16px",
+        borderTopRightRadius: "16px",
+        boxShadow: "0 12px 24px rgba(0, 0, 0, 0.3)", // Stronger shadow
       }}
-      className="select-none rounded-t-2xl bg-white text-black shadow-lg"
+      className="select-none text-black"
       onPointerDown={(e) => {
         e.preventDefault();
         (e.target as HTMLElement).setPointerCapture(e.pointerId);
