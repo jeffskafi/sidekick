@@ -6,14 +6,16 @@ import { useAgentContext } from '~/contexts/AgentContext';
 import { useCanvasScaling } from '~/hooks/useCanvasScaling';
 import { useStageInteractions } from '~/hooks/useStageInteractions';
 import { useSelectionArea } from '~/hooks/useSelectionArea';
+import { useAgentMovement } from '~/hooks/useAgentMovement';
 import AgentGroup from './AgentGroup';
 import type { Agent } from '~/server/db/schema';
 
 export default function AgentCanvas() {
-  const { agents, selectedAgents, selectAgents, moveAgents } = useAgentContext();
+  const { agents, selectedAgents, selectAgents, updateAgent } = useAgentContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scale, stageSize } = useCanvasScaling(containerRef);
   const { selectionArea, startSelection, updateSelection, endSelection } = useSelectionArea();
+  const moveAgents = useAgentMovement(updateAgent);
 
   const handleSelect = useCallback(
     (agentOrAgents: Agent | Agent[]) => {

@@ -69,9 +69,6 @@ export function useStageInteractions(
       if (distance < 5 && e.target === stage) {
         if (selectedAgents.length > 0) {
           moveAgents(selectedAgents, endPos, stage);
-          handleSelect([]);
-        } else {
-          handleSelect([]);
         }
       } else if (isDragging) {
         const x1 = Math.min(dragStartPosition.current.x, endPos.x);

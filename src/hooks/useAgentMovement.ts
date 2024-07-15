@@ -7,7 +7,6 @@ import type Konva from 'konva';
 export function useAgentMovement(onUpdateAgent: (agent: Agent) => void) {
   const moveAgents = useCallback(
     (agentsToMove: Agent[], newPosition: { x: number; y: number }, stage: Konva.Stage) => {
-      console.log("Moving agents to:", newPosition);
       agentsToMove.forEach((agent: Agent) => {
         const group = stage.findOne(`#agent-${agent.id}`);
         if (group) {
@@ -22,7 +21,6 @@ export function useAgentMovement(onUpdateAgent: (agent: Agent) => void) {
                 xPosition: newPosition.x,
                 yPosition: newPosition.y,
               };
-              console.log("Updated agent:", updatedAgent);
               onUpdateAgent(updatedAgent);
             },
           });
