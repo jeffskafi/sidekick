@@ -2,28 +2,14 @@
 
 import React from "react";
 import { useAgentContext } from "~/contexts/AgentContext";
-import {
-  DrawerHeader,
-  DrawerFooter,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerClose,
-} from "~/components/ui/drawer";
-import { X } from "lucide-react";
+import { BottomSheet } from "./BottomSheet";
 
-const AgentDrawer: React.FC = () => {
-  const { selectedAgents } = useAgentContext();
+export function AgentDrawer() {
+  const { selectedAgents, selectAgents } = useAgentContext();
 
   return (
-    <div>
-      <DrawerHeader className="relative">
-        <DrawerClose className="absolute right-2 top-2">
-          <X className="h-4 w-4" />
-        </DrawerClose>
-        <DrawerTitle>Agent Data</DrawerTitle>
-        <DrawerDescription>View and manage your agents</DrawerDescription>
-      </DrawerHeader>
-      <div className="overflow-auto p-4">
+    <BottomSheet isOpen={selectedAgents.length > 0} onClose={() => selectAgents([])}>
+      <div className="p-4 text-black">
         {selectedAgents.map((agent) => (
           <div key={agent.id} className="mb-4 rounded border p-2">
             <h3 className="font-bold">{agent.name}</h3>
@@ -34,12 +20,8 @@ const AgentDrawer: React.FC = () => {
             <p>Skills: {agent.skills?.join(", ") ?? "None"}</p>
           </div>
         ))}
+        <p className="mt-4">Total Agents: {selectedAgents.length}</p>
       </div>
-      <DrawerFooter>
-        <p>Total Agents: {selectedAgents.length}</p>
-      </DrawerFooter>
-    </div>
+    </BottomSheet>
   );
-};
-
-export default AgentDrawer;
+}
