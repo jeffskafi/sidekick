@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useSpring, animated } from "@react-spring/web";
-import { X, ChevronUp } from "lucide-react";
+import { X, ChevronUp, ChevronDown } from "lucide-react";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -20,7 +20,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   const currentYRef = useRef<number>(0);
 
   const [{ y }, api] = useSpring(() => ({ y: "100%" }));
-  const chevronRotation = y.to([0, 90], [180, 0]);
 
   useEffect(() => {
     if (isOpen) {
@@ -64,9 +63,14 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   }, [y, api, onClose]);
 
   const handleExpand = useCallback(() => {
-    void api.start({ y: "0%", immediate: false });
-    setIsPeeking(false);
-  }, [api]);
+    if (isPeeking) {
+      void api.start({ y: "0%", immediate: false });
+      setIsPeeking(false);
+    } else {
+      void api.start({ y: "90%", immediate: false });
+      setIsPeeking(true);
+    }
+  }, [api, isPeeking]);
 
   return (
     <animated.div
@@ -109,13 +113,13 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             <button onClick={onClose} className="p-2">
               <X size={20} className="text-black" />
             </button>
-            <animated.button
-              onClick={handleExpand}
-              className="p-2"
-              style={{ transform: chevronRotation.to(r => `rotate(${r}deg)`) }}
-            >
-              <ChevronUp size={20} className="text-black" />
-            </animated.button>
+            <button onClick={handleExpand} className="p-2">
+              {isPeeking ? (
+                <ChevronUp size={20} className="text-black" />
+              ) : (
+                <ChevronDown size={20} className="text-black" />
+              )}
+            </button>
           </div>
         </div>
         <div className="max-h-[calc(100vh-4rem)] overflow-y-auto pt-16">
