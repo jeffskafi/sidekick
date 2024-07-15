@@ -7,14 +7,19 @@ import {
   DrawerFooter,
   DrawerTitle,
   DrawerDescription,
+  DrawerClose,
 } from "~/components/ui/drawer";
+import { X } from "lucide-react";
 
 const AgentDrawer: React.FC = () => {
   const { selectedAgents } = useAgentContext();
 
   return (
-    <>
-      <DrawerHeader>
+    <div>
+      <DrawerHeader className="relative">
+        <DrawerClose className="absolute right-2 top-2">
+          <X className="h-4 w-4" />
+        </DrawerClose>
         <DrawerTitle>Agent Data</DrawerTitle>
         <DrawerDescription>View and manage your agents</DrawerDescription>
       </DrawerHeader>
@@ -33,7 +38,7 @@ const AgentDrawer: React.FC = () => {
       <DrawerFooter>
         <p>Total Agents: {selectedAgents.length}</p>
       </DrawerFooter>
-    </>
+    </div>
   );
 };
 

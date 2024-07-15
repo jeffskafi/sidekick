@@ -11,6 +11,7 @@ import { Drawer, DrawerContent, DrawerTrigger } from "~/components/ui/drawer";
 const DynamicAgentCanvas = dynamic(() => import("../_components/AgentCanvas/AgentCanvas"), { ssr: false });
 const DynamicAgentSidebar = dynamic(() => import("../_components/AgentSidebar"), { ssr: false });
 const DynamicAgentDrawer = dynamic(() => import("../_components/AgentDrawer"), { ssr: false });
+import { AgentInfoDrawer } from "../_components/AgentInfoDrawer";
 
 async function getAgents(): Promise<Agent[]> {
   const agentsQuery = db
@@ -70,16 +71,7 @@ export default async function HomePage() {
               <DynamicAgentSidebar />
             </Suspense>
           </div>
-          <Drawer>
-            <DrawerTrigger asChild>
-              <button className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
-                Show Agent Data
-              </button>
-            </DrawerTrigger>
-            <DrawerContent>
-              <DynamicAgentDrawer />
-            </DrawerContent>
-          </Drawer>
+          <AgentInfoDrawer />
         </div>
       </main>
     </AgentProvider>
