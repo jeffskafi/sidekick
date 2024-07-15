@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useSpring, animated } from "@react-spring/web";
 import { X, ChevronUp } from "lucide-react";
 
@@ -14,78 +14,111 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   children,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [startY, setStartY] = useState(0);
+  const [isPeeking, setIsPeeking] = useState(true);
+  const dragRef = useRef<HTMLDivElement>(null);
+  const startYRef = useRef<number>(0);
+  const currentYRef = useRef<number>(0);
 
   const [{ y }, api] = useSpring(() => ({ y: "100%" }));
+  const chevronRotation = y.to([0, 90], [180, 0]);
 
   useEffect(() => {
     if (isOpen) {
-      api.start({ y: "0%", immediate: false });
+      void api.start({ y: "90%", immediate: false });
+      setIsPeeking(true);
     } else {
-      api.start({ y: "100%", immediate: false });
+      void api.start({ y: "100%", immediate: false });
     }
   }, [isOpen, api]);
 
   const handleStart = useCallback((clientY: number) => {
     setIsDragging(true);
-    setStartY(clientY);
+    startYRef.current = clientY;
+    currentYRef.current = clientY;
   }, []);
 
-  const handleMove = useCallback(
-    (clientY: number) => {
-      if (!isDragging) return;
-      const diff = clientY - startY;
-      const newY = Math.max(0, Math.min(100, diff / window.innerHeight * 100));
-      api.start({ y: `${newY}%`, immediate: true });
-    },
-    [isDragging, startY, api],
-  );
+  const handleMove = useCallback((clientY: number) => {
+    if (!isDragging) return;
+    currentYRef.current = clientY;
+    const diff = currentYRef.current - startYRef.current;
+    const newY = Math.max(
+      0,
+      Math.min(90, (diff / window.innerHeight) * 100 + (isPeeking ? 90 : 0))
+    );
+    void api.start({ y: `${newY}%`, immediate: true });
+  }, [isDragging, api, isPeeking]);
 
   const handleEnd = useCallback(() => {
     setIsDragging(false);
     const currentY = parseFloat(y.get());
-    if (currentY > 50) {
-      api.start({ y: "100%", immediate: false });
+    if (currentY > 95) {
+      void api.start({ y: "100%", immediate: false });
       onClose();
+    } else if (currentY > 45) {
+      void api.start({ y: "90%", immediate: false });
+      setIsPeeking(true);
     } else {
-      api.start({ y: "0%", immediate: false });
+      void api.start({ y: "0%", immediate: false });
+      setIsPeeking(false);
     }
   }, [y, api, onClose]);
 
+  const handleExpand = useCallback(() => {
+    void api.start({ y: "0%", immediate: false });
+    setIsPeeking(false);
+  }, [api]);
+
   return (
     <animated.div
+      ref={dragRef}
       style={{
         bottom: 0,
         left: 0,
         right: 0,
         position: "fixed",
-        height: "80%",
+        height: "100%",
         zIndex: 50,
         y,
         touchAction: "none",
       }}
-      className="rounded-t-2xl bg-white text-black shadow-lg"
-      onTouchStart={(e) => handleStart(e.touches[0].clientY)}
-      onTouchMove={(e) => handleMove(e.touches[0].clientY)}
-      onTouchEnd={handleEnd}
-      onMouseDown={(e) => handleStart(e.clientY)}
-      onMouseMove={(e) => handleMove(e.clientY)}
-      onMouseUp={handleEnd}
-      onMouseLeave={handleEnd}
+      className="select-none rounded-t-2xl bg-white text-black shadow-lg"
+      onPointerDown={(e) => {
+        e.preventDefault();
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+        handleStart(e.clientY);
+      }}
+      onPointerMove={(e) => {
+        e.preventDefault();
+        handleMove(e.clientY);
+      }}
+      onPointerUp={(e) => {
+        e.preventDefault();
+        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        handleEnd();
+      }}
+      onPointerCancel={(e) => {
+        e.preventDefault();
+        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+        handleEnd();
+      }}
     >
       <div className="relative p-4">
         <div className="absolute left-0 right-0 top-0 flex flex-col items-center px-4 py-2">
-          <div className="h-1 w-16 rounded-full bg-gray-300 mb-2" />
-          <div className="flex justify-between items-center w-full">
+          <div className="mb-2 h-1 w-16 rounded-full bg-gray-300" />
+          <div className="flex w-full items-center justify-between">
             <button onClick={onClose} className="p-2">
               <X size={20} className="text-black" />
             </button>
-            <button onClick={() => api.start({ y: "0%", immediate: false })} className="p-2">
+            <animated.button
+              onClick={handleExpand}
+              className="p-2"
+              style={{ transform: chevronRotation.to(r => `rotate(${r}deg)`) }}
+            >
               <ChevronUp size={20} className="text-black" />
-            </button>
+            </animated.button>
           </div>
         </div>
-        <div className="pt-16">
+        <div className="max-h-[calc(100vh-4rem)] overflow-y-auto pt-16">
           {children}
         </div>
       </div>
