@@ -8,9 +8,9 @@ interface AgentContextType {
   selectedAgents: Agent[];
   setAgents: (agents: Agent[]) => void;
   selectAgents: (agents: Agent[]) => void;
-  updateAgent: (updatedAgent: Agent) => void;
-  deleteAgent: (agentId: number) => void;
-  moveAgents: (agentsToMove: Agent[], newPosition: { x: number; y: number }) => void;
+  updateAgent: (updatedAgent: Agent) => Promise<void>;
+  deleteAgent: (agentId: number) => Promise<void>;
+  moveAgents: (agentsToMove: Agent[], newPosition: { x: number; y: number }) => Promise<void>;
   handleAgentAdded: (newAgent: Agent) => void;
 }
 
@@ -24,24 +24,58 @@ export function AgentProvider({ children, initialAgents }: { children: React.Rea
     setSelectedAgents(newSelectedAgents);
   }, []);
 
-  const updateAgent = useCallback((updatedAgent: Agent) => {
-    setAgents(prevAgents => prevAgents.map(agent => 
-      agent.id === updatedAgent.id ? updatedAgent : agent
-    ));
-  }, []);
-
-  const deleteAgent = useCallback((agentId: number) => {
-    setAgents(prevAgents => prevAgents.filter(agent => agent.id !== agentId));
-  }, []);
-
-  const moveAgents = useCallback((agentsToMove: Agent[], newPosition: { x: number; y: number }) => {
-    setAgents(prevAgents => prevAgents.map(agent => {
-      if (agentsToMove.some(a => a.id === agent.id)) {
-        return { ...agent, xPosition: newPosition.x, yPosition: newPosition.y };
+  const updateAgent = useCallback(async (updatedAgent: Agent) => {
+    try {
+      const response = await fetch(`/api/agents`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...updatedAgent,
+          xPosition: Number(updatedAgent.xPosition),
+          yPosition: Number(updatedAgent.yPosition),
+        }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update agent');
       }
-      return agent;
-    }));
+      const updatedAgentFromServer = await response.json() as Agent;
+      setAgents(prevAgents => prevAgents.map(agent => 
+        agent.id === updatedAgentFromServer.id ? updatedAgentFromServer : agent
+      ));
+    } catch (error) {
+      console.error('Failed to update agent:', error instanceof Error ? error.message : String(error));
+    }
   }, []);
+
+  const deleteAgent = useCallback(async (agentId: number) => {
+    try {
+      const response = await fetch(`/api/agents?id=${agentId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete agent');
+      }
+      setAgents(prevAgents => prevAgents.filter(agent => agent.id !== agentId));
+    } catch (error) {
+      console.error('Failed to delete agent:', error);
+    }
+  }, []);
+
+  const moveAgents = useCallback(async (agentsToMove: Agent[], newPosition: { x: number; y: number }) => {
+    const updatedAgents = agentsToMove.map(agent => ({
+      ...agent,
+      xPosition: newPosition.x,
+      yPosition: newPosition.y
+    }));
+
+    try {
+      await Promise.all(updatedAgents.map(agent => updateAgent(agent)));
+    } catch (error) {
+      console.error('Failed to move agents:', error);
+    }
+  }, [updateAgent]);
 
   const handleAgentAdded = useCallback((newAgent: Agent) => {
     setAgents(prevAgents => [...prevAgents, newAgent]);

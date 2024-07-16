@@ -126,11 +126,19 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Agent ID is required' }, { status: 400 });
     }
 
+    // Parse xPosition and yPosition as numbers
+    const xPosition = parseFloat(updatedAgent.xPosition as unknown as string);
+    const yPosition = parseFloat(updatedAgent.yPosition as unknown as string);
+
+    if (isNaN(xPosition) || isNaN(yPosition)) {
+      return NextResponse.json({ error: 'Invalid position values' }, { status: 400 });
+    }
+
     const result = await db
       .update(agents)
       .set({
-        xPosition: updatedAgent.xPosition,
-        yPosition: updatedAgent.yPosition,
+        xPosition,
+        yPosition,
         // Add other fields you want to update here
       })
       .where(eq(agents.id, updatedAgent.id))

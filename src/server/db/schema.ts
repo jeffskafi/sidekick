@@ -8,6 +8,7 @@ import {
   varchar,
   text,
   integer,
+  doublePrecision,
   pgEnum,
   unique,
 } from "drizzle-orm/pg-core";
@@ -78,8 +79,8 @@ export const agents = createTable(
     projectId: integer("project_id").references(() => projects.id).notNull(),
     name: varchar("name", { length: 256 }).notNull(),
     status: agentStatusEnum("status").notNull().default('idle'),
-    xPosition: integer("x_position").notNull().default(0),
-    yPosition: integer("y_position").notNull().default(0),
+    xPosition: doublePrecision("x_position").notNull(),
+    yPosition: doublePrecision("y_position").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
