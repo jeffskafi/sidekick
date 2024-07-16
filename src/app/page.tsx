@@ -6,8 +6,13 @@ import { eq } from "drizzle-orm";
 import type { Agent } from "~/server/db/schema";
 import { AgentProvider } from "../contexts/AgentContext";
 import { AddAgentButton } from "../_components/AddAgentButton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { WorkContent } from "../_components/WorkContent";
 
-const DynamicAgentCanvas = dynamic(() => import("../_components/AgentCanvas/AgentCanvas"), { ssr: false });
+const DynamicAgentCanvas = dynamic(
+  () => import("../_components/AgentCanvas/AgentCanvas"),
+  { ssr: false },
+);
 import { AgentInfoDrawer } from "../_components/AgentInfoDrawer";
 
 async function getAgents(): Promise<Agent[]> {
@@ -33,7 +38,10 @@ async function getAgents(): Promise<Agent[]> {
     .from(agentSkills)
     .innerJoin(skills, eq(agentSkills.skillId, skills.id));
 
-  const [agentsResult, skillsResult] = await Promise.all([agentsQuery, skillsQuery]);
+  const [agentsResult, skillsResult] = await Promise.all([
+    agentsQuery,
+    skillsQuery,
+  ]);
 
   const skillsMap = new Map<number, string[]>();
   for (const { agentId, skillName } of skillsResult) {
@@ -43,7 +51,7 @@ async function getAgents(): Promise<Agent[]> {
     skillsMap.get(agentId)!.push(skillName);
   }
 
-  return agentsResult.map(agent => ({
+  return agentsResult.map((agent) => ({
     ...agent,
     skills: skillsMap.get(agent.id) ?? [],
   }));
@@ -54,24 +62,45 @@ export default async function HomePage() {
 
   return (
     <AgentProvider initialAgents={initialAgents}>
-      <HomePageContent initialAgents={initialAgents} />
+      <HomePageContent />
     </AgentProvider>
   );
 }
 
-function HomePageContent({ initialAgents }: { initialAgents: Agent[] }) {
+function HomePageContent() {
   return (
     <main className="flex min-h-screen flex-col bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="flex-grow flex flex-col h-[calc(100vh-4rem)]">
-        <header className="p-4 bg-gray-900">
-          <h1 className="text-2xl font-bold">Agent Management</h1>
-          <AddAgentButton />
+      <div className="flex h-screen flex-col">
+        <header className="bg-gray-900 p-4">
+          <h1 className="mb-4 text-2xl font-bold">Agent Management System</h1>
         </header>
-        <Suspense fallback={<div>Loading Canvas...</div>}>
-          <DynamicAgentCanvas className="w-full h-full" />
-        </Suspense>
-        <AgentInfoDrawer />
+        <div className="flex-grow overflow-hidden">
+          <Tabs defaultValue="agents" className="flex h-full w-full flex-col">
+            <TabsList className="mb-4 justify-start">
+              <TabsTrigger value="agents">Agents</TabsTrigger>
+              <TabsTrigger value="work">Work</TabsTrigger>
+            </TabsList>
+            <div className="flex-grow overflow-hidden">
+              <TabsContent value="agents" className="h-full">
+                <div className="flex h-full flex-col">
+                  <div className="mb-4">
+                    <AddAgentButton />
+                  </div>
+                  <div className="relative flex-grow">
+                    <Suspense fallback={<div>Loading Canvas...</div>}>
+                      <DynamicAgentCanvas className="absolute inset-0" />
+                    </Suspense>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="work" className="h-full">
+                <WorkContent />
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </div>
+      <AgentInfoDrawer />
     </main>
   );
 }

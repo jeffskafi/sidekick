@@ -26,7 +26,10 @@ export default function RootLayout({
         <body className="min-h-screen flex flex-col">
           <header className="bg-primary text-primary-foreground p-4">
             <div className="container mx-auto flex justify-between items-center">
-              <Link href="/" className="text-2xl font-bold">Synergy</Link>
+              <Link href="/" className="text-2xl font-bold flex items-center">
+                Synergy 
+                <span className="text-primary-foreground text-xs ml-1 inline-block transform translate-y-1">(alpha version)</span>
+              </Link>
               <nav>
                 <Link href="/settings" className="mr-4">Settings</Link>
                 <SignedOut>
