@@ -213,21 +213,18 @@ export async function main(jobDescription: string): Promise<void> {
   // Generate the tailored resume
   const tailoredResume = await tailorResume(jobDescription, originalResume, schema);
 
-  // Generate timestamp
+  // Generate timestamp and create directory
   const timestamp = generateTimestamp();
-
-  // Create a directory for the timestamped folder
   const outputDir = `files/generated/${timestamp}`;
   await fs.promises.mkdir(outputDir, { recursive: true });
 
-  // Save the JSON resume
-  const jsonFilename = path.join(outputDir, `${timestamp}resume.json`);
-  await fs.promises.writeFile(jsonFilename, JSON.stringify(tailoredResume, null, 2));
+  // Save JSON and generate PDF in parallel
+  await Promise.all([
+    fs.promises.writeFile(path.join(outputDir, `${timestamp}resume.json`), JSON.stringify(tailoredResume, null, 2)),
+    generatePdfResume(tailoredResume, path.join(outputDir, `${timestamp}resume.pdf`))
+  ]);
 
-  // Generate and save the PDF resume
-  const pdfFilename = path.join(outputDir, `${timestamp}resume.pdf`);
-  console.log(`Generating PDF resume at ${pdfFilename}`);
-  await generatePdfResume(tailoredResume, pdfFilename);
+  console.log('Resume generation completed successfully.');
 }
 
 
@@ -242,4 +239,3 @@ Knowledge of cloud platforms like AWS or Azure is a plus.
 main(jobDescription)
   .then(() => console.log('Resume generation completed successfully.'))
   .catch((error) => console.error('An error occurred:', error));
-
