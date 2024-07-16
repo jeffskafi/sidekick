@@ -11,6 +11,7 @@ interface AgentContextType {
   updateAgent: (updatedAgent: Agent) => void;
   deleteAgent: (agentId: number) => void;
   moveAgents: (agentsToMove: Agent[], newPosition: { x: number; y: number }) => void;
+  handleAgentAdded: (newAgent: Agent) => void;
 }
 
 const AgentContext = createContext<AgentContextType | undefined>(undefined);
@@ -42,6 +43,10 @@ export function AgentProvider({ children, initialAgents }: { children: React.Rea
     }));
   }, []);
 
+  const handleAgentAdded = useCallback((newAgent: Agent) => {
+    setAgents(prevAgents => [...prevAgents, newAgent]);
+  }, []);
+
   return (
     <AgentContext.Provider value={{ 
       agents, 
@@ -50,7 +55,8 @@ export function AgentProvider({ children, initialAgents }: { children: React.Rea
       selectAgents, 
       updateAgent, 
       deleteAgent,
-      moveAgents 
+      moveAgents,
+      handleAgentAdded
     }}>
       {children}
     </AgentContext.Provider>
