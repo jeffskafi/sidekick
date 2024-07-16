@@ -17,7 +17,8 @@ interface SkillInputProps {
   >;
 }
 
-export function SkillInput({ agentSkills, setAgentSkills }: SkillInputProps) {
+export function SkillInput(props: SkillInputProps) {
+  const { setAgentSkills } = props;
   const [skills, setSkills] = useState<Skill[]>([]);
   const [skillQuery, setSkillQuery] = useState("");
   const [isSkillsOpen, setIsSkillsOpen] = useState(false);
