@@ -1,0 +1,153 @@
+{
+    "name": "Jaafar Skafi",
+    "contact": {
+        "location": "Los Angeles, CA",
+        "phone": "(310) 663-5089",
+        "email": "jaafarskafi1@gmail.com",
+        "linkedin": "#",
+        "github": "#"
+    },
+    "summary": "Highly skilled Software Engineer with 7+ years of experience in full-stack development, team management, and agile methodologies. Proven ability to lead and mentor engineering teams at early-stage startups, deliver scalable and high-performance solutions, and ensure project success. Expertise in automation and infrastructure development.",
+    "skills": {
+        "project_management": [
+            "Project lifecycle management",
+            "Budget administration",
+            "Requirements analysis"
+        ],
+        "technical_skills": [
+            "Full-stack development",
+            "Security planning",
+            "Infrastructure development"
+        ],
+        "methodologies": [
+            "Agile framework",
+            "Risk mitigation planning",
+            "Quality assurance"
+        ],
+        "tools": [
+            "GraphQL",
+            "OpenAI",
+            "Codegen",
+            "Playwright",
+            "GitLab pipelines",
+            "Next.js",
+            "React",
+            "Node.js",
+            "SQL",
+            "AWS Lambda",
+            "Python",
+            "Java"
+        ],
+        "soft_skills": [
+            "Team leadership",
+            "Mentorship",
+            "Cross-functional collaboration"
+        ]
+    },
+    "professional_experience": [
+        {
+            "company": "Altruist Corp",
+            "roles": [
+                {
+                    "title": "Senior Software Engineer, AI",
+                    "dates": "January 2023 - Present",
+                    "location": "Culver City, CA (Hybrid)",
+                    "responsibilities": [
+                        "Developed and integrated AI and machine learning solutions using OpenAI, LangChain, and CrewAI to enhance infrastructure.",
+                        "Created a JSON-driven framework for LLM integration, reducing integration time between frontend and backend services by 50% in my division.",
+                        "Collaborated with engineering leadership to develop an AI governance framework, roll out generative AI solutions to all developers, and identify use cases for automation across the firm."
+                    ]
+                },
+                {
+                    "title": "Tech Lead, Clearing Operations",
+                    "dates": "January 2022 - January 2023",
+                    "location": "Los Angeles, CA (Remote)",
+                    "responsibilities": [
+                        "Led the development of the Middle Office Clearing operations platform for a multi-billion dollar firm, handling thousands of daily transactions.",
+                        "Designed and implemented a fully automated Backend-for-Frontend (BFF) system using Node.js and GraphQL, halving staffing needs for frontend development and reducing overhead costs.",
+                        "Implemented strategic automations with Codegen, Playwright, and GitLab pipelines.",
+                        "Implemented permissioning system using Active Directory and KeyCloak."
+                    ]
+                },
+                {
+                    "title": "Founding Engineer, Frontend",
+                    "dates": "April 2019 - December 2021",
+                    "location": "Los Angeles, CA (On-site)",
+                    "responsibilities": [
+                        "Orchestrated the development of alpha, beta and first version release of company platform using React, Node.js, and GraphQL.",
+                        "Employee #7 at the company, contributing from pre-seed to Series D, helped scale the company's engineering team from 5 to 200+ employees.",
+                        "Built a self-hosted GraphQL adapter, cutting development time by half and standardizing gateway layers company-wide.",
+                        "Developed a PDF generator framework using AWS Lambda, driving a 70% savings in operational costs and significantly reducing expenses.",
+                        "Transitioned from BitBucket to GitLab, improving developer autonomy and optimizing development cycles, increasing productivity across the firm.",
+                        "Established a micro frontend architecture and unified design system, fostering cross-team collaboration and improving product development engagement.",
+                        "Delivered vital infrastructure for the company's first product launch, consistently meeting time-to-market deadlines while ensuring robust security, compliance and quality.",
+                        "Mentored 30+ engineers in my first year, instituting company-wide standards that improved code quality and minimized maintenance overhead.",
+                        "Partnered with compliance and security teams to implement SOC-2 standards, Security best practices."
+                    ]
+                }
+            ]
+        },
+        {
+            "company": "HST Solar",
+            "roles": [
+                {
+                    "title": "Full-stack Developer",
+                    "dates": "February 2018 - April 2019",
+                    "location": "Greater Los Angeles Area",
+                    "responsibilities": [
+                        "Built a full-stack solar farm design and cost estimation platform using Next.js, React, Apollo GraphQL for the frontend, and SQL, AWS Lambda, and Node.js for the backend.",
+                        "Maintained two REST APIs for executing MATLAB code to generate efficient solar farm layouts.",
+                        "Transitioned server-side code execution to a serverless architecture, reducing AWS costs by ~80%.",
+                        "Supported and maintained legacy SaaS products built with Angular.js, Node.js, and MongoDB, ensuring seamless operation and customer satisfaction."
+                    ]
+                }
+            ]
+        },
+        {
+            "company": "Dx Biosamples, LLC",
+            "roles": [
+                {
+                    "title": "Project Manager",
+                    "dates": "March 2016 - January 2018",
+                    "location": "Culver City, CA",
+                    "responsibilities": [
+                        "Oversaw procurement and biobanking operations for 50+ research institutions.",
+                        "Developed and implemented improved automation workflows for FDA and HIPAA compliance using Zapier, Dropbox, Visual Basic, and Python scripts, substantially reducing overhead time.",
+                        "Facilitated onboarding and training for project coordinators, project managers, and clinical staff."
+                    ]
+                },
+                {
+                    "title": "Project Coordinator",
+                    "dates": "March 2015 - March 2016",
+                    "location": "Culver City, CA",
+                    "responsibilities": [
+                        "Assisted in managing biobanking operations, ensuring compliance with regulatory requirements and accuracy of collected data.",
+                        "Supported project managers in coordinating research projects and maintaining documentation.",
+                        "Performed equipment maintenance and handling/storage of biological samples."
+                    ]
+                }
+            ]
+        },
+        {
+            "company": "American University of Beirut",
+            "roles": [
+                {
+                    "title": "Research Assistant, Bioinformatics",
+                    "dates": "2013 - 2014",
+                    "location": "Beirut, Lebanon",
+                    "responsibilities": [
+                        "Conducted research related to BRCA gene novel mutations, supporting the development of scripts and tools for data analysis.",
+                        "Collaborated with faculty and other researchers on various bioinformatics projects, substantially increasing lab output by processing hundreds of blood samples per week, aiding project completion ahead of schedule."
+                    ]
+                }
+            ]
+        }
+    ],
+    "education": [
+        {
+            "institution": "American University of Beirut",
+            "degree": "Bachelor's Degree, Biology",
+            "dates": "2010 - 2013"
+        }
+    ]
+}

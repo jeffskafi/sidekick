@@ -1,0 +1,186 @@
+{
+    "name": "generate_markdown_resume",
+    "description": "Generates a markdown resume from a JSON payload based on a predefined schema.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "json_data": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Full name of the individual."
+                    },
+                    "contact": {
+                        "type": "object",
+                        "properties": {
+                            "location": {
+                                "type": "string",
+                                "description": "Location of the individual."
+                            },
+                            "phone": {
+                                "type": "string",
+                                "description": "Phone number of the individual."
+                            },
+                            "email": {
+                                "type": "string",
+                                "description": "Email address of the individual."
+                            },
+                            "linkedin": {
+                                "type": "string",
+                                "description": "LinkedIn profile URL of the individual."
+                            },
+                            "github": {
+                                "type": "string",
+                                "description": "GitHub profile URL of the individual."
+                            }
+                        },
+                        "required": [
+                            "location",
+                            "phone",
+                            "email"
+                        ]
+                    },
+                    "summary": {
+                        "type": "string",
+                        "description": "Summary of the individual's professional background."
+                    },
+                    "skills": {
+                        "type": "object",
+                        "properties": {
+                            "project_management": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of project management skills."
+                            },
+                            "technical_skills": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of technical skills."
+                            },
+                            "methodologies": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of methodologies known."
+                            },
+                            "tools": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of tools used."
+                            },
+                            "soft_skills": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "List of soft skills."
+                            }
+                        },
+                        "required": [
+                            "project_management",
+                            "technical_skills",
+                            "methodologies",
+                            "tools",
+                            "soft_skills"
+                        ]
+                    },
+                    "professional_experience": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "company": {
+                                    "type": "string",
+                                    "description": "Name of the company."
+                                },
+                                "roles": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string",
+                                                "description": "Title of the role."
+                                            },
+                                            "dates": {
+                                                "type": "string",
+                                                "description": "Dates of employment."
+                                            },
+                                            "location": {
+                                                "type": "string",
+                                                "description": "Location of the job."
+                                            },
+                                            "responsibilities": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "description": "List of responsibilities and achievements."
+                                            }
+                                        },
+                                        "required": [
+                                            "title",
+                                            "dates",
+                                            "location",
+                                            "responsibilities"
+                                        ]
+                                    }
+                                }
+                            },
+                            "required": [
+                                "company",
+                                "roles"
+                            ]
+                        },
+                        "description": "List of professional experiences."
+                    },
+                    "education": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "institution": {
+                                    "type": "string",
+                                    "description": "Name of the educational institution."
+                                },
+                                "degree": {
+                                    "type": "string",
+                                    "description": "Degree obtained."
+                                },
+                                "dates": {
+                                    "type": "string",
+                                    "description": "Dates of attendance."
+                                }
+                            },
+                            "required": [
+                                "institution",
+                                "degree",
+                                "dates"
+                            ]
+                        },
+                        "description": "List of educational qualifications."
+                    }
+                },
+                "required": [
+                    "name",
+                    "contact",
+                    "summary",
+                    "skills",
+                    "professional_experience",
+                    "education"
+                ]
+            }
+        },
+        "required": [
+            "json_data"
+        ]
+    }
+}
