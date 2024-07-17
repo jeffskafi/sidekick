@@ -21,10 +21,10 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active": return "#4CAF50";
-      case "idle": return "#FFC107";
-      case "error": return "#F44336";
-      default: return "#FFC107"; // Default to idle color
+      // case "active": return "#4CAF50"; // Green
+      // case "idle": return "#FFC107"; // Amber
+      // case "error": return "#F44336"; // Red
+      default: return "#e8e8e8"; // Default to idle color (50% lighter)
     }
   };
 
@@ -77,29 +77,20 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Hover effect with easing (now first, so it's drawn behind other elements) */}
-      <Circle
-        ref={hoverCircleRef}
-        radius={32}
-        stroke="#5c5c5c"
-        strokeWidth={0}
-      />
-      {/* Main circle */}
+      {/* Main circle (agent body) */}
       <Circle
         radius={30}
-        fill="#f0f0f0"
-        stroke={getStatusColor(agent.status)}
-        strokeWidth={2}
+        fill={getStatusColor(agent.status)}
       />
       {/* Status indicator */}
       <Circle
         radius={5}
-        fill={getStatusColor(agent.status)}
+        fill={agent.status === 'active' ? "#5c5c5c" : "#999"}
         x={0}
         y={0}
       />
       {/* Agent ID badge */}
-      <Group x={-20} y={-20}>
+      <Group x={-18} y={-18}>
         <Circle
           radius={10}
           fill="#5c5c5c"
@@ -116,6 +107,13 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
           offsetY={10}
         />
       </Group>
+      {/* Hover/Select effect */}
+      <Circle
+        ref={hoverCircleRef}
+        radius={32}
+        stroke="#5c5c5c"
+        strokeWidth={0}
+      />
     </Group>
   );
 };
