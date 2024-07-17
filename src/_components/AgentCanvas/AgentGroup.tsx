@@ -1,6 +1,6 @@
 // components/AgentGroup.tsx
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Group, Circle, Text } from "react-konva";
+import { Group, Circle, Text, Rect } from "react-konva";
 import Konva from "konva";
 import type { Agent } from "~/server/db/schema";
 
@@ -12,8 +12,17 @@ interface AgentGroupProps {
 }
 
 const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, allAgents }) => {
+
+  // TODO: REMOVE AFTER TESTING
+  // agent.status = 'task_complete';
+  agent.status = 'working';
+  // agent.status = 'needs_human_input';
+  // agent.status = 'error';
+
+  console.log('Agent:', agent);
   const [isHovered, setIsHovered] = useState(false);
   const hoverCircleRef = useRef<Konva.Circle>(null);
+  const statusRectRef = useRef<Konva.Rect>(null);
 
   const handleClick = () => {
     onSelect(agent);
@@ -66,11 +75,36 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
       });
       tween.play();
     }
-  }, [isHovered, isSelected, easeInOut]);
+
+    let anim: Konva.Animation | null = null;
+
+    // Add morphing animation for the status indicator when status is 'working'
+    if (statusRectRef.current && agent.status === 'working') {
+      anim = new Konva.Animation((frame) => {
+        if (frame && statusRectRef.current) {
+          const size = 10; // Base size of the status indicator
+          const minCornerRadius = size / 6; // Minimum corner radius (more square-like)
+          const maxCornerRadius = size / 2; // Maximum corner radius (circle-like)
+          
+          // Calculate corner radius based on time
+          const cornerRadius = minCornerRadius + (maxCornerRadius - minCornerRadius) * 
+            (Math.sin(frame.time * 2 * Math.PI / 2000) + 1) / 2;
+          
+          statusRectRef.current.cornerRadius(cornerRadius);
+        }
+      }, [statusRectRef.current.getLayer()]);
+      anim.start();
+    }
+
+    return () => {
+      if (anim) {
+        anim.stop();
+      }
+    };
+  }, [agent.status, isHovered, isSelected, easeInOut]);
 
   return (
     <Group
-      id={`agent-${agent.id}`}
       x={agent.xPosition}
       y={agent.yPosition}
       onClick={handleClick}
@@ -78,28 +112,32 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Hover/Select effect */}
+      {/* Hover effect with easing (now first, so it's drawn behind other elements) */}
       <Circle
         ref={hoverCircleRef}
-        radius={34}
+        radius={32}
         stroke="#5c5c5c"
         strokeWidth={0}
-        zIndex={-1}  // Ensure hover circle is rendered below other elements
       />
-      {/* Main circle (agent body) */}
+      {/* Main circle */}
       <Circle
         radius={30}
         fill="#f0f0f0"
+        stroke={getStatusColor(agent.status)}
+        strokeWidth={2}
       />
       {/* Status indicator */}
-      <Circle
-        radius={5}
+      <Rect
+        ref={statusRectRef}
+        width={10}
+        height={10}
         fill={getStatusColor(agent.status)}
-        x={0}
-        y={0}
+        x={-5}
+        y={-5}
+        cornerRadius={5} // Start with rounded corners
       />
       {/* Agent ID badge */}
-      <Group x={-18} y={-18}>
+      <Group x={-20} y={-20}>
         <Circle
           radius={10}
           fill="#5c5c5c"
