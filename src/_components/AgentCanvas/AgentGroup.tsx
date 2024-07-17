@@ -69,6 +69,7 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
 
   return (
     <Group
+      id={`agent-${agent.id}`}
       x={agent.xPosition}
       y={agent.yPosition}
       onClick={handleClick}
