@@ -4,7 +4,7 @@ import type { Agent } from '~/server/db/schema';
 import { easeInOut } from '../helpers/movement';
 import type Konva from 'konva';
 
-export function useAgentMovement(onUpdateAgent: (agent: Agent) => void) {
+export function useAgentMovement(onUpdateAgent: (agent: Agent) => Promise<void>) {
   const moveAgents = useCallback(
     (agentsToMove: Agent[], newPosition: { x: number; y: number }, stage: Konva.Stage) => {
       agentsToMove.forEach((agent: Agent) => {
@@ -23,7 +23,9 @@ export function useAgentMovement(onUpdateAgent: (agent: Agent) => void) {
                 xPosition: newX,
                 yPosition: newY,
               };
-              onUpdateAgent(updatedAgent);
+              onUpdateAgent(updatedAgent).catch(error => {
+                console.error('Failed to update agent:', error);
+              });
             },
           });
         } else {
