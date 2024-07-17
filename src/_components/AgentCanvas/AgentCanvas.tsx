@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
 import { useAgentContext } from '~/contexts/AgentContext';
 import { useCanvasScaling } from '~/hooks/useCanvasScaling';
@@ -44,6 +44,18 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
     updateSelection,
     endSelection
   );
+
+  // Prevent context menu on the canvas
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      const preventDefault = (e: Event) => e.preventDefault();
+      container.addEventListener('contextmenu', preventDefault);
+      return () => {
+        container.removeEventListener('contextmenu', preventDefault);
+      };
+    }
+  }, []);
 
   const selectionRect = selectionArea.start && selectionArea.end ? {
     x: Math.min(selectionArea.start.x, selectionArea.end.x),

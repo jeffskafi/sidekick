@@ -14,17 +14,24 @@ export function useStageInteractions(
   endSelection: () => void
 ) {
   const [isDragging, setIsDragging] = useState(false);
-  const [isRightClicking, setIsRightClicking] = useState(false);
   const dragStartPosition = useRef<{ x: number; y: number } | null>(null);
 
   const handleStageMouseDown = useCallback(
     (e: KonvaEventObject<MouseEvent>) => {
+      // Prevent default context menu
+      e.evt.preventDefault();
+
+      const stage = e.target.getStage();
+      if (!stage) return;
+
+      // Right-click
       if (e.evt.button === 2) {
-        setIsRightClicking(true);
+        handleSelect([]); // Deselect all agents
         return;
       }
-      const stage = e.target.getStage();
-      if (stage && e.target === stage) {
+
+      // Left-click
+      if (e.target === stage) {
         const pos = stage.getPointerPosition();
         if (pos) {
           setIsDragging(true);
@@ -33,7 +40,7 @@ export function useStageInteractions(
         }
       }
     },
-    [startSelection]
+    [handleSelect, startSelection]
   );
 
   const handleStageTouchStart = useCallback(
@@ -81,10 +88,6 @@ export function useStageInteractions(
 
   const handleStageMouseUp = useCallback(
     (e: KonvaEventObject<MouseEvent>) => {
-      if (isRightClicking) {
-        setIsRightClicking(false);
-        return;
-      }
       const stage = e.target.getStage();
       if (!stage) return;
 
@@ -120,7 +123,7 @@ export function useStageInteractions(
       dragStartPosition.current = null;
       endSelection();
     },
-    [isDragging, isRightClicking, handleSelect, moveAgents, selectedAgents, agents, endSelection]
+    [isDragging, handleSelect, moveAgents, selectedAgents, agents, endSelection]
   );
 
   const handleStageTouchEnd = useCallback(
