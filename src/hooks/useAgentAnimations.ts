@@ -15,6 +15,7 @@ export const useHoverAnimation = (hoverCircleRef: RefObject<Konva.Circle>, isHov
 
 export const useStatusAnimation = (
   mainCircleRef: RefObject<Konva.Circle>,
+  innerCircleRef: RefObject<Konva.Circle>,
   statusIndicatorRef: RefObject<Konva.Rect>,
   rippleCircleRef: RefObject<Konva.Circle>,
   status: string,
@@ -22,10 +23,11 @@ export const useStatusAnimation = (
 ) => {
   useEffect(() => {
     const mainNode = mainCircleRef.current;
+    const innerNode = innerCircleRef.current;
     const statusNode = statusIndicatorRef.current;
     const rippleNode = rippleCircleRef.current;
 
-    if (!mainNode || !statusNode || !rippleNode) return;
+    if (!mainNode || !innerNode || !statusNode || !rippleNode) return;
 
     const anim = new Konva.Animation((frame) => {
       const time = frame?.time;
@@ -39,7 +41,7 @@ export const useStatusAnimation = (
           animateWorking(time, statusNode);
           break;
         case 'needs_human_input':
-          animateNeedsHumanInput(time, rippleNode);
+          animateNeedsHumanInput(time, innerNode, rippleNode, statusColor);
           break;
       }
     }, mainNode.getLayer());
@@ -49,24 +51,34 @@ export const useStatusAnimation = (
     return () => {
       anim.stop();
     };
-  }, [status, mainCircleRef, statusIndicatorRef, rippleCircleRef, getStatusColor]);
+  }, [status, mainCircleRef, innerCircleRef, statusIndicatorRef, rippleCircleRef, getStatusColor]);
 };
 
 const animateWorking = (time: number, statusIndicator: Konva.Rect) => {
-  const progress = (time % 2000) / 2000;
-  const scale = 1 + Math.abs(Math.sin(progress * Math.PI)) * 0.2;
-  statusIndicator.scale({ x: scale, y: scale });
+  const duration = 2000; // 2 seconds for one complete cycle
+  const progress = (time % duration) / duration;
   
-  // Morph between circle and square
+  // Morph between rounded square and more rounded square
+  const minCornerRadius = 1; // Minimum corner radius
+  const maxCornerRadius = 4; // Maximum corner radius
   const morphProgress = Math.abs(Math.sin(progress * Math.PI));
-  const cornerRadius = 10 * (1 - morphProgress); // 10 is the initial corner radius for a rounded square
+  const cornerRadius = minCornerRadius + (maxCornerRadius - minCornerRadius) * morphProgress;
+  
   statusIndicator.cornerRadius(cornerRadius);
 };
 
-const animateNeedsHumanInput = (time: number, rippleCircle: Konva.Circle) => {
-  const rippleProgress = (time % 1500) / 1500;
-  const rippleScale = 0.8 + rippleProgress * 0.4;
-  const opacity = 0.3 - rippleProgress * 0.3;
-  rippleCircle.scale({ x: rippleScale, y: rippleScale });
-  rippleCircle.opacity(opacity);
+const animateNeedsHumanInput = (time: number, innerCircle: Konva.Circle, rippleCircle: Konva.Circle, statusColor: string) => {
+  const duration = 1500;
+  const progress = (time % duration) / duration;
+  
+  // Inner pulsation
+  const innerOpacity = 0.7 * (1 - progress);
+  innerCircle.fill(statusColor);
+  innerCircle.opacity(innerOpacity);
+  
+  // Outer ripple effect
+  const scale = 1 + 0.5 * progress;
+  const outerOpacity = 0.5 * (1 - progress);
+  rippleCircle.scale({ x: scale, y: scale });
+  rippleCircle.opacity(outerOpacity);
 };

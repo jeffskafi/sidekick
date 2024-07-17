@@ -20,6 +20,7 @@ async function getAgents(): Promise<Agent[]> {
     .select({
       id: agents.id,
       projectId: agents.projectId,
+      userId: agents.userId,
       name: agents.name,
       status: agents.status,
       xPosition: agents.xPosition,
