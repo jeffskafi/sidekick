@@ -53,7 +53,7 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
   } : null;
 
   return (
-    <div ref={containerRef} className={`flex-grow bg-gray-800 no-scroll ${className}`}>
+    <div ref={containerRef} className={`flex-grow bg-gray-100 no-scroll ${className}`}>
       <Stage
         width={stageSize.width}
         height={stageSize.height}
@@ -73,6 +73,7 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
               agent={agent}
               isSelected={selectedAgents.some((a) => a.id === agent.id)}
               onSelect={handleSelect}
+              allAgents={agents}
             />
           ))}
           {selectionRect && (
