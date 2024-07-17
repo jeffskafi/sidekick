@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { db } from "~/server/db";
 import { agents, skills, agentSkills } from "~/server/db/schema";
 import type { Agent } from "~/server/db/schema";
-import { eq } from 'drizzle-orm';
+import { eq, and, ne } from 'drizzle-orm';
+import { auth } from "@clerk/nextjs/server";
 
 // Define an interface for the request body
 interface CreateAgentRequest {
@@ -15,16 +16,28 @@ interface CreateAgentRequest {
 
 export async function POST(request: Request) {
   try {
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { name, skills: skillNames, projectId, xPosition, yPosition } = await request.json() as CreateAgentRequest;
 
     // Start a transaction
     const result = await db.transaction(async (tx) => {
+      // Check if an agent with the same name already exists for this user
+      const existingAgent = await tx.select().from(agents).where(and(eq(agents.name, name), eq(agents.userId, userId))).limit(1);
+      if (existingAgent.length > 0) {
+        throw new Error('An agent with this name already exists for this user');
+      }
+
       // Insert the new agent
       const [newAgent] = await tx.insert(agents).values({
         name,
         projectId,
         xPosition,
         yPosition,
+        userId,
       }).returning();
 
       if (!newAgent) {
@@ -120,10 +133,30 @@ export async function DELETE(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const updatedAgent = await request.json() as Agent;
 
     if (!updatedAgent.id) {
       return NextResponse.json({ error: 'Agent ID is required' }, { status: 400 });
+    }
+
+    // Check if the updated name already exists for this user (if name is being updated)
+    if (updatedAgent.name) {
+      const existingAgent = await db.select().from(agents).where(
+        and(
+          eq(agents.name, updatedAgent.name),
+          eq(agents.userId, userId),
+          ne(agents.id, updatedAgent.id)
+        )
+      ).limit(1);
+
+      if (existingAgent.length > 0) {
+        return NextResponse.json({ error: 'An agent with this name already exists for this user' }, { status: 400 });
+      }
     }
 
     // Parse xPosition and yPosition as numbers
@@ -137,15 +170,16 @@ export async function PUT(request: Request) {
     const result = await db
       .update(agents)
       .set({
+        name: updatedAgent.name,
         xPosition,
         yPosition,
         // Add other fields you want to update here
       })
-      .where(eq(agents.id, updatedAgent.id))
+      .where(and(eq(agents.id, updatedAgent.id), eq(agents.userId, userId)))
       .returning();
 
     if (result.length === 0) {
-      return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Agent not found or unauthorized' }, { status: 404 });
     }
 
     return NextResponse.json(result[0], { status: 200 });

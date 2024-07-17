@@ -77,6 +77,7 @@ export const agents = createTable(
   {
     id: serial("id").primaryKey(),
     projectId: integer("project_id").references(() => projects.id).notNull(),
+    userId: varchar("user_id", { length: 256 }).notNull(),
     name: varchar("name", { length: 256 }).notNull(),
     status: agentStatusEnum("status").notNull().default('idle'),
     xPosition: doublePrecision("x_position").notNull(),
@@ -91,6 +92,7 @@ export const agents = createTable(
   (table) => ({
     nameIndex: index("agent_name_idx").on(table.name),
     statusIndex: index("agent_status_idx").on(table.status),
+    userAgentNameUnique: unique().on(table.userId, table.name),
   })
 );
 
