@@ -18,7 +18,13 @@ export const createTable = pgTableCreator((name) => `command-center_${name}`);
 
 // Enums
 export const taskStatusEnum = pgEnum('task_status', ['todo', 'in_progress', 'done', 'failed', 'exception']);
-export const agentStatusEnum = pgEnum('agent_status', ['idle', 'active']);
+export const agentStatusEnum = pgEnum('agent_status', [
+  'idle',
+  'task_complete',
+  'working',
+  'needs_human_input',
+  'error'
+]);
 export const crewTypeEnum = pgEnum('crew_type', ['hierarchical', 'sequential']);
 
 // Projects (Canvas)

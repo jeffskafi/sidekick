@@ -21,10 +21,11 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      // case "active": return "#4CAF50"; // Green
-      // case "idle": return "#FFC107"; // Amber
-      // case "error": return "#F44336"; // Red
-      default: return "#e8e8e8"; // Default to idle color (50% lighter)
+      case "task_complete": return "#4CAF50"; // Green
+      case "working": return "#FF6F00"; // Amber
+      case "needs_human_input": return "#FF6F00"; // Amber
+      case "error": return "#F44336"; // Red
+      default: return "#999"; // Grey for idle
     }
   };
 
@@ -88,12 +89,12 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
       {/* Main circle (agent body) */}
       <Circle
         radius={30}
-        fill={getStatusColor(agent.status)}
+        fill="#f0f0f0"
       />
       {/* Status indicator */}
       <Circle
         radius={5}
-        fill={agent.status === 'active' ? "#5c5c5c" : "#999"}
+        fill={getStatusColor(agent.status)}
         x={0}
         y={0}
       />
