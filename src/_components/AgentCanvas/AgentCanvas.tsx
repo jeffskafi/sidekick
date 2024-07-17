@@ -94,8 +94,12 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
               y={selectionRect.y}
               width={selectionRect.width}
               height={selectionRect.height}
-              fill="rgba(0, 0, 255, 0.1)"
-              stroke="blue"
+              fill="rgba(0, 0, 0, 0.05)"
+              stroke="#000"
+              strokeWidth={0.5}
+              dash={[4, 2]}
+              cornerRadius={30}
+              opacity={0.5}
             />
           )}
         </Layer>

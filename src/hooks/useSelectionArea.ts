@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import type { KonvaEventObject } from 'konva/lib/Node';
 
 export function useSelectionArea(scale: number) {
   const [selectionArea, setSelectionArea] = useState<{

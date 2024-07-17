@@ -77,6 +77,14 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Hover/Select effect */}
+      <Circle
+        ref={hoverCircleRef}
+        radius={34}
+        stroke="#5c5c5c"
+        strokeWidth={0}
+        zIndex={-1}  // Ensure hover circle is rendered below other elements
+      />
       {/* Main circle (agent body) */}
       <Circle
         radius={30}
@@ -107,13 +115,6 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
           offsetY={10}
         />
       </Group>
-      {/* Hover/Select effect */}
-      <Circle
-        ref={hoverCircleRef}
-        radius={32}
-        stroke="#5c5c5c"
-        strokeWidth={0}
-      />
     </Group>
   );
 };
