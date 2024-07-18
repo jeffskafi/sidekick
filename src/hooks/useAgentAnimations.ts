@@ -76,6 +76,10 @@ const animateNeedsHumanInput = (time: number, mainCircle: Konva.Circle, rippleCi
   mainCircle.fill(statusColor);
   mainCircle.opacity(innerOpacity);
   
+  // Ensure stroke is always visible
+  mainCircle.stroke(statusColor);
+  mainCircle.setAttr('strokeOpacity', 1);
+  
   // Outer ripple effect
   const scale = 1 + 0.5 * progress;
   const outerOpacity = 0.5 * (1 - progress);

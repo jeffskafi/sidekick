@@ -18,6 +18,7 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
   const hoverCircleRef = useRef<Konva.Circle>(null);
   const statusIndicatorRef = useRef<Konva.Rect>(null);
   const rippleCircleRef = useRef<Konva.Circle>(null);
+  const humanInputCircleRef = useRef<Konva.Circle>(null);
 
   const handleClick = () => {
     onSelect(agent);
@@ -83,6 +84,16 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
         fill={getStatusColor(agent.status)}
         opacity={0}
       />
+      {/* Transparent circle with ember border for needs_human_input */}
+      {agent.status === "needs_human_input" && (
+        <Circle
+          ref={humanInputCircleRef}
+          radius={32}
+          fill="transparent"
+          stroke="#FF6F00"
+          strokeWidth={2}
+        />
+      )}
       {/* Main circle */}
       <Circle
         ref={mainCircleRef}
