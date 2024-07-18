@@ -70,10 +70,11 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
       {/* Hover effect circle */}
       <Circle
         ref={hoverCircleRef}
-        radius={32}
+        radius={34}
         stroke="#5c5c5c"
         strokeWidth={0}
         opacity={0}
+        fill="rgba(102, 102, 102, 0.1)"
       />
       {/* Ripple effect for needs_human_input */}
       <Circle
