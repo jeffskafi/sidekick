@@ -17,7 +17,6 @@ export const useHoverAnimation = (hoverCircleRef: RefObject<Konva.Circle>, isHov
 
 export const useStatusAnimation = (
   mainCircleRef: RefObject<Konva.Circle>,
-  innerCircleRef: RefObject<Konva.Circle>,
   statusIndicatorRef: RefObject<Konva.Rect>,
   rippleCircleRef: RefObject<Konva.Circle>,
   status: string,
@@ -25,11 +24,10 @@ export const useStatusAnimation = (
 ) => {
   useEffect(() => {
     const mainNode = mainCircleRef.current;
-    const innerNode = innerCircleRef.current;
     const statusNode = statusIndicatorRef.current;
     const rippleNode = rippleCircleRef.current;
 
-    if (!mainNode || !innerNode || !statusNode || !rippleNode) return;
+    if (!mainNode || !statusNode || !rippleNode) return;
 
     const anim = new Konva.Animation((frame) => {
       const time = frame?.time;
@@ -43,7 +41,7 @@ export const useStatusAnimation = (
           animateWorking(time, statusNode);
           break;
         case 'needs_human_input':
-          animateNeedsHumanInput(time, innerNode, rippleNode, statusColor);
+          animateNeedsHumanInput(time, mainNode, rippleNode, statusColor);
           break;
       }
     }, mainNode.getLayer());
@@ -53,7 +51,7 @@ export const useStatusAnimation = (
     return () => {
       anim.stop();
     };
-  }, [status, mainCircleRef, innerCircleRef, statusIndicatorRef, rippleCircleRef, getStatusColor]);
+  }, [status, mainCircleRef, statusIndicatorRef, rippleCircleRef, getStatusColor]);
 };
 
 const animateWorking = (time: number, statusIndicator: Konva.Rect) => {
@@ -69,14 +67,14 @@ const animateWorking = (time: number, statusIndicator: Konva.Rect) => {
   statusIndicator.cornerRadius(cornerRadius);
 };
 
-const animateNeedsHumanInput = (time: number, innerCircle: Konva.Circle, rippleCircle: Konva.Circle, statusColor: string) => {
+const animateNeedsHumanInput = (time: number, mainCircle: Konva.Circle, rippleCircle: Konva.Circle, statusColor: string) => {
   const duration = 1500;
   const progress = (time % duration) / duration;
   
   // Inner pulsation
   const innerOpacity = 0.7 * (1 - progress);
-  innerCircle.fill(statusColor);
-  innerCircle.opacity(innerOpacity);
+  mainCircle.fill(statusColor);
+  mainCircle.opacity(innerOpacity);
   
   // Outer ripple effect
   const scale = 1 + 0.5 * progress;
