@@ -1,7 +1,7 @@
 // components/AgentGroup.tsx
 import React, { useState, useRef } from "react";
 import { Group, Circle, Text, Rect } from "react-konva";
-import Konva from "konva";
+import type Konva from "konva";
 import type { Agent } from "~/server/db/schema";
 import { useHoverAnimation, useStatusAnimation } from "~/hooks/useAgentAnimations";
 
