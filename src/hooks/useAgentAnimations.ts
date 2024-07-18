@@ -1,4 +1,5 @@
-import { useEffect, RefObject } from 'react';
+import { useEffect } from 'react';
+import type { RefObject } from 'react';
 import Konva from 'konva';
 
 export const useHoverAnimation = (hoverCircleRef: RefObject<Konva.Circle>, isHovered: boolean) => {

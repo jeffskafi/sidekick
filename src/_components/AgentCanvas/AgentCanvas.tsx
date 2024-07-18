@@ -1,31 +1,35 @@
-'use client';
+"use client";
 
-import { useRef, useCallback, useEffect } from 'react';
-import { Stage, Layer, Rect } from 'react-konva';
-import { useAgentContext } from '~/contexts/AgentContext';
-import { useCanvasScaling } from '~/hooks/useCanvasScaling';
-import { useStageInteractions } from '~/hooks/useStageInteractions';
-import { useSelectionArea } from '~/hooks/useSelectionArea';
-import { useAgentMovement } from '~/hooks/useAgentMovement';
-import AgentGroup from './AgentGroup';
-import type { Agent } from '~/server/db/schema';
+import { useRef, useCallback, useEffect } from "react";
+import { Stage, Layer, Rect } from "react-konva";
+import { useAgentContext } from "~/contexts/AgentContext";
+import { useCanvasScaling } from "~/hooks/useCanvasScaling";
+import { useStageInteractions } from "~/hooks/useStageInteractions";
+import { useSelectionArea } from "~/hooks/useSelectionArea";
+import { useAgentMovement } from "~/hooks/useAgentMovement";
+import AgentGroup from "./AgentGroup";
+import type { Agent } from "~/server/db/schema";
 
 interface AgentCanvasProps {
   className?: string;
 }
 
 export default function AgentCanvas({ className }: AgentCanvasProps) {
-  const { agents, selectedAgents, selectAgents, updateAgent } = useAgentContext();
+  const { agents, selectedAgents, selectAgents, updateAgent } =
+    useAgentContext();
   const containerRef = useRef<HTMLDivElement>(null);
   const { scale, stageSize } = useCanvasScaling(containerRef);
-  const { selectionArea, startSelection, updateSelection, endSelection } = useSelectionArea(scale);
+  const { selectionArea, startSelection, updateSelection, endSelection } =
+    useSelectionArea(scale);
   const moveAgents = useAgentMovement(updateAgent);
 
   const handleSelect = useCallback(
     (agentOrAgents: Agent | Agent[]) => {
-      selectAgents(Array.isArray(agentOrAgents) ? agentOrAgents : [agentOrAgents]);
+      selectAgents(
+        Array.isArray(agentOrAgents) ? agentOrAgents : [agentOrAgents],
+      );
     },
-    [selectAgents]
+    [selectAgents],
   );
 
   const {
@@ -42,7 +46,7 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
     agents,
     startSelection,
     updateSelection,
-    endSelection
+    endSelection,
   );
 
   // Prevent context menu on the canvas
@@ -50,22 +54,28 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
     const container = containerRef.current;
     if (container) {
       const preventDefault = (e: Event) => e.preventDefault();
-      container.addEventListener('contextmenu', preventDefault);
+      container.addEventListener("contextmenu", preventDefault);
       return () => {
-        container.removeEventListener('contextmenu', preventDefault);
+        container.removeEventListener("contextmenu", preventDefault);
       };
     }
   }, []);
 
-  const selectionRect = selectionArea.start && selectionArea.end ? {
-    x: Math.min(selectionArea.start.x, selectionArea.end.x),
-    y: Math.min(selectionArea.start.y, selectionArea.end.y),
-    width: Math.abs(selectionArea.end.x - selectionArea.start.x),
-      height: Math.abs(selectionArea.end.y - selectionArea.start.y),
-    } : null;
+  const selectionRect =
+    selectionArea.start && selectionArea.end
+      ? {
+          x: Math.min(selectionArea.start.x, selectionArea.end.x),
+          y: Math.min(selectionArea.start.y, selectionArea.end.y),
+          width: Math.abs(selectionArea.end.x - selectionArea.start.x),
+          height: Math.abs(selectionArea.end.y - selectionArea.start.y),
+        }
+      : null;
 
   return (
-    <div ref={containerRef} className={`flex-grow bg-gray-100 no-scroll ${className}`}>
+    <div
+      ref={containerRef}
+      className={`no-scroll flex-grow bg-gray-100 ${className}`}
+    >
       <Stage
         width={stageSize.width}
         height={stageSize.height}

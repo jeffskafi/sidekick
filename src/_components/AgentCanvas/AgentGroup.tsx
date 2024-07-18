@@ -1,5 +1,5 @@
 // components/AgentGroup.tsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Group, Circle, Text, Rect } from "react-konva";
 import type Konva from "konva";
 import type { Agent } from "~/server/db/schema";
@@ -66,6 +66,7 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
 
   return (
     <Group
+      id={`agent-${agent.id}`}
       x={agent.xPosition}
       y={agent.yPosition}
       onClick={handleClick}
