@@ -1,7 +1,7 @@
 // components/AgentGroup.tsx
 import React, { useState, useRef } from "react";
 import { Group, Circle, Text, Rect } from "react-konva";
-import type Konva from "konva";
+import Konva from "konva";
 import type { Agent } from "~/server/db/schema";
 import { useHoverAnimation, useStatusAnimation } from "~/hooks/useAgentAnimations";
 
@@ -13,15 +13,8 @@ interface AgentGroupProps {
 }
 
 const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, allAgents }) => {
-  // TODO: REMOVE AFTER TESTING
-  // agent.status = 'task_complete';
-  // agent.status = 'working';
-  // agent.status = 'needs_human_input';
-  // agent.status = 'error';
-
   const [isHovered, setIsHovered] = useState(false);
   const mainCircleRef = useRef<Konva.Circle>(null);
-  const innerCircleRef = useRef<Konva.Circle>(null);
   const hoverCircleRef = useRef<Konva.Circle>(null);
   const statusIndicatorRef = useRef<Konva.Rect>(null);
   const rippleCircleRef = useRef<Konva.Circle>(null);
@@ -61,8 +54,8 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
     return identifier;
   };
 
-  useHoverAnimation(hoverCircleRef, isHovered);
-  useStatusAnimation(mainCircleRef, innerCircleRef, statusIndicatorRef, rippleCircleRef, agent.status, getStatusColor);
+  useHoverAnimation(hoverCircleRef, isHovered, isSelected);
+  useStatusAnimation(mainCircleRef, statusIndicatorRef, rippleCircleRef, agent.status, getStatusColor);
 
   return (
     <Group
@@ -74,6 +67,14 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Hover effect circle */}
+      <Circle
+        ref={hoverCircleRef}
+        radius={32}
+        stroke="#5c5c5c"
+        strokeWidth={0}
+        opacity={0}
+      />
       {/* Ripple effect for needs_human_input */}
       <Circle
         ref={rippleCircleRef}
@@ -81,20 +82,13 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
         fill={getStatusColor(agent.status)}
         opacity={0}
       />
-      {/* Main circle (border) */}
+      {/* Main circle */}
       <Circle
         ref={mainCircleRef}
         radius={30}
-        fill="transparent"
+        fill="#f0f0f0"
         stroke={getStatusColor(agent.status)}
         strokeWidth={2}
-      />
-      {/* Inner circle for pulsation */}
-      <Circle
-        ref={innerCircleRef}
-        radius={28}
-        fill={getStatusColor(agent.status)}
-        opacity={0}
       />
       {/* Status indicator */}
       <Rect
@@ -105,14 +99,6 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
         cornerRadius={5}
         offsetX={5}
         offsetY={5}
-      />
-      {/* Hover effect circle */}
-      <Circle
-        ref={hoverCircleRef}
-        radius={32}
-        stroke="#5c5c5c"
-        strokeWidth={2}
-        opacity={0}
       />
       {/* Agent ID badge */}
       <Group x={-20} y={-20}>

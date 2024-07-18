@@ -2,16 +2,17 @@ import { useEffect } from 'react';
 import type { RefObject } from 'react';
 import Konva from 'konva';
 
-export const useHoverAnimation = (hoverCircleRef: RefObject<Konva.Circle>, isHovered: boolean) => {
+export const useHoverAnimation = (hoverCircleRef: RefObject<Konva.Circle>, isHovered: boolean, isSelected: boolean) => {
   useEffect(() => {
     const node = hoverCircleRef.current;
     if (node) {
       node.to({
-        opacity: isHovered ? 1 : 0,
+        opacity: isHovered || isSelected ? 1 : 0,
+        strokeWidth: isHovered || isSelected ? 2 : 0,
         duration: 0.3,
       });
     }
-  }, [isHovered, hoverCircleRef]);
+  }, [isHovered, isSelected, hoverCircleRef]);
 };
 
 export const useStatusAnimation = (
