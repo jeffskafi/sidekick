@@ -61,8 +61,8 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
     x: Math.min(selectionArea.start.x, selectionArea.end.x),
     y: Math.min(selectionArea.start.y, selectionArea.end.y),
     width: Math.abs(selectionArea.end.x - selectionArea.start.x),
-    height: Math.abs(selectionArea.end.y - selectionArea.start.y),
-  } : null;
+      height: Math.abs(selectionArea.end.y - selectionArea.start.y),
+    } : null;
 
   return (
     <div ref={containerRef} className={`flex-grow bg-gray-100 no-scroll ${className}`}>
