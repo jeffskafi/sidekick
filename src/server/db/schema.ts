@@ -88,6 +88,7 @@ export const agents = createTable(
     status: agentStatusEnum("status").notNull().default('idle'),
     xPosition: doublePrecision("x_position").notNull(),
     yPosition: doublePrecision("y_position").notNull(),
+    openaiAssistantId: varchar("openai_assistant_id", { length: 256 }), // Added this line
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -181,6 +182,22 @@ export const tasks = createTable(
     storyIndex: index("task_story_idx").on(table.storyId),
     statusIndex: index("task_status_idx").on(table.status),
   })
+);
+
+// Threads
+export const threads = createTable(
+  "thread",
+  {
+    id: serial("id").primaryKey(),
+    openaiThreadId: varchar("openai_thread_id", { length: 256 }).notNull().unique(),
+    agentId: integer("agent_id").references(() => agents.id).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date()
+    ),
+  }
 );
 
 // Export Zod schemas

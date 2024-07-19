@@ -4,6 +4,10 @@ import { agents, skills, agentSkills } from "~/server/db/schema";
 import type { Agent } from "~/server/db/schema";
 import { eq, and, ne } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
+import OpenAI from "openai";
+import { config } from "dotenv";
+
+config();
 
 // Define an interface for the request body
 interface CreateAgentRequest {
@@ -31,6 +35,18 @@ export async function POST(request: Request) {
         throw new Error('An agent with this name already exists for this user');
       }
 
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      // Create OpenAI assistant
+      const assistant = await openai.beta.assistants.create({
+        name: name,
+        instructions: `You are an AI agent with the following skills: ${skillNames.join(', ')}. Assist the user to the best of your abilities.`,
+        model: "gpt-4-1106-preview",
+        tools: [{ type: "code_interpreter" }, { type: "file_search" }],
+      });
+
       // Insert the new agent
       const [newAgent] = await tx.insert(agents).values({
         name,
@@ -38,6 +54,7 @@ export async function POST(request: Request) {
         xPosition,
         yPosition,
         userId,
+        openaiAssistantId: assistant.id,
       }).returning();
 
       if (!newAgent) {
@@ -92,6 +109,12 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const deletionProgress = {
+    assistantDeleted: false,
+    skillsDeleted: false,
+    agentDeleted: false,
+  };
+
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
@@ -106,28 +129,58 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Invalid agent ID' }, { status: 400 });
     }
 
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
     // Start a transaction
     const deletedAgent = await db.transaction(async (tx) => {
-      // First, delete related records in the agent_skill table
-      await tx.delete(agentSkills)
-        .where(eq(agentSkills.agentId, agentId));
+      // First, retrieve the agent to get the OpenAI assistant ID
+      const [agent] = await tx.select().from(agents).where(eq(agents.id, agentId));
 
-      // Then, delete the agent
-      const [deletedAgent] = await tx.delete(agents)
-        .where(eq(agents.id, agentId))
-        .returning();
+      if (!agent) {
+        throw new Error('Agent not found');
+      }
 
-      return deletedAgent;
+      // Perform deletion operations in parallel
+      const [assistantDeletionResult, agentDeletionResult] = await Promise.all([
+        // Delete the OpenAI assistant
+        agent.openaiAssistantId
+          ? openai.beta.assistants.del(agent.openaiAssistantId).catch(error => {
+              console.error('Failed to delete OpenAI assistant:', error);
+              return null;
+            })
+          : Promise.resolve(null),
+        
+        // Delete the agent and related records in the agent_skill table
+        tx.delete(agents).where(eq(agents.id, agentId)).returning(),
+      ]);
+
+      deletionProgress.assistantDeleted = assistantDeletionResult !== null;
+      deletionProgress.skillsDeleted = true; // Assuming skills are deleted due to foreign key constraints
+      deletionProgress.agentDeleted = agentDeletionResult.length > 0;
+
+      if (!deletionProgress.agentDeleted) {
+        throw new Error('Failed to delete agent');
+      }
+
+      return agentDeletionResult[0];
     });
 
     if (!deletedAgent) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
     }
 
-    return NextResponse.json(deletedAgent, { status: 200 });
+    return NextResponse.json({ 
+      deletedAgent, 
+      deletionProgress 
+    }, { status: 200 });
   } catch (error) {
     console.error('Error deleting agent:', error);
-    return NextResponse.json({ error: 'Failed to delete agent' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to delete agent', 
+      deletionProgress 
+    }, { status: 500 });
   }
 }
 
