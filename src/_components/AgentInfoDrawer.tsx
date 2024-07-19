@@ -13,21 +13,14 @@ export function AgentInfoDrawer() {
   const { selectedAgents, selectAgents } = useAgentContext();
   const pathname = usePathname();
   const [expandedAgentId, setExpandedAgentId] = useState<number | null>(null);
-  const [contentHeight, setContentHeight] = useState<number | null>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
 
   const isAgentsTab = pathname === "/" || pathname.includes("agents");
 
-  const handleAssignWork = (agentId: number, task: string) => {
-    console.log(`Assigning task "${task}" to agent ${agentId}`);
+  const handleAssignWork = (agentId: number, tasks: string[]) => {
+    console.log(`Assigning tasks "${tasks.join(", ")}" to agent ${agentId}`);
     // Implement your work assignment logic here
     setExpandedAgentId(null); // Close the popup after assigning work
   };
-  useEffect(() => {
-    if (contentRef.current) {
-      setContentHeight(contentRef.current.scrollHeight);
-    }
-  }, [expandedAgentId]);
 
   return (
     <BottomSheet
@@ -35,11 +28,9 @@ export function AgentInfoDrawer() {
       onClose={() => selectAgents([])}
     >
       <div
-        ref={contentRef}
         className="p-4 text-black transition-all duration-300 ease-in-out"
-        style={{ minHeight: contentHeight ? `${contentHeight}px` : "auto" }}
+        style={{ minHeight: "75vh" }}
       >
-        {" "}
         <h2 className="mb-4 text-lg font-semibold">Selected Agents</h2>
         {selectedAgents.map((agent) => (
           <div
@@ -61,8 +52,8 @@ export function AgentInfoDrawer() {
             </div>
             <div className="relative mt-3">
               <Button
-                className={`w-auto px-4 bg-white bg-opacity-70 backdrop-blur-[20px] border border-white border-opacity-20 text-gray-800 hover:bg-white hover:bg-opacity-80 transition-all duration-300 ${
-                  expandedAgentId === agent.id ? 'shadow-lg' : ''
+                className={`w-auto border border-white border-opacity-20 bg-white bg-opacity-70 px-4 text-gray-800 backdrop-blur-[20px] transition-all duration-300 hover:bg-white hover:bg-opacity-80 ${
+                  expandedAgentId === agent.id ? "shadow-lg" : ""
                 }`}
                 onClick={() =>
                   setExpandedAgentId(
@@ -77,7 +68,7 @@ export function AgentInfoDrawer() {
                   <AssignWorkPopup
                     agentName={agent.name}
                     onClose={() => setExpandedAgentId(null)}
-                    onAssignWork={(task) => handleAssignWork(agent.id, task)}
+                    onAssignWork={(tasks) => handleAssignWork(agent.id, tasks)}
                   />
                 )}
               </AnimatePresence>

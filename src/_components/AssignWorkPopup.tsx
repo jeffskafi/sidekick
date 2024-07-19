@@ -1,15 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "~/components/ui/select";
 import { X } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { RamsDropdown } from "./Dropdown";
 
 interface AssignWorkPopupProps {
   agentName: string;
   onClose: () => void;
-  onAssignWork: (task: string) => void;
+  onAssignWork: (tasks: string[]) => void;
 }
 
+const availableTasks = [
+  "Patrol Area A",
+  "Investigate Anomaly B",
+  "Collect Resources at Point C",
+  "Maintain Equipment D",
+  "Scout Location E",
+  "Analyze Data F",
+  "Repair System G",
+  "Monitor Environment H",
+];
+
 export const AssignWorkPopup: React.FC<AssignWorkPopupProps> = ({ agentName, onClose, onAssignWork }) => {
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
+
+  const handleSubmit = () => {
+    onAssignWork(selectedTasks);
+    onClose();
+  };
+
   return (
     <>
       <motion.div
@@ -31,31 +50,37 @@ export const AssignWorkPopup: React.FC<AssignWorkPopupProps> = ({ agentName, onC
           position: 'absolute',
           top: 0,
           left: 0,
+          maxHeight: '75vh',
+          minHeight: '40vh',
+          display: 'flex',
+          flexDirection: 'column',
         }}
         className="bg-white bg-opacity-70 backdrop-blur-[20px] rounded-md shadow-lg border border-white border-opacity-20 max-w-md w-max z-50"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-3 relative">
+        <div className="p-4 relative flex-grow overflow-y-auto">
           <button 
             onClick={onClose}
-            className="absolute top-2 left-2 text-gray-500 hover:text-gray-700"
+            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
           >
             <X size={20} />
           </button>
-          <p className="text-sm mb-3 font-bold text-gray-800 pl-8">
-            Select a task to assign to {agentName}:
-          </p>
-          <div className="bg-white bg-opacity-50 p-2 rounded">
-            <Select onValueChange={onAssignWork}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose a task" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="task1">Make PDF</SelectItem>
-                <SelectItem value="task2">Write content</SelectItem>
-                <SelectItem value="task3">Visit website</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <h3 className="text-lg font-semibold mb-4">Assign Tasks to {agentName}</h3>
+          <RamsDropdown
+            options={availableTasks}
+            selectedValues={selectedTasks}
+            onChange={setSelectedTasks}
+            placeholder="Select or type tasks"
+          />
+        </div>
+        <div className="p-4 border-t border-gray-200">
+          <Button
+            onClick={handleSubmit}
+            className="w-full bg-blue-500 text-white hover:bg-blue-600 transition-colors"
+            disabled={selectedTasks.length === 0}
+          >
+            Assign Tasks ({selectedTasks.length})
+          </Button>
         </div>
       </motion.div>
     </>
