@@ -47,3 +47,4 @@ yarn-error.log*
 
 .vscode
 util/search/data/
+src/open_ai_implementation_draft
