@@ -59,58 +59,54 @@ export function AgentInfoDrawer() {
                 className="w-auto px-4"
                 onClick={() => setExpandedAgentId(expandedAgentId === agent.id ? null : agent.id)}
               >
-                {expandedAgentId === agent.id ? "Close" : "Assign Work"}
+                {"Assign Work"}
               </Button>
               <AnimatePresence>
                 {expandedAgentId === agent.id && (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40"
-                      onClick={() => setExpandedAgentId(null)}
-                    />
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                      style={{ 
-                        originX: 0, 
-                        originY: 0,
-                        position: 'absolute',
-                        top: 'calc(100% + 10px)',
-                        left: '10px',
-                      }}
-                      className="bg-white bg-opacity-70 backdrop-blur-md rounded-md shadow-lg border border-white border-opacity-20 max-w-md w-max z-50"
-                    >
-                      <div className="p-3 relative">
-                        <button 
-                          onClick={() => setExpandedAgentId(null)}
-                          className="absolute top-2 left-2 text-gray-500 hover:text-gray-700"
-                        >
-                          <X size={20} />
-                        </button>
-                        <p className="text-sm mb-3 font-bold text-gray-800 pl-8">
-                          Select a task to assign to {agent.name}:
-                        </p>
-                        <div className="bg-white bg-opacity-50 p-2 rounded">
-                          <Select onValueChange={(value) => handleAssignWork(agent.id, value)}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Choose a task" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="task1">Patrol Area A</SelectItem>
-                              <SelectItem value="task2">Investigate Anomaly B</SelectItem>
-                              <SelectItem value="task3">Collect Resources at Point C</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ duration: 0.15, ease: "easeInOut" }}
+                    style={{ 
+                      originX: 0, 
+                      originY: 0,
+                      position: 'absolute',
+                      top: 'calc(100% - 48px)',
+                      left: '0px',
+                      transform: 'translateX(-50%)',
+                      zIndex: 50,
+                    }}
+                    className="mt-2 bg-red-100 rounded-md shadow-md border-2 border-red-500 max-w-md w-max"
+                  >
+                    <div className="p-3 relative">
+                      <button 
+                        onClick={() => setExpandedAgentId(null)}
+                        className="absolute top-2 left-2 text-gray-500 hover:text-gray-700"
+                      >
+                        <X size={20} />
+                      </button>
+                      <p className="text-sm mb-3 font-bold text-red-500 pl-8">
+                        Debug: Expanded content starts here
+                      </p>
+                      <p className="text-sm mb-3">
+                        Select a task to assign to {agent.name}:
+                      </p>
+                      <div className="bg-blue-100 p-2 rounded border-2 border-blue-500">
+                        <p className="text-xs mb-2 font-bold text-blue-500">Debug: Select component should be below</p>
+                        <Select onValueChange={(value) => handleAssignWork(agent.id, value)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Choose a task" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="task1">Patrol Area A</SelectItem>
+                            <SelectItem value="task2">Investigate Anomaly B</SelectItem>
+                            <SelectItem value="task3">Collect Resources at Point C</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </motion.div>
-                  </>
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
