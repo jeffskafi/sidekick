@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Label } from "~/components/ui/label";
 import SettingsSection from "~/_components/Settings/SettingsSection";
-import "~/styles/darkModeToggle.css"; // Make sure this import is present
+import "~/styles/darkModeToggle.css";
 
 const generateStars = (count: number) => {
   return Array.from({ length: count }, () => ({
@@ -11,34 +11,36 @@ const generateStars = (count: number) => {
   }));
 };
 
-export default function AppearanceSettings() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+interface AppearanceSettingsProps {
+  isDarkMode: boolean;
+  toggleDarkMode: (darkMode: boolean) => void;
+}
+
+export default function AppearanceSettings({ isDarkMode, toggleDarkMode }: AppearanceSettingsProps) {
   const [stars, setStars] = useState(generateStars(20));
 
-  useEffect(() => {
-    const isDark = document.body.classList.contains('dark-mode');
-    setIsDarkMode(isDark);
-  }, []);
-
-  const toggleDarkMode = () => {
-    document.body.classList.toggle('dark-mode');
-    setIsDarkMode(!isDarkMode);
-    setStars(generateStars(20)); // Regenerate stars on toggle
+  const handleToggle = () => {
+    toggleDarkMode(!isDarkMode);
+    setStars(generateStars(20));
   };
 
   return (
     <SettingsSection title="Appearance">
-      <div className="space-y-4">
+      <div className={`space-y-4 ${isDarkMode ? 'dark-mode' : ''}`}>
         <Label
           htmlFor="theme"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
           Theme
         </Label>
         <div className="toggle-container">
-          <span className="toggle-label">Dark Mode</span>
-          <div className={`toggle-switch ${isDarkMode ? 'dark-mode' : ''}`} onClick={toggleDarkMode}>
-            <div className="clouds"></div>
+          <span className="toggle-label dark:text-gray-300">Dark Mode</span>
+          <div className={`toggle-switch ${isDarkMode ? 'dark-mode' : ''}`} onClick={handleToggle}>
+            <div className="clouds">
+              <div className="cloud"></div>
+              <div className="cloud"></div>
+              <div className="cloud"></div>
+            </div>
             <div className="stars">
               {stars.map((star, index) => (
                 <div

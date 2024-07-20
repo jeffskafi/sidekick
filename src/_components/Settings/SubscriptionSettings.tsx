@@ -39,8 +39,8 @@ export default function SubscriptionSettings() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        const errorData = await response.json() as { error?: string };
+        throw new Error(errorData.error ?? `HTTP error! status: ${response.status}`);
       }
 
       const session = await response.json() as CheckoutSession;
