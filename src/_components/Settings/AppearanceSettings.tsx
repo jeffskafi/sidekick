@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Label } from "~/components/ui/label";
 import SettingsSection from "~/_components/Settings/SettingsSection";
+import "~/styles/darkModeToggle.css"; // Make sure this import is present
 
 export default function AppearanceSettings() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Check the initial theme when the component mounts
     const isDark = document.body.classList.contains('dark-mode');
     setIsDarkMode(isDark);
   }, []);
