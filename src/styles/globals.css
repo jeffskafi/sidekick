@@ -29,6 +29,8 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --primary-color: #3b82f6;
+    --primary-hover-color: #2563eb;
   }
 
   .dark {
@@ -64,7 +66,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
   }
 }
 

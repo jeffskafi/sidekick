@@ -29,9 +29,9 @@ export default function SettingsPage() {
 
   return (
     <Elements stripe={stripePromise}>
-      <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+      <div className={`min-h-screen ${isDarkMode ? 'dark' : ''} bg-gray-100 dark:bg-gray-900`}>
         <div className="container mx-auto mt-8 max-w-3xl px-4">
-          <h1 className="text-4xl font-bold mb-8 text-center dark:text-white">Settings</h1>
+          <h1 className="text-4xl font-bold mb-8 text-center dark:text-white">Sidekick Settings</h1>
           
           <div className="space-y-8 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6 md:p-8">
             <AppearanceSettings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
@@ -39,7 +39,7 @@ export default function SettingsPage() {
             <NotificationSettings />
             <DataPrivacySettings />
 
-            <Button className="w-full mt-8">Save Settings</Button>
+            <Button className="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white">Save Settings</Button>
           </div>
         </div>
       </div>

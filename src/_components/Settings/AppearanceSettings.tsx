@@ -26,16 +26,19 @@ export default function AppearanceSettings({ isDarkMode, toggleDarkMode }: Appea
 
   return (
     <SettingsSection title="Appearance">
-      <div className={`space-y-4 ${isDarkMode ? 'dark-mode' : ''}`}>
+      <div className="space-y-4">
         <Label
           htmlFor="theme"
           className="block text-sm font-medium text-gray-700 dark:text-gray-300"
         >
           Theme
         </Label>
-        <div className="toggle-container">
-          <span className="toggle-label dark:text-gray-300">Dark Mode</span>
-          <div className={`toggle-switch ${isDarkMode ? 'dark-mode' : ''}`} onClick={handleToggle}>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-600 dark:text-gray-400">Dark Mode</span>
+          <div
+            className={`toggle-switch ${isDarkMode ? 'dark-mode' : ''}`}
+            onClick={handleToggle}
+          >
             <div className="clouds">
               <div className="cloud"></div>
               <div className="cloud"></div>

@@ -66,22 +66,22 @@ export default function SubscriptionSettings() {
     <SettingsSection title="Subscription & Billing">
       <div className="space-y-4">
         <div>
-          <Label className="block text-sm font-medium text-gray-700">Current Plan</Label>
-          <p className="mt-1 text-sm text-gray-500">Free Tier</p>
+          <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Current Plan</Label>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Free Tier</p>
         </div>
         <div>
-          <Label htmlFor="billingCycle" className="block text-sm font-medium text-gray-700">Billing Cycle</Label>
-          <select id="billingCycle" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+          <Label htmlFor="billingCycle" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Billing Cycle</Label>
+          <select id="billingCycle" className="mt-1 block w-full input-primary">
             <option value="monthly">Monthly</option>
             <option value="annually">Annually (Save 20%)</option>
           </select>
         </div>
         <div>
-          <Label className="block text-sm font-medium text-gray-700">Payment Method</Label>
-          <p className="mt-1 text-sm text-gray-500">Visa ending in 1234</p>
+          <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Method</Label>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Visa ending in 1234</p>
           <Button variant="outline" className="mt-2 w-full">Update Payment Method</Button>
         </div>
-        <Button className="w-full" onClick={handleUpgrade}>Upgrade to Pro</Button>
+        <Button className="w-full btn-primary" onClick={handleUpgrade}>Upgrade to Pro</Button>
         {error && <p className="text-red-500">{error}</p>}
       </div>
     </SettingsSection>
