@@ -39,6 +39,7 @@ export default function AppearanceSettings({ isDarkMode, toggleDarkMode }: Appea
             className={`toggle-switch ${isDarkMode ? 'dark-mode' : ''}`}
             onClick={handleToggle}
           >
+            <div className="stars"></div>
             <div className="clouds">
               <div className="cloud"></div>
               <div className="cloud"></div>
