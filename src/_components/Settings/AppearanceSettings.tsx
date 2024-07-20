@@ -28,6 +28,8 @@ export default function AppearanceSettings() {
         <div className="toggle-container">
           <span className="toggle-label">Dark Mode</span>
           <div className={`toggle-switch ${isDarkMode ? 'dark-mode' : ''}`} onClick={toggleDarkMode}>
+            <div className="clouds"></div>
+            <div className="stars"></div>
             <div className="toggle-button"></div>
             <div className="sun"></div>
             <div className="moon"></div>
