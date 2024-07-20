@@ -92,3 +92,108 @@
 }
 
 /* Add more dark mode styles as needed */
+
+:root {
+  --primary-color: #3b82f6;
+  --primary-hover-color: #2563eb;
+}
+
+body {
+  @apply bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+}
+
+.btn-primary {
+  @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors;
+}
+
+.input-primary {
+  @apply border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white;
+}
+
+.upgrade-to-pro-button {
+  position: relative;
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(45deg, #f59e0b, #d97706);
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.upgrade-to-pro-button::before,
+.upgrade-to-pro-button::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  background-repeat: repeat;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.upgrade-to-pro-button::before {
+  background-image: 
+    radial-gradient(circle, #fbbf24 20%, transparent 20%),
+    radial-gradient(circle, #f59e0b 20%, transparent 20%),
+    radial-gradient(circle, #d97706 20%, transparent 20%);
+  background-size: 100px 100px;
+  background-position: 0 0, 50px 50px, 100px 100px;
+  animation: floatingBubbles 15s linear infinite;
+}
+
+.upgrade-to-pro-button::after {
+  background-image: 
+    radial-gradient(circle, #fbbf24 20%, transparent 20%),
+    radial-gradient(circle, #f59e0b 20%, transparent 20%),
+    radial-gradient(circle, #d97706 20%, transparent 20%);
+  background-size: 120px 120px;
+  background-position: 60px 60px, 110px 110px, 10px 10px;
+  animation: floatingBubbles 20s linear infinite;
+}
+
+@keyframes floatingBubbles {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, -50px);
+  }
+}
+
+.upgrade-to-pro-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(45deg, #f59e0b, #b45309);
+}
+
+.upgrade-to-pro-button:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(245, 158, 11, 0.2);
+}
+
+.upgrade-to-pro-button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.upgrade-to-pro-button:disabled::before,
+.upgrade-to-pro-button:disabled::after {
+  display: none;
+}
+
+.upgrade-to-pro-button span {
+  position: relative;
+  z-index: 1;
+}
