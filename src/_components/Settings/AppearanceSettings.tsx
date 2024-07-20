@@ -1,8 +1,21 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Label } from "~/components/ui/label";
 import SettingsSection from "~/_components/Settings/SettingsSection";
 
 export default function AppearanceSettings() {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check the initial theme when the component mounts
+    const isDark = document.body.classList.contains('dark-mode');
+    setIsDarkMode(isDark);
+  }, []);
+
+  const toggleDarkMode = () => {
+    document.body.classList.toggle('dark-mode');
+    setIsDarkMode(!isDarkMode);
+  };
+
   return (
     <SettingsSection title="Appearance">
       <div className="space-y-4">
@@ -12,14 +25,14 @@ export default function AppearanceSettings() {
         >
           Theme
         </Label>
-        <select
-          id="theme"
-          className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-        >
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-          <option value="system">System</option>
-        </select>
+        <div className="toggle-container">
+          <span className="toggle-label">Dark Mode</span>
+          <div className={`toggle-switch ${isDarkMode ? 'dark-mode' : ''}`} onClick={toggleDarkMode}>
+            <div className="toggle-button"></div>
+            <div className="sun"></div>
+            <div className="moon"></div>
+          </div>
+        </div>
       </div>
     </SettingsSection>
   );

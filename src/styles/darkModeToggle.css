@@ -1,0 +1,72 @@
+body {
+    transition: background-color 0.3s, color 0.3s;
+  }
+  body.dark-mode {
+    background-color: #333;
+    color: #f0f0f0;
+  }
+  .toggle-container {
+    display: flex;
+    align-items: center;
+  }
+  .toggle-label {
+    margin-right: 10px;
+  }
+  .toggle-switch {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background-color: #e0e0e0;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .toggle-button {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s, background-color 0.3s;
+    background: radial-gradient(circle at 35% 35%, #fff, #f0f0f0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .toggle-switch.dark-mode {
+    background-color: #2a2a2a;
+  }
+  .toggle-switch.dark-mode .toggle-button {
+    transform: translateX(30px);
+    background: radial-gradient(circle at 35% 35%, #f0f0f0, #d0d0d0);
+  }
+  .toggle-switch .sun,
+  .toggle-switch .moon {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    top: 6px;
+    left: 6px;
+    transition: transform 0.3s, opacity 0.3s;
+    z-index: 2;
+  }
+  .toggle-switch .sun {
+    background: radial-gradient(circle at 30% 30%, #ffd700, #ffa500);
+    box-shadow: 0 0 5px #ffa500;
+    opacity: 1;
+  }
+  .toggle-switch .moon {
+    background: radial-gradient(circle at 70% 70%, #f0f0f0, #d0d0d0);
+    box-shadow: inset -3px -2px 0 #a0a0a0;
+    opacity: 0;
+  }
+  .toggle-switch.dark-mode .sun {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  .toggle-switch.dark-mode .moon {
+    transform: translateX(30px);
+    opacity: 1;
+  }

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from "~/components/ui/button";
 import AppearanceSettings from '~/_components/Settings/AppearanceSettings';
 import SubscriptionSettings from '~/_components/Settings/SubscriptionSettings';
@@ -12,6 +12,14 @@ import { loadStripe } from '@stripe/stripe-js';
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function SettingsPage() {
+  useEffect(() => {
+    // Check for saved theme preference
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    }
+  }, []);
+
   return (
     <Elements stripe={stripePromise}>
       <div className="container mx-auto mt-8 max-w-3xl px-4">

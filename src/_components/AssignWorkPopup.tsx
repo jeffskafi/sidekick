@@ -50,15 +50,13 @@ export const AssignWorkPopup: React.FC<AssignWorkPopupProps> = ({ agentName, onC
           position: 'absolute',
           top: 0,
           left: 0,
-          maxHeight: '75vh',
-          minHeight: '40vh',
           display: 'flex',
           flexDirection: 'column',
         }}
         className="bg-white bg-opacity-70 backdrop-blur-[20px] rounded-md shadow-lg border border-white border-opacity-20 max-w-md w-max z-50"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 relative flex-grow overflow-y-auto">
+        <div className="p-4 relative">
           <button 
             onClick={onClose}
             className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
