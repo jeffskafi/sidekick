@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import type { Agent } from '~/server/db/schema';
-import { easeInOut } from '../helpers/movement';
 import type Konva from 'konva';
+import { easeInOut } from '../helpers/movement';
+import type { Agent } from '~/server/db/schema';
 
 const CELL_SIZE = 65; // Size of each grid cell, should be at least the agent's diameter
 

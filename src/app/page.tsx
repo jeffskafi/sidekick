@@ -27,6 +27,7 @@ async function getAgents(): Promise<Agent[]> {
       yPosition: agents.yPosition,
       createdAt: agents.createdAt,
       updatedAt: agents.updatedAt,
+      openaiAssistantId: agents.openaiAssistantId,
     })
     .from(agents)
     .orderBy(agents.id);
