@@ -12,14 +12,15 @@ type GridCell = {
 };
 
 function createGrid(width: number, height: number, agents: Agent[]): GridCell[][] {
-  const grid: GridCell[][] = [];
-  for (let y = 0; y < height; y += CELL_SIZE) {
-    const row: GridCell[] = [];
-    for (let x = 0; x < width; x += CELL_SIZE) {
-      row.push({ x, y, occupied: false });
-    }
-    grid.push(row);
-  }
+  const gridWidth = Math.ceil(width / CELL_SIZE);
+  const gridHeight = Math.ceil(height / CELL_SIZE);
+  const grid: GridCell[][] = Array.from({ length: gridHeight }, (_, y) =>
+    Array.from({ length: gridWidth }, (_, x) => ({
+      x: x * CELL_SIZE,
+      y: y * CELL_SIZE,
+      occupied: false
+    }))
+  );
 
   // Mark cells as occupied based on current agent positions
   agents.forEach(agent => {
@@ -60,6 +61,21 @@ function findNearestFreeCell(grid: GridCell[][], targetX: number, targetY: numbe
 }
 
 export function useAgentMovement(onUpdateAgent: (agent: Agent) => Promise<void>) {
+  const moveAgent = useCallback((agent: Agent, newCell: GridCell, group: Konva.Group) => {
+    group.to({
+      x: newCell.x,
+      y: newCell.y,
+      duration: 0.15,
+      easing: easeInOut,
+      onFinish: () => {
+        const updatedAgent: Agent = { ...agent, xPosition: newCell.x, yPosition: newCell.y };
+        onUpdateAgent(updatedAgent).catch(error => {
+          console.error('Failed to update agent:', error);
+        });
+      },
+    });
+  }, [onUpdateAgent]);
+
   const moveSingleAgent = useCallback(
     (agent: Agent, newPosition: { x: number; y: number }, stage: Konva.Stage, allAgents: Agent[]) => {
       const grid = createGrid(stage.width(), stage.height(), allAgents);
@@ -71,22 +87,11 @@ export function useAgentMovement(onUpdateAgent: (agent: Agent) => Promise<void>)
       if (nearestFreeCell) {
         const group = stage.findOne(`#agent-${agent.id}`) as Konva.Group | null;
         if (group) {
-          group.to({
-            x: nearestFreeCell.x,
-            y: nearestFreeCell.y,
-            duration: 0.15,
-            easing: easeInOut,
-            onFinish: () => {
-              const updatedAgent: Agent = { ...agent, xPosition: nearestFreeCell.x, yPosition: nearestFreeCell.y };
-              onUpdateAgent(updatedAgent).catch(error => {
-                console.error('Failed to update agent:', error);
-              });
-            },
-          });
+          moveAgent(agent, nearestFreeCell, group);
         }
       }
     },
-    [onUpdateAgent]
+    [moveAgent]
   );
 
   const moveAgentGroup = useCallback(
@@ -100,18 +105,7 @@ export function useAgentMovement(onUpdateAgent: (agent: Agent) => Promise<void>)
         if (nearestFreeCell) {
           const group = stage.findOne(`#agent-${agent.id}`) as Konva.Group | null;
           if (group) {
-            group.to({
-              x: nearestFreeCell.x,
-              y: nearestFreeCell.y,
-              duration: 0.15,
-              easing: easeInOut,
-              onFinish: () => {
-                const updatedAgent: Agent = { ...agent, xPosition: nearestFreeCell.x, yPosition: nearestFreeCell.y };
-                onUpdateAgent(updatedAgent).catch(error => {
-                  console.error('Failed to update agent:', error);
-                });
-              },
-            });
+            moveAgent(agent, nearestFreeCell, group);
             // Mark the cell as occupied so other agents won't move there
             const cellX = Math.floor(nearestFreeCell.x / CELL_SIZE);
             const cellY = Math.floor(nearestFreeCell.y / CELL_SIZE);
@@ -122,7 +116,7 @@ export function useAgentMovement(onUpdateAgent: (agent: Agent) => Promise<void>)
         }
       });
     },
-    [onUpdateAgent]
+    [moveAgent]
   );
 
   return { moveSingleAgent, moveAgentGroup };
