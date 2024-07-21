@@ -181,6 +181,8 @@ export const tasks = createTable(
     agentIndex: index("task_agent_idx").on(table.agentId),
     storyIndex: index("task_story_idx").on(table.storyId),
     statusIndex: index("task_status_idx").on(table.status),
+    projectIndex: index("task_project_idx").on(table.projectId),
+    uniqueAgentTask: unique().on(table.agentId), // Added this line
   })
 );
 
@@ -205,6 +207,7 @@ export const insertAgentSchema = createInsertSchema(agents);
 export const selectAgentSchema = createSelectSchema(agents);
 
 // Export types
-export type Agent = InferSelectModel<typeof agents> & { skills?: string[] };
-export type NewAgent = InferInsertModel<typeof agents>;
+export type Agent = InferSelectModel<typeof agents>;
 export type Task = InferSelectModel<typeof tasks>;
+export type NewAgent = InferInsertModel<typeof agents>;
+export type NewTask = InferInsertModel<typeof tasks>;
