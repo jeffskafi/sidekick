@@ -9,6 +9,7 @@ import { useSelectionArea } from "~/hooks/useSelectionArea";
 import { useAgentMovement } from "~/hooks/useAgentMovement";
 import AgentGroup from "./AgentGroup";
 import type { Agent } from "~/server/db/schema";
+import type Konva from "konva";
 
 interface AgentCanvasProps {
   className?: string;
@@ -17,11 +18,14 @@ interface AgentCanvasProps {
 export default function AgentCanvas({ className }: AgentCanvasProps) {
   const { agents, selectedAgents, selectAgents, updateAgent } =
     useAgentContext();
+
   const containerRef = useRef<HTMLDivElement>(null);
   const { scale, stageSize } = useCanvasScaling(containerRef);
+
   const { selectionArea, startSelection, updateSelection, endSelection } =
     useSelectionArea(scale);
-  const moveAgents = useAgentMovement(updateAgent);
+
+  const { moveSingleAgent, moveAgentGroup } = useAgentMovement(updateAgent);
 
   const handleSelect = useCallback(
     (agentOrAgents: Agent | Agent[]) => {
@@ -30,6 +34,17 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
       );
     },
     [selectAgents],
+  );
+
+  const handleAgentMove = useCallback(
+    (agentsToMove: Agent[], newPosition: { x: number; y: number }, stage: Konva.Stage) => {
+      if (agentsToMove.length === 1 && agentsToMove[0]) {
+        moveSingleAgent(agentsToMove[0], newPosition, stage, agents);
+      } else if (agentsToMove.length > 1) {
+        moveAgentGroup(agentsToMove, newPosition, stage, agents);
+      }
+    },
+    [agents, moveSingleAgent, moveAgentGroup]
   );
 
   const {
@@ -41,7 +56,7 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
     handleStageTouchEnd,
   } = useStageInteractions(
     handleSelect,
-    moveAgents,
+    handleAgentMove,
     selectedAgents,
     agents,
     startSelection,
@@ -53,7 +68,9 @@ export default function AgentCanvas({ className }: AgentCanvasProps) {
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
-      const preventDefault = (e: Event) => e.preventDefault();
+      const preventDefault = (e: Event) => {
+        e.preventDefault();
+      };
       container.addEventListener("contextmenu", preventDefault);
       return () => {
         container.removeEventListener("contextmenu", preventDefault);
