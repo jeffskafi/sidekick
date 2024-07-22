@@ -38,10 +38,7 @@ export function AgentInfoDrawer() {
       isOpen={isAgentsTab && selectedAgents.length > 0}
       onClose={() => selectAgents([])}
     >
-      <div
-        className="p-4 text-black transition-all duration-300 ease-in-out"
-        style={{ minHeight: "75vh" }}
-      >
+      <div className="p-4 text-black dark:text-white transition-all duration-300 ease-in-out">
         <h2 className="mb-4 text-lg font-semibold">Selected Agents</h2>
         {selectedAgents.map((agent) => (
           <div

@@ -1,40 +1,28 @@
 .bottomSheet {
-    overflow: hidden;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-  }
-  
-  .blurOverlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.7);
-  }
-  
-  /* Safari-specific styles */
-  @supports (-webkit-backdrop-filter: none) {
-    .blurOverlay {
-      -webkit-backdrop-filter: blur(10px);
-    }
-  }
-  
-  /* For Safari 9-11.0 */
-  @supports (not (backdrop-filter: none)) and (-webkit-backdrop-filter: none) {
-    .blurOverlay {
-      -webkit-backdrop-filter: blur(10px);
-    }
-  }
-  
-  .content {
-    position: relative;
-    z-index: 1;
-    padding: 16px;
-  }
-  
-  :global(.dark) .blurOverlay {
-    background-color: rgba(0, 0, 0, 0.7);
-  }
+  overflow: hidden;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.blurOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow-y: auto;
+  background-color: transparent;
+}
+
+:global(.dark) .blurOverlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
