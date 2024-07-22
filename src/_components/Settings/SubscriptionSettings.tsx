@@ -1,57 +1,63 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
-import SettingsSection from './SettingsSection';
-import { useStripe } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import SettingsSection from "./SettingsSection";
+import { useStripe } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 
 interface CheckoutSession {
   id: string;
 }
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
+);
 
 export default function SubscriptionSettings() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [billingCycle, setBillingCycle] = useState<string>('monthly');
+  const [billingCycle, setBillingCycle] = useState<string>("monthly");
 
   const handleUpgrade = async () => {
     setError(null);
     setLoading(true);
     const stripe = await stripePromise;
     if (!stripe) {
-      setError('Stripe failed to load');
+      setError("Stripe failed to load");
       setLoading(false);
       return;
     }
 
     if (!process.env.NEXT_PUBLIC_STRIPE_PRICE_ID) {
-      setError('Stripe Price ID is not set');
+      setError("Stripe Price ID is not set");
       setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
+      const response = await fetch("/api/create-checkout-session", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID }),
+        body: JSON.stringify({
+          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+        }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json() as { error?: string };
-        throw new Error(errorData.error ?? `HTTP error! status: ${response.status}`);
+        const errorData = (await response.json()) as { error?: string };
+        throw new Error(
+          errorData.error ?? `HTTP error! status: ${response.status}`,
+        );
       }
 
-      const session = await response.json() as CheckoutSession;
+      const session = (await response.json()) as CheckoutSession;
 
       if (!session.id) {
-        throw new Error('Session ID is missing from the response');
+        throw new Error("Session ID is missing from the response");
       }
 
       const result = await stripe.redirectToCheckout({
@@ -62,7 +68,7 @@ export default function SubscriptionSettings() {
         throw result.error;
       }
     } catch (error) {
-      console.error('Error in handleUpgrade:', error);
+      console.error("Error in handleUpgrade:", error);
       setError((error as Error).message);
     } finally {
       setLoading(false);
@@ -71,43 +77,55 @@ export default function SubscriptionSettings() {
 
   return (
     <SettingsSection title="Subscription & Billing">
-      <div className="space-y-6 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
+      <div className="space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
         <div className="space-y-4">
           <div>
-            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Current Plan</Label>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Free Tier</p>
+            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Current Plan
+            </Label>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Free Tier
+            </p>
           </div>
           <div>
-            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Billing Cycle</Label>
-            <div className="flex space-x-2 mt-1">
+            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Billing Cycle
+            </Label>
+            <div className="mt-1 flex space-x-2">
               <button
-                className={`px-4 py-2 rounded-md text-sm font-medium ${billingCycle === 'monthly' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
-                onClick={() => setBillingCycle('monthly')}
+                className={`rounded-md px-4 py-2 text-sm font-medium ${billingCycle === "monthly" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}`}
+                onClick={() => setBillingCycle("monthly")}
               >
                 Monthly
               </button>
               <button
-                className={`px-4 py-2 rounded-md text-sm font-medium ${billingCycle === 'annually' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
-                onClick={() => setBillingCycle('annually')}
+                className={`rounded-md px-4 py-2 text-sm font-medium ${billingCycle === "annually" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}`}
+                onClick={() => setBillingCycle("annually")}
               >
                 Annually (Save 20%)
               </button>
             </div>
           </div>
           <div>
-            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Payment Method</Label>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Visa ending in 1234</p>
-            <Button variant="outline" className="mt-2 w-full">Update Payment Method</Button>
+            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Payment Method
+            </Label>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Visa ending in 1234
+            </p>
+            <Button variant="outline" className="mt-2 w-full">
+              Update Payment Method
+            </Button>
           </div>
         </div>
-        <button 
-          className="upgrade-to-pro-button" 
-          onClick={handleUpgrade} 
+        <button
+          className="w-full rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition-colors duration-200 ease-in-out hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={handleUpgrade}
           disabled={loading}
         >
-          <span>{loading ? 'Processing...' : 'Upgrade to Pro'}</span>
+          {loading ? "Processing..." : "Upgrade to Pro"}
         </button>
-        {error && <p className="text-red-500 mt-4">{error}</p>}
+        {error && <p className="mt-4 text-red-500">{error}</p>}
       </div>
     </SettingsSection>
   );
