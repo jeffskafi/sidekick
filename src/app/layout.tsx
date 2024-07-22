@@ -6,9 +6,10 @@ import { type Metadata } from "next";
 import {
   ClerkProvider,
   SignInButton,
+  SignOutButton,
+  UserButton,
   SignedIn,
-  SignedOut,
-  UserButton
+  SignedOut
 } from '@clerk/nextjs';
 import Link from 'next/link';
 
@@ -24,22 +25,35 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
-        <body className="min-h-screen flex flex-col">
-          <header className="bg-white dark:bg-gray-800 shadow-md">
-            <div className="container mx-auto px-6 py-3">
-              <div className="flex justify-between items-center">
-                <Link href="/" className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  Sidekick
+        <body className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+          <header className="bg-white dark:bg-gray-800 shadow-sm">
+            <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+              <Link href="/" className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                Sidekick
+              </Link>
+              <nav className="flex items-center space-x-4">
+                <Link href="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                  Dashboard
                 </Link>
-                <div className="space-x-4">
-                  <Link href="/dashboard" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
-                    Dashboard
-                  </Link>
+                <SignedIn>
                   <Link href="/settings" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
                     Settings
                   </Link>
-                </div>
-              </div>
+                  <UserButton afterSignOutUrl="/" />
+                  <SignOutButton>
+                    <button className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                      Sign out
+                    </button>
+                  </SignOutButton>
+                </SignedIn>
+                <SignedOut>
+                  <SignInButton mode="modal">
+                    <button className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400">
+                      Sign in
+                    </button>
+                  </SignInButton>
+                </SignedOut>
+              </nav>
             </div>
           </header>
           <main className="flex-grow">
