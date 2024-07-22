@@ -88,9 +88,6 @@ function HomePageContent() {
   return (
     <main className="flex min-h-screen flex-col bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <div className="flex h-screen flex-col">
-        <header className="bg-gray-900 p-4">
-          <h1 className="mb-4 text-2xl font-bold">Sidekick</h1>
-        </header>
         <div className="flex-grow overflow-hidden">
           <Tabs defaultValue="agents" className="flex h-full flex-col">
             <TabsList className="mb-4 justify-start">
