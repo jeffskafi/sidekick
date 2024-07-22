@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import SettingsSection from "./SettingsSection";
 import { useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import styles from "./SubscriptionSettings.module.css";
 
 interface CheckoutSession {
   id: string;
@@ -19,6 +20,21 @@ export default function SubscriptionSettings() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [billingCycle, setBillingCycle] = useState<string>("monthly");
+
+  const glitterParticles = useMemo(() => {
+    return Array.from({ length: 200 }, (_, i) => ({
+      id: i,
+      style: {
+        '--x': `${Math.random() * 100}%`,
+        '--y': `${Math.random() * 100}%`,
+        '--size': `${Math.random() * 3 + 1}px`,
+        '--duration': `${Math.random() * 20 + 10}s`,
+        '--delay': `${Math.random() * -20}s`,
+        '--tx': `${(Math.random() - 0.5) * 20}px`,
+        '--ty': `${(Math.random() - 0.5) * 20}px`,
+      } as React.CSSProperties,
+    }));
+  }, []);
 
   const handleUpgrade = async () => {
     setError(null);
@@ -119,11 +135,22 @@ export default function SubscriptionSettings() {
           </div>
         </div>
         <button
-          className="w-full rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition-colors duration-200 ease-in-out hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${styles.upgradeButton} relative w-full overflow-hidden rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition-colors duration-200 ease-in-out hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50`}
           onClick={handleUpgrade}
           disabled={loading}
         >
-          {loading ? "Processing..." : "Upgrade to Pro"}
+          <span className="relative z-10 text-shadow">
+            {loading ? "Processing..." : "Upgrade to Pro"}
+          </span>
+          <div className={styles.glitterContainer} aria-hidden="true">
+            {glitterParticles.map((particle) => (
+              <div
+                key={particle.id}
+                className={styles.glitterParticle}
+                style={particle.style}
+              />
+            ))}
+          </div>
         </button>
         {error && <p className="mt-4 text-red-500">{error}</p>}
       </div>

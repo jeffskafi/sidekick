@@ -109,3 +109,62 @@ body {
 .input-primary {
   @apply border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white;
 }
+
+/* Glitter effect */
+.glitter-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.glitter-particle {
+  position: absolute;
+  background: linear-gradient(135deg, #ffd700, #fff5e6, #fffaf0);
+  border-radius: 50%;
+  will-change: transform;
+  animation: float var(--duration, 15s) linear infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Add more glitter particles */
+.glitter-container::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: 
+    radial-gradient(circle, rgba(255, 215, 0, 0.6) 10%, transparent 10%),
+    radial-gradient(circle, rgba(255, 250, 240, 0.6) 10%, transparent 10%);
+  background-size: 7px 7px;
+  background-position: 0 0, 3.5px 3.5px;
+  animation: glitterAnimation 60s linear infinite;
+  opacity: 0.4;
+  will-change: transform;
+}
+
+@keyframes glitterAnimation {
+  0% {
+    transform: translateX(-50%) translateY(-50%) rotate(0deg);
+  }
+  100% {
+    transform: translateX(-50%) translateY(-50%) rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(var(--tx, 5px), var(--ty, 5px)); }
+  50% { transform: translate(calc(var(--tx, 5px) * -1), calc(var(--ty, 5px) * -1)); }
+  75% { transform: translate(var(--tx, 5px), calc(var(--ty, 5px) * -1)); }
+}
+
+/* Text shadow for button text */
+.text-shadow {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
