@@ -88,7 +88,7 @@ export const agents = createTable(
     status: agentStatusEnum("status").notNull().default('idle'),
     xPosition: doublePrecision("x_position").notNull(),
     yPosition: doublePrecision("y_position").notNull(),
-    openaiAssistantId: varchar("openai_assistant_id", { length: 256 }), // Added this line
+    openaiAssistantId: varchar("openai_assistant_id", { length: 256 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -169,7 +169,9 @@ export const tasks = createTable(
     description: text("description").notNull(),
     status: taskStatusEnum("status").notNull().default('todo'),
     agentId: integer("agent_id").references(() => agents.id),
-    storyId: integer("story_id").references(() => stories.id),
+    openaiAssistantId: varchar("openai_assistant_id", { length: 256 }),
+    openaiThreadId: varchar("openai_thread_id", { length: 256 }),
+    openaiRunId: varchar("openai_run_id", { length: 256 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -179,10 +181,9 @@ export const tasks = createTable(
   },
   (table) => ({
     agentIndex: index("task_agent_idx").on(table.agentId),
-    storyIndex: index("task_story_idx").on(table.storyId),
     statusIndex: index("task_status_idx").on(table.status),
     projectIndex: index("task_project_idx").on(table.projectId),
-    uniqueAgentTask: unique().on(table.agentId), // Added this line
+    uniqueAgentTask: unique().on(table.agentId),
   })
 );
 

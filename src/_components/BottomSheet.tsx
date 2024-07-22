@@ -9,18 +9,7 @@ import { useSpring, animated } from "@react-spring/web";
 import { X, ChevronUp, ChevronDown } from "lucide-react";
 import { useAgentContext } from "~/contexts/AgentContext";
 import { useTaskContext } from "~/contexts/TaskContext";
-
-// Custom debounce function with improved typing
-function debounce<T extends (...args: never[]) => void>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
-  return (...args: Parameters<T>) => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-}
+import { debounce } from '~/lib/utils';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -110,12 +99,6 @@ const BottomSheet: React.FC<BottomSheetProps> = React.memo(
         zIndex: 50,
         y,
         touchAction: "none" as const,
-        backdropFilter: "blur(10px)",
-        backgroundColor: "rgba(255, 255, 255, 0.7)",
-        border: "1px solid rgba(255, 255, 255, 0.5)",
-        borderTopLeftRadius: "16px",
-        borderTopRightRadius: "16px",
-        boxShadow: "0 12px 24px rgba(0, 0, 0, 0.3)",
       }),
       [y],
     );
@@ -205,7 +188,7 @@ const BottomSheet: React.FC<BottomSheetProps> = React.memo(
       <animated.div
         ref={dragRef}
         style={animatedDivStyle}
-        className="select-none text-black"
+        className="select-none overflow-hidden rounded-t-2xl text-black dark:text-white"
         onPointerDown={(e) => {
           e.preventDefault();
           (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -226,7 +209,10 @@ const BottomSheet: React.FC<BottomSheetProps> = React.memo(
           handleEnd();
         }}
       >
-        {memoizedContent}
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-sm dark:bg-black/70" />
+        <div className="relative z-10 p-4">
+          {memoizedContent}
+        </div>
       </animated.div>
     );
   },

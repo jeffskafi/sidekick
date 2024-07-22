@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Popover, PopoverTrigger } from "~/components/ui/popover";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { debounce } from '~/lib/utils';
 
 interface Skill {
   id: string;
@@ -100,21 +101,4 @@ export function SkillInput(props: SkillInputProps) {
       </Popover>
     </div>
   );
-}
-
-function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
-  func: T,
-  delay: number,
-): T {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-  return ((...args) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(() => {
-      func(...args);
-    }, delay);
-    return func;
-  }) as T;
 }

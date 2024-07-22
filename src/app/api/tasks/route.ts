@@ -4,6 +4,11 @@ import { tasks } from "~/server/db/schema";
 import type { Task, NewTask } from "~/server/db/schema";
 import { eq, and, isNull, ne } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 // GET: Fetch all tasks for a project
 export async function GET(request: Request) {
@@ -46,29 +51,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Description and Project ID are required' }, { status: 400 });
     }
 
-    if (newTaskData.agentId) {
-      // Check if the agent already has an assigned task
-      const existingTask = await db.select()
-        .from(tasks)
-        .where(and(
-          eq(tasks.agentId, newTaskData.agentId),
-          isNull(tasks.storyId)
-        ))
-        .limit(1);
+    let openaiAssistantId, openaiThreadId, openaiRunId;
 
-      if (existingTask.length > 0) {
-        return NextResponse.json({ error: 'This agent already has an assigned task' }, { status: 400 });
-      }
+    if (newTaskData.agentId) {
+      // Create OpenAI assistant, thread, and run
+      const assistant = await openai.beta.assistants.create({
+        name: "Task Assistant",
+        instructions: `Complete the following task: ${newTaskData.description}`,
+        model: "gpt-4o",
+      });
+      openaiAssistantId = assistant.id;
+
+      const thread = await openai.beta.threads.create();
+      openaiThreadId = thread.id;
+
+      const run = await openai.beta.threads.runs.create(thread.id, {
+        assistant_id: assistant.id,
+      });
+      openaiRunId = run.id;
     }
 
-    const [newTask] = await db.insert(tasks).values(newTaskData).returning();
+    const [newTask] = await db.insert(tasks).values({
+      ...newTaskData,
+      openaiAssistantId,
+      openaiThreadId,
+      openaiRunId,
+    }).returning();
 
     return NextResponse.json(newTask, { status: 201 });
   } catch (error) {
     console.error('Error creating task:', error);
-    if (error instanceof Error && error.message.includes('uniqueAgentTask')) {
-      return NextResponse.json({ error: 'This agent already has an assigned task' }, { status: 400 });
-    }
     return NextResponse.json({ error: 'Failed to create task' }, { status: 500 });
   }
 }
@@ -87,32 +99,8 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
     }
 
-    // Manually create an object with only the fields we want to update
-    const updateFields: Partial<Task> = {};
-    if (updatedTaskData.description !== undefined) updateFields.description = updatedTaskData.description;
-    if (updatedTaskData.status !== undefined) updateFields.status = updatedTaskData.status;
-    if (updatedTaskData.agentId !== undefined) updateFields.agentId = updatedTaskData.agentId;
-    if (updatedTaskData.storyId !== undefined) updateFields.storyId = updatedTaskData.storyId;
-    // Add any other fields that should be updatable
-
-    if (updateFields.agentId) {
-      // Check if the agent already has an assigned task (excluding the current task)
-      const existingTask = await db.select()
-        .from(tasks)
-        .where(and(
-          eq(tasks.agentId, updateFields.agentId),
-          isNull(tasks.storyId),
-          ne(tasks.id, updatedTaskData.id)
-        ))
-        .limit(1);
-
-      if (existingTask.length > 0) {
-        return NextResponse.json({ error: 'This agent already has an assigned task' }, { status: 400 });
-      }
-    }
-
     const [updatedTask] = await db.update(tasks)
-      .set(updateFields)
+      .set(updatedTaskData)
       .where(eq(tasks.id, updatedTaskData.id))
       .returning();
 
@@ -123,9 +111,6 @@ export async function PUT(request: Request) {
     return NextResponse.json(updatedTask, { status: 200 });
   } catch (error) {
     console.error('Error updating task:', error);
-    if (error instanceof Error && error.message.includes('uniqueAgentTask')) {
-      return NextResponse.json({ error: 'This agent already has an assigned task' }, { status: 400 });
-    }
     return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
   }
 }

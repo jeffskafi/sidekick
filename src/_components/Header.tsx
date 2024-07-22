@@ -1,35 +1,46 @@
 import Link from "next/link";
-import { useRouter } from "next/router";
+import {
+  SignInButton,
+  SignOutButton,
+  UserButton,
+  SignedIn,
+  SignedOut,
+} from "@clerk/nextjs";
 
 export default function Header() {
-  const router = useRouter();
-
   return (
-    <header className="bg-white shadow-md dark:bg-gray-800">
-      <nav className="container mx-auto px-6 py-3">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/"
-            className="text-2xl font-bold text-blue-600 dark:text-blue-400"
-          >
-            Sidekick
-          </Link>
-          <div className="space-x-4">
+    <header className="bg-white shadow-sm dark:bg-gray-800">
+      <div className="container mx-auto flex items-center justify-between px-4 py-3">
+        <Link
+          href="/"
+          className="text-2xl font-bold text-blue-600 dark:text-blue-400"
+        >
+          Sidekick
+        </Link>
+        <nav className="flex items-center space-x-4">
+          <SignedIn>
             <Link
               href="/settings"
-              className={`${router.pathname === "/settings" ? "text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300"} hover:text-blue-600 dark:hover:text-blue-400`}
+              className="text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
             >
               Settings
             </Link>
-            <Link
-              href="/design-system"
-              className={`${router.pathname === "/design-system" ? "text-blue-600 dark:text-blue-400" : "text-gray-600 dark:text-gray-300"} hover:text-blue-600 dark:hover:text-blue-400`}
-            >
-              Design System
-            </Link>
-          </div>
-        </div>
-      </nav>
+            <UserButton afterSignOutUrl="/" />
+            <SignOutButton>
+              <button className="text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">
+                Sign out
+              </button>
+            </SignOutButton>
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">
+                Sign in
+              </button>
+            </SignInButton>
+          </SignedOut>
+        </nav>
+      </div>
     </header>
   );
 }
