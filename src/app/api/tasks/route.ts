@@ -87,12 +87,20 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
     }
 
-    if (updatedTaskData.agentId) {
+    // Manually create an object with only the fields we want to update
+    const updateFields: Partial<Task> = {};
+    if (updatedTaskData.description !== undefined) updateFields.description = updatedTaskData.description;
+    if (updatedTaskData.status !== undefined) updateFields.status = updatedTaskData.status;
+    if (updatedTaskData.agentId !== undefined) updateFields.agentId = updatedTaskData.agentId;
+    if (updatedTaskData.storyId !== undefined) updateFields.storyId = updatedTaskData.storyId;
+    // Add any other fields that should be updatable
+
+    if (updateFields.agentId) {
       // Check if the agent already has an assigned task (excluding the current task)
       const existingTask = await db.select()
         .from(tasks)
         .where(and(
-          eq(tasks.agentId, updatedTaskData.agentId),
+          eq(tasks.agentId, updateFields.agentId),
           isNull(tasks.storyId),
           ne(tasks.id, updatedTaskData.id)
         ))
@@ -104,7 +112,7 @@ export async function PUT(request: Request) {
     }
 
     const [updatedTask] = await db.update(tasks)
-      .set(updatedTaskData)
+      .set(updateFields)
       .where(eq(tasks.id, updatedTaskData.id))
       .returning();
 

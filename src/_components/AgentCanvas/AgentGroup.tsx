@@ -4,6 +4,7 @@ import { Group, Circle, Text, Rect } from "react-konva";
 import type Konva from "konva";
 import type { Agent } from "~/server/db/schema";
 import { useHoverAnimation, useStatusAnimation } from "~/hooks/useAgentAnimations";
+import { useTaskContext } from "~/contexts/TaskContext";
 
 interface AgentGroupProps {
   agent: Agent;
@@ -20,12 +21,36 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
   const rippleCircleRef = useRef<Konva.Circle>(null);
   const humanInputCircleRef = useRef<Konva.Circle>(null);
 
+  const { tasks } = useTaskContext();
+
+  const getAgentStatus = (agentId: number) => {
+    const agentTask = tasks.find(task => task.agentId === agentId);
+    if (!agentTask) return "idle";
+
+    switch (agentTask.status) {
+      case "todo":
+        return "needs_human_input";
+      case "in_progress":
+        return "working";
+      case "done":
+        return "task_complete";
+      case "failed":
+      case "exception":
+        return "error";
+      default:
+        return "idle";
+    }
+  };
+
+  const agentStatus = getAgentStatus(agent.id);
+
   const handleClick = () => {
     onSelect(agent);
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "idle": return "#999";
       case "task_complete": return "#4CAF50";
       case "working": return "#FF6F00";
       case "needs_human_input": return "#FF6F00";
@@ -56,7 +81,7 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
   };
 
   useHoverAnimation(hoverCircleRef, isHovered, isSelected);
-  useStatusAnimation(mainCircleRef, statusIndicatorRef, rippleCircleRef, agent.status, getStatusColor);
+  useStatusAnimation(mainCircleRef, statusIndicatorRef, rippleCircleRef, agentStatus, getStatusColor);
 
   return (
     <Group
@@ -81,11 +106,11 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
       <Circle
         ref={rippleCircleRef}
         radius={30}
-        fill={getStatusColor(agent.status)}
+        fill={getStatusColor(agentStatus)}
         opacity={0}
       />
       {/* Transparent circle with ember border for needs_human_input */}
-      {agent.status === "needs_human_input" && (
+      {agentStatus === "needs_human_input" && (
         <Circle
           ref={humanInputCircleRef}
           radius={32}
@@ -99,7 +124,7 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
         ref={mainCircleRef}
         radius={30}
         fill="#f0f0f0"
-        stroke={getStatusColor(agent.status)}
+        stroke={getStatusColor(agentStatus)}
         strokeWidth={2}
       />
       {/* Status indicator */}
@@ -107,7 +132,7 @@ const AgentGroup: React.FC<AgentGroupProps> = ({ agent, isSelected, onSelect, al
         ref={statusIndicatorRef}
         width={10}
         height={10}
-        fill={getStatusColor(agent.status)}
+        fill={getStatusColor(agentStatus)}
         cornerRadius={5}
         offsetX={5}
         offsetY={5}

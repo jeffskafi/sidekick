@@ -31,11 +31,7 @@ export function AgentProvider({ children, initialAgents }: { children: React.Rea
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...updatedAgent,
-          xPosition: Number(updatedAgent.xPosition),
-          yPosition: Number(updatedAgent.yPosition),
-        }),
+        body: JSON.stringify(updatedAgent),
       });
       if (!response.ok) {
         throw new Error('Failed to update agent');

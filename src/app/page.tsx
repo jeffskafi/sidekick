@@ -1,13 +1,14 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { db } from "../server/db";
-import { agents, skills, agentSkills } from "../server/db/schema";
+import { agents, skills, agentSkills, tasks } from "../server/db/schema";
 import { eq } from "drizzle-orm";
-import type { Agent } from "~/server/db/schema";
+import type { Agent, Task } from "~/server/db/schema";
 import { AgentProvider } from "../contexts/AgentContext";
 import { AddAgentButton } from "../_components/AddAgentButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { WorkContent } from "../_components/WorkContent";
+import { TaskProvider } from "../contexts/TaskContext";
 
 const DynamicAgentCanvas = dynamic(
   () => import("../_components/AgentCanvas/AgentCanvas"),
@@ -59,12 +60,26 @@ async function getAgents(): Promise<Agent[]> {
   }));
 }
 
+async function getTasks(projectId: number): Promise<Task[]> {
+  const tasksQuery = db
+    .select()
+    .from(tasks)
+    .where(eq(tasks.projectId, projectId))
+    .orderBy(tasks.id);
+
+  return tasksQuery;
+}
+
 export default async function HomePage() {
+  const projectId = 1; // You should get this from the user's context or URL params
   const initialAgents = await getAgents();
+  const initialTasks = await getTasks(projectId);
 
   return (
     <AgentProvider initialAgents={initialAgents}>
-      <HomePageContent />
+      <TaskProvider initialTasks={initialTasks}>
+        <HomePageContent />
+      </TaskProvider>
     </AgentProvider>
   );
 }
@@ -77,7 +92,7 @@ function HomePageContent() {
           <h1 className="mb-4 text-2xl font-bold">Sidekick</h1>
         </header>
         <div className="flex-grow overflow-hidden">
-          <Tabs defaultValue="agents" className="flex h-full w-full flex-col">
+          <Tabs defaultValue="agents" className="flex h-full flex-col">
             <TabsList className="mb-4 justify-start">
               <TabsTrigger value="agents">Agents</TabsTrigger>
               <TabsTrigger value="work">Work</TabsTrigger>

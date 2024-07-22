@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useAgentContext } from "~/contexts/AgentContext";
 import { BottomSheet } from "./BottomSheet";
 import { Badge } from "~/components/ui/badge";
@@ -22,6 +22,17 @@ export function AgentInfoDrawer() {
     setExpandedAgentId(null); // Close the popup after assigning work
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "idle": return "Idle";
+      case "task_complete": return "Task Complete";
+      case "working": return "Working";
+      case "needs_human_input": return "Needs Human Input";
+      case "error": return "Error";
+      default: return "Unknown";
+    }
+  };
+
   return (
     <BottomSheet
       isOpen={isAgentsTab && selectedAgents.length > 0}
@@ -38,7 +49,7 @@ export function AgentInfoDrawer() {
             className="relative mb-4 rounded-lg border border-gray-200 p-3 shadow-sm"
           >
             <h3 className="text-lg font-bold">{agent.name}</h3>
-            <p className="text-sm text-gray-600">Status: {agent.status}</p>
+            <p className="text-sm text-gray-600">Status: {getStatusText(agent.status)}</p>
             <p className="text-sm text-gray-600">
               Position: ({agent.xPosition}, {agent.yPosition})
             </p>
