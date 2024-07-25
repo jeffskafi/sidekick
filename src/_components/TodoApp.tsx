@@ -12,7 +12,8 @@ import {
   Zap,
   Flag,
   ClipboardList,
-  Clock
+  Clock,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from './ThemeProvider';
@@ -20,17 +21,7 @@ import { cn } from "~/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import CustomCalendar from './CustomCalendar';
 import { useTaskContext } from "~/contexts/TaskContext";
-import type { Task } from "~/server/db/schema";
-
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-  agentStatus: Task['status'];
-  priority: Task['priority'];
-  hasDueDate: boolean;
-  dueDate: Date | null;
-}
+import type { Task, Subtask } from "~/server/db/schema";
 
 interface AnimatedCheckmarkProps {
   completed: boolean;
@@ -216,11 +207,11 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
 };
 
 interface TodoItemProps {
-  todo: Todo;
-  onToggle: (id: number) => Promise<void>;
-  onDelete: (id: number) => Promise<void>;
+  todo: Task & { subtasks?: Subtask[] };
+  onToggle: (id: number) => void;
+  onDelete: (id: number) => void;
   onUpdate: (id: number, updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
-  onDelegate: (id: number) => Promise<void>;
+  onDelegate: (id: number) => void;
 }
 
 const TodoItem: React.FC<TodoItemProps> = React.memo(({
@@ -228,11 +219,11 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
   onToggle,
   onDelete,
   onUpdate,
-  onDelegate,
 }) => {
   const { theme } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedText, setEditedText] = useState(todo.text);
+  const [editedText, setEditedText] = useState(todo.description);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleEdit = useCallback(async () => {
     try {
@@ -245,7 +236,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
   }, [todo.id, editedText, onUpdate]);
 
   const cancelEdit = () => {
-    setEditedText(todo.text);
+    setEditedText(todo.description);
     setIsEditing(false);
   };
 
@@ -270,7 +261,30 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
     }
   }, [todo.id, todo.priority, onUpdate]);
 
-  const getStatusColor = (status: Task['status'] | null) => {
+  const handleDelegate = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/tasks/${todo.id}`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delegate task');
+      }
+      const result = await response.json() as Task & { subtasks: Subtask[] };
+      // Update the task with subtasks
+      await onUpdate(todo.id, { 
+        status: result.status,
+        subtasks: result.subtasks
+      });
+    } catch (error) {
+      console.error('Failed to delegate task:', error);
+      // Optionally, you can add some user feedback here
+    } finally {
+      setIsLoading(false);
+    }
+  }, [todo.id, onUpdate]);
+
+  const getStatusColor = (status: Task['status']) => {
     switch (status) {
       case "in_progress": return "bg-orange-500";
       case "needs_human_input": return "bg-orange-500 animate-pulse";
@@ -283,70 +297,93 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
   };
 
   return (
-    <li className={`group flex items-center justify-between rounded-full ${theme === 'dark' ? 'bg-background-dark' : 'bg-background-light'} pl-2 pr-3 py-2 shadow-sm transition-colors duration-200 w-full`}>
-      <div className="mr-2 flex flex-grow items-center">
-        <AnimatedCheckmark
-          completed={todo.completed}
-          onToggle={() => onToggle(todo.id)}
-        />
-        <PriorityButton priority={todo.priority} onToggle={togglePriority} />
-        <div className="flex-grow relative">
-          {isEditing ? (
-            <>
-              <input
-                type="text"
-                value={editedText}
-                onChange={(e) => setEditedText(e.target.value)}
-                onBlur={handleEdit}
-                onKeyPress={(e) => e.key === "Enter" && handleEdit()}
-                className={`h-6 w-full pr-6 px-1 py-0 text-xs ${theme === 'dark' ? 'bg-surface-dark text-text-dark' : 'bg-surface-light text-text-light'}`}
-                autoFocus
-              />
-              <button
-                onClick={cancelEdit}
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+    <li className={`group flex flex-col items-start justify-between rounded-lg ${theme === 'dark' ? 'bg-background-dark' : 'bg-background-light'} p-3 shadow-sm transition-colors duration-200 w-full`}>
+      <div className="flex w-full items-center justify-between">
+        <div className="mr-2 flex flex-grow items-center">
+          <AnimatedCheckmark
+            completed={todo.completed}
+            onToggle={() => onToggle(todo.id)}
+          />
+          <PriorityButton priority={todo.priority} onToggle={togglePriority} />
+          <div className="flex-grow relative">
+            {isEditing ? (
+              <>
+                <input
+                  type="text"
+                  value={editedText}
+                  onChange={(e) => setEditedText(e.target.value)}
+                  onBlur={handleEdit}
+                  onKeyPress={(e) => e.key === "Enter" && handleEdit()}
+                  className={`h-6 w-full pr-6 px-1 py-0 text-xs ${theme === 'dark' ? 'bg-surface-dark text-text-dark' : 'bg-surface-light text-text-light'}`}
+                  autoFocus
+                />
+                <button
+                  onClick={cancelEdit}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  <X size={12} />
+                </button>
+              </>
+            ) : (
+              <span
+                className={`cursor-pointer text-xs transition-all ${
+                  todo.completed 
+                    ? 'text-text-light-dark'
+                    : theme === 'dark' ? 'text-text-dark' : 'text-text-light'
+                }`}
+                onClick={() => setIsEditing(true)}
               >
-                <X size={12} />
-              </button>
-            </>
-          ) : (
-            <span
-              className={`cursor-pointer text-xs transition-all ${
-                todo.completed 
-                  ? 'text-text-light-dark'
-                  : theme === 'dark' ? 'text-text-dark' : 'text-text-light'
-              }`}
-              onClick={() => setIsEditing(true)}
-            >
-              {todo.text}
-            </span>
-          )}
+                {todo.description}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center space-x-1">
+          <DueDateButton hasDueDate={todo.hasDueDate} dueDate={todo.dueDate} onSetDueDate={handleSetDueDate} />
+          <motion.button
+            onClick={handleDelegate}
+            disabled={todo.status !== 'todo' || isLoading}
+            className={`transition-colors duration-300 focus:outline-none ${
+              todo.status !== 'todo'
+                ? getStatusColor(todo.status)
+                : theme === 'dark' 
+                  ? 'text-amber-400 hover:text-amber-300' 
+                  : 'text-blue-500 hover:text-blue-600'
+            }`}
+            title={todo.status !== 'todo' ? todo.status : "Delegate to AI"}
+            animate={{
+              width: todo.status !== 'todo' ? '14px' : 'auto',
+              height: todo.status !== 'todo' ? '14px' : 'auto',
+              borderRadius: todo.status !== 'todo' ? '50%' : '0%',
+            }}
+            transition={{ duration: 0.15 }}
+          >
+            {todo.status === 'todo' ? (
+              isLoading ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />
+            ) : null}
+          </motion.button>
+          <DeleteButton onDelete={() => onDelete(todo.id)} />
         </div>
       </div>
-      <div className="flex items-center space-x-1">
-        <DueDateButton hasDueDate={todo.hasDueDate} dueDate={todo.dueDate} onSetDueDate={handleSetDueDate} />
-        <motion.button
-          onClick={() => onDelegate(todo.id)}
-          disabled={!!todo.agentStatus}
-          className={`transition-colors duration-300 focus:outline-none ${
-            todo.agentStatus 
-              ? getStatusColor(todo.agentStatus)
-              : theme === 'dark' 
-                ? 'text-amber-400 hover:text-amber-300' 
-                : 'text-blue-500 hover:text-blue-600'
-          }`}
-          title={todo.agentStatus ? todo.agentStatus : "Delegate to AI"}
-          animate={{
-            width: todo.agentStatus ? '14px' : 'auto',
-            height: todo.agentStatus ? '14px' : 'auto',
-            borderRadius: todo.agentStatus ? '50%' : '0%',
-          }}
-          transition={{ duration: 0.15 }}
-        >
-          {todo.agentStatus ? null : <Zap size={14} />}
-        </motion.button>
-        <DeleteButton onDelete={() => onDelete(todo.id)} />
-      </div>
+      {todo.subtasks && todo.subtasks.length > 0 && (
+        <ul className="mt-2 ml-6 list-disc">
+          {todo.subtasks.map((subtask) => (
+            <li key={subtask.id} className="text-xs text-gray-500">
+              <input
+                type="checkbox"
+                checked={subtask.completed}
+                onChange={() => onUpdate(todo.id, { 
+                  subtasks: todo.subtasks?.map(st => 
+                    st.id === subtask.id ? { ...st, completed: !st.completed } : st
+                  ) 
+                })}
+                className="mr-2"
+              />
+              {subtask.description}
+            </li>
+          ))}
+        </ul>
+      )}
     </li>
   );
 });
@@ -432,10 +469,10 @@ const TodoApp: React.FC = React.memo(() => {
   const delegateToAgent = useCallback(async (id: number) => {
     const task = tasks.find(t => t.id === id);
     if (task) {
-      const statuses: Task['status'][] = ['in_progress', 'needs_human_input', 'done', 'failed', 'exception'];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
       try {
-        await updateTask({ id, status: randomStatus });
+        // Here you would typically call your API to delegate the task to an AI agent
+        // For now, we'll just update the status to 'in_progress'
+        await updateTask({ id, status: 'in_progress' });
       } catch (error) {
         console.error('Failed to delegate task:', error);
         // Optionally, you can add some user feedback here
@@ -472,15 +509,7 @@ const TodoApp: React.FC = React.memo(() => {
     return tasks.map((task) => (
       <TodoItem
         key={task.id}
-        todo={{
-          id: task.id,
-          text: task.description,
-          completed: task.completed,
-          agentStatus: task.status,
-          priority: task.priority,
-          hasDueDate: task.hasDueDate,
-          dueDate: task.hasDueDate ? new Date(task.dueDate!) : null,
-        }}
+        todo={task}
         onToggle={toggleTodo}
         onDelete={deleteTask}
         onUpdate={updateTodo}

@@ -191,9 +191,33 @@ export const tasks = createTable(
   })
 );
 
+// Subtasks
+export const subtasks = createTable(
+  "subtask",
+  {
+    id: serial("id").primaryKey(),
+    taskId: integer("task_id").references(() => tasks.id).notNull(),
+    description: text("description").notNull(),
+    completed: boolean("completed").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date()
+    ),
+  },
+  (table) => ({
+    taskIndex: index("subtask_task_idx").on(table.taskId),
+  })
+);
+
 // Update the Task type
-export type Task = InferSelectModel<typeof tasks>;
+export type Task = InferSelectModel<typeof tasks> & {
+  subtasks?: Subtask[];
+};
 export type NewTask = InferInsertModel<typeof tasks>;
+export type Subtask = InferSelectModel<typeof subtasks>;
+export type NewSubtask = InferInsertModel<typeof subtasks>;
 
 // Threads
 export const threads = createTable(

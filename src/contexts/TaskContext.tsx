@@ -77,15 +77,16 @@ export function TaskProvider({
 
   const deleteTask = useCallback(async (taskId: number) => {
     try {
-      const response = await fetch(`/api/tasks?id=${taskId}`, {
-        method: "DELETE",
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
       });
       if (!response.ok) {
-        throw new Error("Failed to delete task");
+        throw new Error('Failed to delete task');
       }
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
     } catch (error) {
-      console.error("Failed to delete task:", error);
+      console.error('Failed to delete task:', error);
+      throw error;
     }
   }, []);
 
