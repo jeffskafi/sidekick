@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import Header from "~/_components/Header";
+import { ThemeProvider } from "~/_components/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "Sidekick",
@@ -18,10 +19,12 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className={GeistSans.variable}>
-        <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-gray-900">
-          <Header />
-          <main className="flex-grow">{children}</main>
-        </body>
+        <ThemeProvider>
+          <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-dark-bg">
+            <Header />
+            <main className="flex-grow">{children}</main>
+          </body>
+        </ThemeProvider>
       </html>
     </ClerkProvider>
   );

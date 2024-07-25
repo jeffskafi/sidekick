@@ -3,7 +3,7 @@ import { TaskProvider } from "../contexts/TaskContext";
 import { db } from "~/server/db";
 import { agents, tasks, type Agent, type Task } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
-import HomePageContent from "~/_components/HomePageContent";
+import TodoApp from "~/_components/TodoApp";
 
 async function getAgents(): Promise<Agent[]> {
   return db.select().from(agents);
@@ -21,7 +21,7 @@ export default async function HomePage() {
   return (
     <AgentProvider initialAgents={initialAgents}>
       <TaskProvider initialTasks={initialTasks}>
-        <HomePageContent />
+        <TodoApp />
       </TaskProvider>
     </AgentProvider>
   );

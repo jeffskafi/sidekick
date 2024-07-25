@@ -56,6 +56,9 @@ const config = {
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
+      backgroundColor: {
+        'dark-bg': '#1a1a1a', // or any other color code you prefer
+      }
     },
   },
   plugins: [require("tailwindcss-animate")],
