@@ -219,6 +219,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
   onToggle,
   onDelete,
   onUpdate,
+  onDelegate,
 }) => {
   const { theme } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
@@ -264,25 +265,14 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
   const handleDelegate = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/tasks/${todo.id}`, {
-        method: 'POST',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delegate task');
-      }
-      const result = await response.json() as Task & { subtasks: Subtask[] };
-      // Update the task with subtasks
-      await onUpdate(todo.id, { 
-        status: result.status,
-        subtasks: result.subtasks
-      });
+      onDelegate(todo.id);
     } catch (error) {
       console.error('Failed to delegate task:', error);
       // Optionally, you can add some user feedback here
     } finally {
       setIsLoading(false);
     }
-  }, [todo.id, onUpdate]);
+  }, [todo.id, onDelegate]);
 
   const getStatusColor = (status: Task['status']) => {
     switch (status) {
@@ -436,7 +426,7 @@ const EmptyState: React.FC = () => {
 
 const TodoApp: React.FC = React.memo(() => {
   const { theme } = useTheme();
-  const { tasks, addTask, updateTask, deleteTask } = useTaskContext();
+  const { tasks, addTask, updateTask, deleteTask, delegateTask } = useTaskContext();
   const [input, setInput] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -466,19 +456,15 @@ const TodoApp: React.FC = React.memo(() => {
     }
   }, [tasks, updateTask]);
 
-  const delegateToAgent = useCallback(async (id: number) => {
-    const task = tasks.find(t => t.id === id);
-    if (task) {
-      try {
-        // Here you would typically call your API to delegate the task to an AI agent
-        // For now, we'll just update the status to 'in_progress'
-        await updateTask({ id, status: 'in_progress' });
-      } catch (error) {
-        console.error('Failed to delegate task:', error);
-        // Optionally, you can add some user feedback here
-      }
+  const handleDelegateTask = useCallback(async (taskId: number) => {
+    try {
+      await delegateTask(taskId);
+      // The task is already updated in the state by the context
+    } catch (error) {
+      console.error('Failed to delegate task:', error);
+      // Optionally, you can add some user feedback here
     }
-  }, [tasks, updateTask]);
+  }, [delegateTask]);
 
   const addTodo = useCallback(async () => {
     if (input.trim()) {
@@ -513,10 +499,10 @@ const TodoApp: React.FC = React.memo(() => {
         onToggle={toggleTodo}
         onDelete={deleteTask}
         onUpdate={updateTodo}
-        onDelegate={delegateToAgent}
+        onDelegate={handleDelegateTask}
       />
     ));
-  }, [tasks, toggleTodo, deleteTask, updateTodo, delegateToAgent]);
+  }, [tasks, toggleTodo, deleteTask, updateTodo, handleDelegateTask]);
 
   const handleFileUpload = () => {
     // Implement file upload logic

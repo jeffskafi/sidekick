@@ -9,6 +9,7 @@ interface TaskContextType {
   addTask: (newTask: Omit<Partial<Task>, "id" | "createdAt" | "updatedAt">) => Promise<void>;
   updateTask: (updatedTaskData: Partial<Task> & { id: number }) => Promise<Task>;
   deleteTask: (taskId: number) => Promise<void>;
+  delegateTask: (taskId: number) => Promise<Task>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -90,6 +91,25 @@ export function TaskProvider({
     }
   }, []);
 
+  const delegateTask = useCallback(async (taskId: number) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/delegate`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delegate task');
+      }
+      const updatedTask = await response.json() as Task;
+      setTasks(prevTasks => prevTasks.map(task => 
+        task.id === updatedTask.id ? updatedTask : task
+      ));
+      return updatedTask;
+    } catch (error) {
+      console.error('Failed to delegate task:', error);
+      throw error;
+    }
+  }, []);
+
   return (
     <TaskContext.Provider
       value={{
@@ -98,6 +118,7 @@ export function TaskProvider({
         addTask,
         updateTask,
         deleteTask,
+        delegateTask,
       }}
     >
       {children}
