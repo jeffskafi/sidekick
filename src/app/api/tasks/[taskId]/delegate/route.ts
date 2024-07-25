@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from "~/server/db";
 import { tasks, subtasks } from "~/server/db/schema";
-import type { Task, Subtask } from "~/server/db/schema";
+import type { Subtask } from "~/server/db/schema";
 import { eq } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
@@ -11,7 +11,6 @@ const openai = new OpenAI({
 });
 
 export async function POST(
-  request: Request,
   { params }: { params: { taskId: string } }
 ) {
   try {
@@ -105,7 +104,7 @@ export async function POST(
     }
 
     // Create subtasks in the database
-    const newSubtasks = await db.insert(subtasks).values(
+    await db.insert(subtasks).values(
       parsedContent.subtasks.map((subtask) => ({
         taskId,
         description: subtask.description,

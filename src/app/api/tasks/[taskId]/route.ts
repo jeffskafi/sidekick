@@ -51,7 +51,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
     }
 
-    const updatedTaskData = await request.json() as Partial<Task> & { subtasks?: Subtask[] };
+    const updatedTaskData = await request.json() as Partial<Task>;
 
     // Update task
     const [updatedTask] = await db.update(tasks)
@@ -61,22 +61,6 @@ export async function PUT(
 
     if (!updatedTask) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-    }
-
-    // Handle subtasks update if provided
-    if (updatedTaskData.subtasks) {
-      // Delete existing subtasks
-      await db.delete(subtasks).where(eq(subtasks.taskId, taskId));
-
-      // Insert new subtasks
-      if (updatedTaskData.subtasks.length > 0) {
-        await db.insert(subtasks).values(
-          updatedTaskData.subtasks.map(subtask => ({
-            ...subtask,
-            taskId: taskId
-          }))
-        );
-      }
     }
 
     // Fetch updated task with subtasks
@@ -92,7 +76,7 @@ export async function PUT(
     // Format the response
     const formattedTask = updatedTaskWithSubtasks[0] ? {
       ...updatedTaskWithSubtasks[0].task,
-      subtasks: updatedTaskWithSubtasks.map(row => row.subtask).filter(Boolean),
+      subtasks: updatedTaskWithSubtasks.map(row => row.subtask).filter((subtask): subtask is Subtask => subtask !== null),
     } : null;
 
     return NextResponse.json(formattedTask, { status: 200 });

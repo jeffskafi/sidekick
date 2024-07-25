@@ -50,28 +50,23 @@ export function TaskProvider({
 
   const updateTask = useCallback(async (updatedTaskData: Partial<Task> & { id: number }) => {
     try {
-      const response = await fetch("/api/tasks", {
-        method: "PUT",
+      const response = await fetch(`/api/tasks/${updatedTaskData.id}`, {
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(updatedTaskData),
       });
       if (!response.ok) {
-        throw new Error("Failed to update task");
+        throw new Error('Failed to update task');
       }
-      const updatedTaskFromServer = (await response.json()) as Task;
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === updatedTaskFromServer.id ? { ...task, ...updatedTaskFromServer } : task,
-        ),
-      );
-      return updatedTaskFromServer;
+      const updatedTask = await response.json() as Task;
+      setTasks(prevTasks => prevTasks.map(task => 
+        task.id === updatedTask.id ? updatedTask : task
+      ));
+      return updatedTask;
     } catch (error) {
-      console.error(
-        "Failed to update task:",
-        error instanceof Error ? error.message : String(error),
-      );
+      console.error('Failed to update task:', error);
       throw error;
     }
   }, []);
