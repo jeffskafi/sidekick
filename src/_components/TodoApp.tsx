@@ -19,7 +19,6 @@ import { useTheme } from './ThemeProvider';
 import { cn } from "~/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import CustomCalendar from './CustomCalendar';
-import TaskDetails from './TaskDetails';
 
 // Interfaces and types
 interface Todo {

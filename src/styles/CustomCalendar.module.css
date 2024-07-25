@@ -1,99 +1,99 @@
 .calendar {
-  font-family: 'Inter', sans-serif;
-  width: 100%;
-  max-width: 300px;
-  border-radius: 0.5rem;
-  overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    max-width: 300px;
+    border-radius: 0.5rem;
+    overflow: hidden;
 }
 
 .calendarLight {
-  background-color: #FFFFFF;
-  color: #1F2937;
+    background-color: #FFFFFF;
+    color: #1F2937;
 }
 
 .calendarDark {
-  background-color: #1A1A1A;
-  color: #E5E5E5;
+    background-color: #1A1A1A;
+    color: #E5E5E5;
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
 }
 
 .navButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 50%;
-  transition: background-color 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: background-color 0.2s;
 }
 
 .navButtonLight:hover {
-  background-color: #F3F4F6;
+    background-color: #F3F4F6;
 }
 
 .navButtonDark:hover {
-  background-color: #374151;
+    background-color: #374151;
 }
 
 .monthYear {
-  font-weight: 600;
+    font-weight: 600;
 }
 
 .weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  text-align: center;
-  font-weight: 500;
-  font-size: 0.875rem;
-  padding: 0.5rem 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.5rem 0;
 }
 
 .days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  padding: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    padding: 0.5rem;
 }
 
 .day {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 2.5rem;
-  width: 2.5rem;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .dayLight:hover:not(.selected):not(.disabled) {
-  background-color: #F3F4F6;
+    background-color: #F3F4F6;
 }
 
 .dayDark:hover:not(.selected):not(.disabled) {
-  background-color: #374151;
+    background-color: #374151;
 }
 
 .selected {
-  background-color: #F59E0B;
-  color: white;
+    background-color: #F59E0B;
+    color: white;
 }
 
 .today {
-  font-weight: bold;
-  border: 1px solid #F59E0B;
+    font-weight: bold;
+    border: 1px solid #F59E0B;
 }
 
 .disabled {
-  color: #9CA3AF;
-  cursor: not-allowed;
+    color: #9CA3AF;
+    cursor: not-allowed;
 }
 
 .outside {
-  opacity: 0.5;
+    opacity: 0.5;
 }
