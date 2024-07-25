@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from "~/server/db";
 import { tasks } from "~/server/db/schema";
 import type { Task, NewTask } from "~/server/db/schema";
-import { eq, and, isNull, ne } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
 
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
       const assistant = await openai.beta.assistants.create({
         name: "Task Assistant",
         instructions: `Complete the following task: ${newTaskData.description}`,
-        model: "gpt-4o",
+        model: "gpt-4",
       });
       openaiAssistantId = assistant.id;
 
@@ -99,8 +99,28 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 });
     }
 
+    // Handle different types of updates
+    const updateData: Partial<Task> = {};
+
+    if (updatedTaskData.description !== undefined) {
+      updateData.description = updatedTaskData.description;
+    }
+    if (updatedTaskData.completed !== undefined) {
+      updateData.completed = updatedTaskData.completed;
+    }
+    if (updatedTaskData.status !== undefined) {
+      updateData.status = updatedTaskData.status;
+    }
+    if (updatedTaskData.priority !== undefined) {
+      updateData.priority = updatedTaskData.priority;
+    }
+    if (updatedTaskData.hasDueDate !== undefined) {
+      updateData.hasDueDate = updatedTaskData.hasDueDate;
+      updateData.dueDate = updatedTaskData.hasDueDate ? new Date(updatedTaskData.dueDate!) : null;
+    }
+
     const [updatedTask] = await db.update(tasks)
-      .set(updatedTaskData)
+      .set(updateData)
       .where(eq(tasks.id, updatedTaskData.id))
       .returning();
 

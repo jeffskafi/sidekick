@@ -11,13 +11,14 @@ import {
   doublePrecision,
   pgEnum,
   unique,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 
 export const createTable = pgTableCreator((name) => `command-center_${name}`);
 
 // Enums
-export const taskStatusEnum = pgEnum('task_status', ['todo', 'in_progress', 'done', 'failed', 'exception']);
+export const taskStatusEnum = pgEnum('task_status', ['todo', 'in_progress', 'done', 'failed', 'exception', 'needs_human_input']);
 export const agentStatusEnum = pgEnum('agent_status', [
   'idle',
   'task_complete',
@@ -167,7 +168,11 @@ export const tasks = createTable(
     id: serial("id").primaryKey(),
     projectId: integer("project_id").references(() => projects.id).notNull(),
     description: text("description").notNull(),
+    completed: boolean("completed").notNull().default(false),
     status: taskStatusEnum("status").notNull().default('todo'),
+    priority: varchar("priority", { length: 10 }).notNull().default('none'),
+    hasDueDate: boolean("has_due_date").notNull().default(false),
+    dueDate: timestamp("due_date", { withTimezone: true }),
     agentId: integer("agent_id").references(() => agents.id),
     openaiAssistantId: varchar("openai_assistant_id", { length: 256 }),
     openaiThreadId: varchar("openai_thread_id", { length: 256 }),
@@ -183,9 +188,12 @@ export const tasks = createTable(
     agentIndex: index("task_agent_idx").on(table.agentId),
     statusIndex: index("task_status_idx").on(table.status),
     projectIndex: index("task_project_idx").on(table.projectId),
-    uniqueAgentTask: unique().on(table.agentId),
   })
 );
+
+// Update the Task type
+export type Task = InferSelectModel<typeof tasks>;
+export type NewTask = InferInsertModel<typeof tasks>;
 
 // Threads
 export const threads = createTable(
@@ -209,6 +217,3 @@ export const selectAgentSchema = createSelectSchema(agents);
 
 // Export types
 export type Agent = InferSelectModel<typeof agents> & { skills?: string[] };
-export type Task = InferSelectModel<typeof tasks>;
-export type NewAgent = InferInsertModel<typeof agents>;
-export type NewTask = InferInsertModel<typeof tasks>;

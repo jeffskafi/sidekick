@@ -11,33 +11,32 @@ import {
   X,
   Zap,
   Flag,
-  Clock,
   ClipboardList,
+  Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from './ThemeProvider';
 import { cn } from "~/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import CustomCalendar from './CustomCalendar';
+import { useTaskContext } from "~/contexts/TaskContext";
+import type { Task } from "~/server/db/schema";
 
-// Interfaces and types
 interface Todo {
   id: number;
   text: string;
   completed: boolean;
-  agentStatus: AgentStatus | null;
-  priority: "none" | "low" | "medium" | "high";
+  agentStatus: Task['status'];
+  priority: Task['priority'];
+  hasDueDate: boolean;
   dueDate: Date | null;
 }
-
-type AgentStatus = "work in progress" | "needs human input" | "done" | "error";
 
 interface AnimatedCheckmarkProps {
   completed: boolean;
   onToggle: () => void;
 }
 
-// AnimatedCheckmark component
 const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
   completed,
   onToggle,
@@ -50,7 +49,7 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
     onToggle();
     if (completed) {
       setIsDisabled(true);
-      setTimeout(() => setIsDisabled(false), 300); // Disable for 300ms
+      setTimeout(() => setIsDisabled(false), 300);
     }
   };
 
@@ -100,7 +99,6 @@ interface DeleteButtonProps {
   onDelete: () => void;
 }
 
-// DeleteButton component
 const DeleteButton: React.FC<DeleteButtonProps> = ({ onDelete }) => {
   return (
     <button
@@ -114,16 +112,15 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({ onDelete }) => {
 };
 
 interface PriorityButtonProps {
-  priority: Todo["priority"];
+  priority: Task['priority'];
   onToggle: () => void;
 }
 
-// PriorityButton component
 const PriorityButton: React.FC<PriorityButtonProps> = ({
   priority,
   onToggle,
 }) => {
-  const colors = {
+  const colors: Record<Task['priority'], string> = {
     none: "text-gray-300",
     low: "text-green-500",
     medium: "text-yellow-500",
@@ -141,34 +138,49 @@ const PriorityButton: React.FC<PriorityButtonProps> = ({
 };
 
 interface DueDateButtonProps {
+  hasDueDate: boolean;
   dueDate: Date | null;
-  onSetDueDate: (date: Date | null) => void;
+  onSetDueDate: (params: { hasDueDate: boolean; dueDate: Date | null }) => void;
 }
 
-// DueDateButton component
+// Custom isValid function
+const isValid = (date: unknown): boolean => {
+  return date instanceof Date && !isNaN(date.getTime());
+};
+
+// Custom format function
+const formatDate = (date: Date, formatString: string): string => {
+  if (!isValid(date)) {
+    return "Invalid date";
+  }
+
+  const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+
+  return formatString
+    .replace('MMM', month ?? '')
+    .replace('d', day.toString())
+    .replace('yyyy', year.toString());
+};
+
 const DueDateButton: React.FC<DueDateButtonProps> = ({
+  hasDueDate,
   dueDate,
   onSetDueDate,
 }) => {
   const { theme } = useTheme();
 
-  const formatDate = (date: Date | null, formatString: string): string => {
-    if (date && !isNaN(date.getTime())) {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const d = date.getDate();
-      const m = months[date.getMonth()];
-      const y = date.getFullYear();
-      
-      switch (formatString) {
-        case 'MMM d':
-          return `${m} ${d}`;
-        case 'MMM d, yyyy':
-          return `${m} ${d}, ${y}`;
-        default:
-          return `${m} ${d}, ${y}`;
-      }
+  const formatDueDate = (date: Date | null): string => {
+    if (date && isValid(date)) {
+      return formatDate(date, 'MMM d');
     }
-    return "";
+    return "No due date";
   };
 
   return (
@@ -176,14 +188,14 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
       <PopoverTrigger asChild>
         <button
           className="flex items-center justify-center w-auto h-5 mr-2 transition-colors duration-300 focus:outline-none"
-          title={dueDate ? `Due: ${formatDate(dueDate, 'MMM d, yyyy')}` : "Set due date"}
+          title={hasDueDate ? `Due: ${formatDueDate(dueDate)}` : "Set due date"}
         >
-          {dueDate ? (
+          {hasDueDate ? (
             <span className={`text-xs ${theme === 'dark' ? 'text-amber-400' : 'text-amber-500'}`}>
-              {formatDate(dueDate, 'MMM d')}
+              {formatDueDate(dueDate)}
             </span>
           ) : (
-            <Clock size={14} className="text-gray-400" />
+            <Clock size={14} className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
           )}
         </button>
       </PopoverTrigger>
@@ -195,8 +207,8 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
         align="start"
       >
         <CustomCalendar
-          selected={dueDate}
-          onSelect={(date) => onSetDueDate(date)}
+          selected={hasDueDate ? dueDate : null}
+          onSelect={(date: Date | null) => onSetDueDate(date ? { hasDueDate: true, dueDate: date } : { hasDueDate: false, dueDate: null })}
         />
       </PopoverContent>
     </Popover>
@@ -205,13 +217,12 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
 
 interface TodoItemProps {
   todo: Todo;
-  onToggle: (id: number) => void;
-  onDelete: (id: number) => void;
-  onUpdate: (id: number, updates: Partial<Todo>) => void;
-  onDelegate: (id: number) => void;
+  onToggle: (id: number) => Promise<void>;
+  onDelete: (id: number) => Promise<void>;
+  onUpdate: (id: number, updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
+  onDelegate: (id: number) => Promise<void>;
 }
 
-// TodoItem component
 const TodoItem: React.FC<TodoItemProps> = React.memo(({
   todo,
   onToggle,
@@ -223,9 +234,14 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(todo.text);
 
-  const handleEdit = useCallback(() => {
-    onUpdate(todo.id, { text: editedText });
-    setIsEditing(false);
+  const handleEdit = useCallback(async () => {
+    try {
+      await onUpdate(todo.id, { description: editedText });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      // Optionally, you can add some user feedback here
+    }
   }, [todo.id, editedText, onUpdate]);
 
   const cancelEdit = () => {
@@ -233,23 +249,35 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
     setIsEditing(false);
   };
 
-  const handleSetDueDate = useCallback((date: Date | null) => {
-    onUpdate(todo.id, { dueDate: date });
+  const handleSetDueDate = useCallback(async ({ hasDueDate, dueDate }: { hasDueDate: boolean; dueDate: Date | null }) => {
+    try {
+      await onUpdate(todo.id, { hasDueDate, dueDate });
+    } catch (error) {
+      console.error('Failed to set due date:', error);
+      // Optionally, you can add some user feedback here
+    }
   }, [todo.id, onUpdate]);
 
-  const togglePriority = useCallback(() => {
-    const priorities: Todo["priority"][] = ["none", "low", "medium", "high"];
+  const togglePriority = useCallback(async () => {
+    const priorities: Task['priority'][] = ['none', 'low', 'medium', 'high'];
     const currentIndex = priorities.indexOf(todo.priority);
     const nextPriority = priorities[(currentIndex + 1) % priorities.length];
-    onUpdate(todo.id, { priority: nextPriority });
+    try {
+      await onUpdate(todo.id, { priority: nextPriority });
+    } catch (error) {
+      console.error('Failed to update priority:', error);
+      // Optionally, you can add some user feedback here
+    }
   }, [todo.id, todo.priority, onUpdate]);
 
-  const getStatusColor = (status: AgentStatus | null) => {
+  const getStatusColor = (status: Task['status'] | null) => {
     switch (status) {
-      case "work in progress": return "bg-orange-500";
-      case "needs human input": return "bg-orange-500 animate-pulse";
+      case "in_progress": return "bg-orange-500";
+      case "needs_human_input": return "bg-orange-500 animate-pulse";
       case "done": return "bg-green-500";
-      case "error": return "bg-red-500";
+      case "failed": return "bg-red-500";
+      case "exception": return "bg-red-500";
+      case "todo": return theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300';
       default: return theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300';
     }
   };
@@ -296,7 +324,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
         </div>
       </div>
       <div className="flex items-center space-x-1">
-        <DueDateButton dueDate={todo.dueDate} onSetDueDate={handleSetDueDate} />
+        <DueDateButton hasDueDate={todo.hasDueDate} dueDate={todo.dueDate} onSetDueDate={handleSetDueDate} />
         <motion.button
           onClick={() => onDelegate(todo.id)}
           disabled={!!todo.agentStatus}
@@ -325,7 +353,6 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
 
 TodoItem.displayName = 'TodoItem';
 
-// ActionButton component
 const ActionButton: React.FC<{
   icon: React.ReactNode;
   onClick: () => void;
@@ -347,7 +374,6 @@ const ActionButton: React.FC<{
   </motion.button>
 );
 
-// AccessibleImage component
 const AccessibleImage: React.FC<{ size: number; className: string }> = (props) => {
   return (
     <span role="img" aria-hidden="true">
@@ -356,7 +382,6 @@ const AccessibleImage: React.FC<{ size: number; className: string }> = (props) =
   );
 };
 
-// EmptyState component
 const EmptyState: React.FC = () => {
   const { theme } = useTheme();
   return (
@@ -372,83 +397,98 @@ const EmptyState: React.FC = () => {
   );
 };
 
-// Main TodoApp component
 const TodoApp: React.FC = React.memo(() => {
   const { theme } = useTheme();
-  // State declarations
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const { tasks, addTask, updateTask, deleteTask } = useTaskContext();
   const [input, setInput] = useState("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const todoListRef = useRef<HTMLUListElement>(null);
 
-  // Callback functions for todo operations
-  const toggleTodo = useCallback((id: number) => {
-    setTodos(prevTodos =>
-      prevTodos.map(todo =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  }, []);
-
-  const deleteTodo = useCallback((id: number) => {
-    setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
-  }, []);
-
-  const updateTodo = useCallback((id: number, updates: Partial<Todo>) => {
-    setTodos(prevTodos =>
-      prevTodos.map(todo => (todo.id === id ? { ...todo, ...updates } : todo))
-    );
-  }, []);
-
-  const delegateToAgent = useCallback((id: number) => {
-    const statuses: AgentStatus[] = [
-      "work in progress",
-      "needs human input",
-      "done",
-      "error",
-    ];
-    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-    updateTodo(id, { agentStatus: randomStatus });
-  }, [updateTodo]);
-
-  const addTodo = useCallback(() => {
-    if (input.trim()) {
-      const newTodo: Todo = {
-        id: Date.now(),
-        text: input.trim(),
-        completed: false,
-        agentStatus: null,
-        priority: "none",
-        dueDate: null,
-      };
-      setTodos(prevTodos => [newTodo, ...prevTodos]);
-      setInput("");
+  const toggleTodo = useCallback(async (id: number) => {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      try {
+        await updateTask({ id, completed: !task.completed });
+      } catch (error) {
+        console.error('Failed to toggle task:', error);
+        // Optionally, you can add some user feedback here
+      }
     }
-  }, [input]);
+  }, [tasks, updateTask]);
 
-  // Effect to scroll to top when new todo is added
+  const updateTodo = useCallback(async (id: number, updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>) => {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      try {
+        await updateTask({ id, ...updates });
+      } catch (error) {
+        console.error('Failed to update task:', error);
+        // Optionally, you can add some user feedback here
+      }
+    }
+  }, [tasks, updateTask]);
+
+  const delegateToAgent = useCallback(async (id: number) => {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+      const statuses: Task['status'][] = ['in_progress', 'needs_human_input', 'done', 'failed', 'exception'];
+      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      try {
+        await updateTask({ id, status: randomStatus });
+      } catch (error) {
+        console.error('Failed to delegate task:', error);
+        // Optionally, you can add some user feedback here
+      }
+    }
+  }, [tasks, updateTask]);
+
+  const addTodo = useCallback(async () => {
+    if (input.trim()) {
+      try {
+        await addTask({
+          description: input.trim(),
+          projectId: 1, // You should get this from the user's context or URL params
+          status: 'todo',
+          priority: 'none',
+          hasDueDate: false,
+          dueDate: null,
+        });
+        setInput("");
+      } catch (error) {
+        console.error('Failed to add task:', error);
+        // Optionally, you can add some user feedback here
+      }
+    }
+  }, [input, addTask]);
+
   useEffect(() => {
-    if (todoListRef.current && todos.length > 0) {
+    if (todoListRef.current && tasks.length > 0) {
       todoListRef.current.scrollTop = 0;
     }
-  }, [todos.length]);
+  }, [tasks.length]);
 
-  // Memoized todos list
   const memoizedTodos = useMemo(() => {
-    return todos.map((todo) => (
+    return tasks.map((task) => (
       <TodoItem
-        key={todo.id}
-        todo={todo}
+        key={task.id}
+        todo={{
+          id: task.id,
+          text: task.description,
+          completed: task.completed,
+          agentStatus: task.status,
+          priority: task.priority,
+          hasDueDate: task.hasDueDate,
+          dueDate: task.hasDueDate ? new Date(task.dueDate!) : null,
+        }}
         onToggle={toggleTodo}
-        onDelete={deleteTodo}
+        onDelete={deleteTask}
         onUpdate={updateTodo}
         onDelegate={delegateToAgent}
       />
     ));
-  }, [todos, toggleTodo, deleteTodo, updateTodo, delegateToAgent]);
+  }, [tasks, toggleTodo, deleteTask, updateTodo, delegateToAgent]);
 
-  // Handler functions for additional actions
   const handleFileUpload = () => {
     // Implement file upload logic
   };
@@ -467,14 +507,12 @@ const TodoApp: React.FC = React.memo(() => {
 
   const isInputEmpty = input.trim() === '';
 
-  // Render TodoApp component
   return (
     <div className="flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8">
       <div className={`w-full max-w-[390px] rounded-lg ${theme === 'dark' ? 'bg-surface-dark' : 'bg-surface-light'} p-4 sm:p-6 text-sm shadow-md transition-colors duration-200`}>
         <div className="flex flex-col h-[75vh]">
           <h1 className={`${theme === 'dark' ? 'text-primary-dark' : 'text-primary'} mb-3 sm:mb-4 text-lg sm:text-xl font-semibold`}>Quick Tasks</h1>
 
-          {/* Input area */}
           <div className="mb-3 sm:mb-4 flex-shrink-0">
             <div className="relative flex items-center">
               <div className={`relative flex items-center w-full h-10 rounded-full ${theme === 'dark' ? 'bg-background-dark border-gray-600' : 'bg-background-light border-gray-200'} border`}>
@@ -561,9 +599,8 @@ const TodoApp: React.FC = React.memo(() => {
             </AnimatePresence>
           </div>
 
-          {/* Todo list */}
           <div className="flex-grow overflow-hidden">
-            {todos.length > 0 ? (
+            {tasks.length > 0 ? (
               <ul 
                 ref={todoListRef}
                 className="h-full overflow-y-auto space-y-2 sm:space-y-3 pr-2"
