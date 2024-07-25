@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import SettingsSection from "./SettingsSection";
-import { useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { useTheme } from '../ThemeProvider';
 import styles from "./SubscriptionSettings.module.css";
 
 interface CheckoutSession {
@@ -20,6 +20,7 @@ export default function SubscriptionSettings() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [billingCycle, setBillingCycle] = useState<string>("monthly");
+  const { theme } = useTheme();
 
   const glitterParticles = useMemo(() => {
     return Array.from({ length: 200 }, (_, i) => ({
@@ -93,29 +94,37 @@ export default function SubscriptionSettings() {
 
   return (
     <SettingsSection title="Subscription & Billing">
-      <div className="space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+      <div className={`space-y-6 rounded-lg ${theme === 'dark' ? 'bg-surface-dark' : 'bg-surface-light'} p-6 shadow-lg`}>
         <div className="space-y-4">
           <div>
-            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label className={`block text-sm font-medium ${theme === 'dark' ? 'text-text-dark' : 'text-text-light'}`}>
               Current Plan
             </Label>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className={`mt-1 text-sm ${theme === 'dark' ? 'text-text-light-dark' : 'text-text-light-light'}`}>
               Free Tier
             </p>
           </div>
           <div>
-            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label className={`block text-sm font-medium ${theme === 'dark' ? 'text-text-dark' : 'text-text-light'}`}>
               Billing Cycle
             </Label>
             <div className="mt-1 flex space-x-2">
               <button
-                className={`rounded-md px-4 py-2 text-sm font-medium ${billingCycle === "monthly" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}`}
+                className={`rounded-md px-4 py-2 text-sm font-medium ${
+                  billingCycle === "monthly" 
+                    ? "bg-primary text-white" 
+                    : `${theme === 'dark' ? 'bg-gray-700 text-text-light-dark' : 'bg-gray-200 text-text-light-light'}`
+                }`}
                 onClick={() => setBillingCycle("monthly")}
               >
                 Monthly
               </button>
               <button
-                className={`rounded-md px-4 py-2 text-sm font-medium ${billingCycle === "annually" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}`}
+                className={`rounded-md px-4 py-2 text-sm font-medium ${
+                  billingCycle === "annually" 
+                    ? "bg-primary text-white" 
+                    : `${theme === 'dark' ? 'bg-gray-700 text-text-light-dark' : 'bg-gray-200 text-text-light-light'}`
+                }`}
                 onClick={() => setBillingCycle("annually")}
               >
                 Annually (Save 20%)
@@ -123,19 +132,19 @@ export default function SubscriptionSettings() {
             </div>
           </div>
           <div>
-            <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Label className={`block text-sm font-medium ${theme === 'dark' ? 'text-text-dark' : 'text-text-light'}`}>
               Payment Method
             </Label>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className={`mt-1 text-sm ${theme === 'dark' ? 'text-text-light-dark' : 'text-text-light-light'}`}>
               Visa ending in 1234
             </p>
-            <Button variant="outline" className="mt-2 w-full">
+            <Button variant="outline" className={`mt-2 w-full ${theme === 'dark' ? 'border-gray-600 text-text-dark' : 'border-gray-300 text-text-light'}`}>
               Update Payment Method
             </Button>
           </div>
         </div>
         <button
-          className={`${styles.upgradeButton} relative w-full overflow-hidden rounded-md bg-amber-500 px-4 py-2 font-semibold text-white transition-colors duration-200 ease-in-out hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`${styles.upgradeButton} relative w-full overflow-hidden rounded-md bg-primary px-4 py-2 font-semibold text-white transition-colors duration-200 ease-in-out hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50`}
           onClick={handleUpgrade}
           disabled={loading}
         >
@@ -152,7 +161,7 @@ export default function SubscriptionSettings() {
             ))}
           </div>
         </button>
-        {error && <p className="mt-4 text-red-500">{error}</p>}
+        {error && <p className={`mt-4 ${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`}>{error}</p>}
       </div>
     </SettingsSection>
   );

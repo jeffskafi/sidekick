@@ -1,16 +1,24 @@
+'use client'
+
 import React from 'react';
 import Link from 'next/link';
 import { UserButton } from "@clerk/nextjs";
+import { useTheme } from './ThemeProvider';
 
 const Header = () => {
+  const { theme } = useTheme();
+
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+    <header className={`${theme === 'dark' ? 'bg-background-dark border-gray-700' : 'bg-background-light border-gray-200'} border-b`}>
       <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="text-xl font-semibold text-gray-900 dark:text-white">
+        <Link href="/" className={`text-xl font-semibold ${theme === 'dark' ? 'text-text-dark' : 'text-text-light'}`}>
           Sidekick
         </Link>
         <div className="flex items-center space-x-6">
-          <Link href="/settings" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
+          <Link 
+            href="/settings" 
+            className={`${theme === 'dark' ? 'text-text-light-dark hover:text-text-dark' : 'text-text-light-light hover:text-text-light'} transition-colors`}
+          >
             Settings
           </Link>
           <UserButton 

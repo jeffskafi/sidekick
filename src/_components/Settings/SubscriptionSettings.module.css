@@ -36,3 +36,8 @@
     50% { transform: translate(calc(var(--tx) * -1), calc(var(--ty) * -1)); }
     75% { transform: translate(var(--tx), calc(var(--ty) * -1)); }
   }
+  
+  :global(.dark) .glitterParticle {
+    background: linear-gradient(135deg, #ffd700, #d4af37, #ffdb58);
+    opacity: 0.4;
+  }
