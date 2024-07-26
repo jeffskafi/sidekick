@@ -1,14 +1,16 @@
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { Button } from "~/components/ui/button";
-import AppearanceSettings from '~/_components/Settings/AppearanceSettings';
-import SubscriptionSettings from '~/_components/Settings/SubscriptionSettings';
-import NotificationSettings from '~/_components/Settings/NotificationSettings';
-import DataPrivacySettings from '~/_components/Settings/DataPrivacySettings';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useTheme } from '~/_components/ThemeProvider';
+
+const AppearanceSettings = dynamic(() => import('~/_components/Settings/AppearanceSettings'), { ssr: true });
+const SubscriptionSettings = dynamic(() => import('~/_components/Settings/SubscriptionSettings'), { ssr: true });
+const NotificationSettings = dynamic(() => import('~/_components/Settings/NotificationSettings'), { ssr: true });
+const DataPrivacySettings = dynamic(() => import('~/_components/Settings/DataPrivacySettings'), { ssr: true });
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -28,15 +30,23 @@ export default function SettingsPage() {
           <div className={`space-y-8 ${theme === 'dark' ? 'bg-surface-dark' : 'bg-surface-light'} shadow-lg rounded-lg p-6 md:p-8`}>
             <div className="grid gap-8 md:grid-cols-2">
               <div>
-                <AppearanceSettings isDarkMode={theme === 'dark'} toggleDarkMode={toggleDarkMode} />
+                <Suspense fallback={<div>Loading appearance settings...</div>}>
+                  <AppearanceSettings isDarkMode={theme === 'dark'} toggleDarkMode={toggleDarkMode} />
+                </Suspense>
                 <div className="mt-8">
-                  <NotificationSettings />
+                  <Suspense fallback={<div>Loading notification settings...</div>}>
+                    <NotificationSettings />
+                  </Suspense>
                 </div>
               </div>
               <div>
-                <SubscriptionSettings />
+                <Suspense fallback={<div>Loading subscription settings...</div>}>
+                  <SubscriptionSettings />
+                </Suspense>
                 <div className="mt-8">
-                  <DataPrivacySettings />
+                  <Suspense fallback={<div>Loading data privacy settings...</div>}>
+                    <DataPrivacySettings />
+                  </Suspense>
                 </div>
               </div>
             </div>
