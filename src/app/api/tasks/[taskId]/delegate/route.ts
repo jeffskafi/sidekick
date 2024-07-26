@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { db } from "~/server/db";
 import { tasks, subtasks } from "~/server/db/schema";
 import type { Subtask } from "~/server/db/schema";
@@ -11,6 +12,7 @@ const openai = new OpenAI({
 });
 
 export async function POST(
+  _: NextRequest,
   { params }: { params: { taskId: string } }
 ) {
   try {
