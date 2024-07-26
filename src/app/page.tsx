@@ -3,7 +3,7 @@ import { db } from "~/server/db";
 import { tasks, type Task } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 import dynamic from 'next/dynamic'
-const TodoApp = dynamic(() => import('~/_components/TodoApp'), { ssr: true })
+const TodoApp = dynamic(() => import('~/_components/tasks/TodoApp'), { ssr: true })
 
 export const runtime = 'edge'
 

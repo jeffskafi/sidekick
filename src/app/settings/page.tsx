@@ -15,12 +15,7 @@ const DataPrivacySettings = dynamic(() => import('~/_components/Settings/DataPri
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function SettingsPage() {
-  const { theme, setTheme } = useTheme();
-
-  const toggleDarkMode = (darkMode: boolean) => {
-    setTheme(darkMode ? 'dark' : 'light');
-  };
-
+  const { theme } = useTheme();
   return (
     <Elements stripe={stripePromise}>
       <div className={`min-h-screen py-8 sm:py-12 ${theme === 'dark' ? 'bg-background-dark' : 'bg-background-light'}`}>
@@ -31,7 +26,7 @@ export default function SettingsPage() {
             <div className="grid gap-8 md:grid-cols-2">
               <div>
                 <Suspense fallback={<div>Loading appearance settings...</div>}>
-                  <AppearanceSettings isDarkMode={theme === 'dark'} toggleDarkMode={toggleDarkMode} />
+                  <AppearanceSettings />
                 </Suspense>
                 <div className="mt-8">
                   <Suspense fallback={<div>Loading notification settings...</div>}>
