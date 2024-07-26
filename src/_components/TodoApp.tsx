@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback, useEffect, useMemo } from "react"
 import {
   Plus,
   ChevronDown,
+  ChevronUp,
   File,
   Camera,
   Image as LucideImage,
@@ -539,12 +540,11 @@ const TodoApp: React.FC = React.memo(() => {
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   aria-label="Other options"
                 >
-                  <motion.div
-                    animate={{ rotate: isMenuOpen ? 180 : 0 }}
-                    transition={{ duration: 0.15 }}
-                  >
+                  {isMenuOpen ? (
+                    <ChevronUp size={16} className={theme === 'dark' ? 'text-primary-dark' : 'text-primary'} />
+                  ) : (
                     <ChevronDown size={16} className={theme === 'dark' ? 'text-primary-dark' : 'text-primary'} />
-                  </motion.div>
+                  )}
                 </motion.button>
                 <input
                   type="text"
