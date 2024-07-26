@@ -12,7 +12,7 @@ body.dark-mode {
 .toggle-label {
   margin-right: 10px;
 }
-.toggle-switch {
+.toggleSwitch {
   position: relative;
   width: 60px;
   height: 30px;
@@ -22,7 +22,7 @@ body.dark-mode {
   overflow: hidden;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
-.toggle-button {
+.toggleButton {
   position: absolute;
   width: 26px;
   height: 26px;
@@ -34,15 +34,15 @@ body.dark-mode {
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   z-index: 1;
 }
-.toggle-switch.dark-mode {
+.toggleSwitch.darkMode {
   background-color: #1a1a1a;
 }
-.toggle-switch.dark-mode .toggle-button {
+.toggleSwitch.darkMode .toggleButton {
   transform: translateX(30px);
   background: radial-gradient(circle at 35% 35%, #f0f0f0, #d0d0d0);
 }
-.toggle-switch .sun,
-.toggle-switch .moon {
+.toggleSwitch .sun,
+.toggleSwitch .moon {
   position: absolute;
   width: 18px;
   height: 18px;
@@ -52,12 +52,12 @@ body.dark-mode {
   transition: transform 0.3s, opacity 0.3s;
   z-index: 2;
 }
-.toggle-switch .sun {
+.toggleSwitch .sun {
   background: radial-gradient(circle at 30% 30%, #ffd700, #ffa500);
   box-shadow: 0 0 5px #ffa500;
   opacity: 1;
 }
-.toggle-switch .sun::after {
+.toggleSwitch .sun::after {
   content: '';
   position: absolute;
   top: -4px;
@@ -68,7 +68,7 @@ body.dark-mode {
   background: radial-gradient(circle at 50% 50%, rgba(255, 223, 0, 0.5), rgba(255, 223, 0, 0));
   z-index: -1;
 }
-.toggle-switch .moon {
+.toggleSwitch .moon {
   position: absolute;
   width: 26px;
   height: 26px;
@@ -110,15 +110,15 @@ body.dark-mode {
   transition: transform 0.3s ease, opacity 0.3s ease;
   border: 1px solid #808080;
 }
-.toggle-switch.dark-mode .sun {
+.toggleSwitch.darkMode .sun {
   transform: translateX(30px);
   opacity: 0;
 }
-.toggle-switch.dark-mode .moon {
+.toggleSwitch.darkMode .moon {
   transform: translateX(30px);
   opacity: 1;
 }
-.toggle-switch .moon::after {
+.toggleSwitch .moon::after {
   content: '';
   position: absolute;
   top: 3px;
@@ -131,7 +131,7 @@ body.dark-mode {
 }
 
 /* Light mode background */
-.toggle-switch::before {
+.toggleSwitch::before {
   content: '';
   position: absolute;
   top: 0;
@@ -144,7 +144,7 @@ body.dark-mode {
 }
 
 /* Dark mode background */
-.toggle-switch::after {
+.toggleSwitch::after {
   content: '';
   position: absolute;
   top: 0;
@@ -158,7 +158,7 @@ body.dark-mode {
 }
 
 /* Clouds for light mode */
-.toggle-switch .clouds {
+.toggleSwitch .clouds {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -231,7 +231,7 @@ body.dark-mode {
 }
 
 /* Stars for dark mode */
-.toggle-switch .stars {
+.toggleSwitch .stars {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -240,7 +240,7 @@ body.dark-mode {
   z-index: 2;
 }
 
-.toggle-switch .star {
+.toggleSwitch .star {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -260,17 +260,17 @@ body.dark-mode {
   }
 }
 
-.toggle-switch.dark-mode::before {
+.toggleSwitch.darkMode::before {
   opacity: 0;
 }
 
-.toggle-switch.dark-mode::after {
+.toggleSwitch.darkMode::after {
   opacity: 1;
 }
 
-.toggle-switch.dark-mode .clouds {
+.toggleSwitch.darkMode .clouds {
   opacity: 0;
 }
-.toggle-switch.dark-mode .stars {
+.toggleSwitch.darkMode .stars {
   opacity: 1;
 }
