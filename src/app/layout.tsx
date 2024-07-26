@@ -1,5 +1,4 @@
 import "~/styles/globals.css";
-import "~/styles/darkModeToggle.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -23,13 +22,28 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={GeistSans.variable}>
-        <ThemeProvider>
-          <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-dark-bg">
+      <html lang="en" className={`${GeistSans.variable} dark`}>
+        <head>
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              // IMPORTANT: set this in <HEAD> top before any other tag.
+              const setTheme = (theme) => {
+                theme ??= localStorage.theme || "dark";
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.classList.remove('light', 'dark');
+                document.documentElement.classList.add(theme);
+                localStorage.theme = theme;
+              };
+              setTheme();
+            `
+          }} />
+        </head>
+        <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-dark-bg">
+          <ThemeProvider>
             <Header />
             <main className="flex-grow">{children}</main>
-          </body>
-        </ThemeProvider>
+          </ThemeProvider>
+        </body>
       </html>
     </ClerkProvider>
   );
