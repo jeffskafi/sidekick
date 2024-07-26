@@ -2,7 +2,7 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export default clerkMiddleware((auth, req) => {
-  const publicPaths = ["/", "/sign-in", "/sign-up"];
+  const publicPaths = ["/sign-in", "/sign-up"];
   const isPublicPath = publicPaths.includes(req.nextUrl.pathname);
 
   if (isPublicPath) {
