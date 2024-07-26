@@ -62,7 +62,10 @@ export function TaskProvider({
       }
       const updatedTask = await response.json() as Task;
       setTasks(prevTasks => prevTasks.map(task => 
-        task.id === updatedTask.id ? updatedTask : task
+        task.id === updatedTask.id ? {
+          ...updatedTask,
+          dueDate: updatedTask.dueDate ? new Date(updatedTask.dueDate) : null
+        } : task
       ));
       return updatedTask;
     } catch (error) {

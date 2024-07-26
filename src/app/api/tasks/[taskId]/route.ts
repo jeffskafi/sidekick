@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from "~/server/db";
 import { tasks, subtasks } from "~/server/db/schema";
-import type { Task, Subtask } from "~/server/db/schema";
+import type { Task } from "~/server/db/schema";
 import { eq } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 
@@ -53,6 +53,11 @@ export async function PUT(
 
     const updatedTaskData = await request.json() as Partial<Task>;
 
+    // Ensure dueDate is properly formatted
+    if (updatedTaskData.dueDate) {
+      updatedTaskData.dueDate = new Date(updatedTaskData.dueDate);
+    }
+
     // Update task
     const [updatedTask] = await db.update(tasks)
       .set(updatedTaskData)
@@ -63,23 +68,16 @@ export async function PUT(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
-    // Fetch updated task with subtasks
-    const updatedTaskWithSubtasks = await db
-      .select({
-        task: tasks,
-        subtask: subtasks,
-      })
-      .from(tasks)
-      .leftJoin(subtasks, eq(tasks.id, subtasks.taskId))
-      .where(eq(tasks.id, taskId));
+    // Fetch subtasks
+    const taskSubtasks = await db.select().from(subtasks).where(eq(subtasks.taskId, taskId));
 
-    // Format the response
-    const formattedTask = updatedTaskWithSubtasks[0] ? {
-      ...updatedTaskWithSubtasks[0].task,
-      subtasks: updatedTaskWithSubtasks.map(row => row.subtask).filter((subtask): subtask is Subtask => subtask !== null),
-    } : null;
+    // Combine task and subtasks
+    const taskWithSubtasks = {
+      ...updatedTask,
+      subtasks: taskSubtasks,
+    };
 
-    return NextResponse.json(formattedTask, { status: 200 });
+    return NextResponse.json(taskWithSubtasks, { status: 200 });
   } catch (error) {
     console.error('Error updating task:', error);
     return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });

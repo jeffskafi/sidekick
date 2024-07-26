@@ -214,6 +214,7 @@ export const subtasks = createTable(
 // Update the Task type
 export type Task = InferSelectModel<typeof tasks> & {
   subtasks?: Subtask[];
+  dueDate: Date | null;
 };
 export type NewTask = InferInsertModel<typeof tasks>;
 export type Subtask = InferSelectModel<typeof subtasks>;

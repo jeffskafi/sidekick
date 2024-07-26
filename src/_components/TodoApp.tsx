@@ -14,7 +14,8 @@ import {
   Flag,
   ClipboardList,
   Clock,
-  Loader2
+  Loader2,
+  ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from './ThemeProvider';
@@ -29,11 +30,13 @@ const CustomCalendar = dynamic(() => import('./CustomCalendar'), { ssr: false })
 interface AnimatedCheckmarkProps {
   completed: boolean;
   onToggle: () => void;
+  size?: 'normal' | 'small';
 }
 
 const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
   completed,
   onToggle,
+  size = 'normal',
 }) => {
   const { theme } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
@@ -47,12 +50,14 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
     }
   };
 
+  const sizeClasses = size === 'small' ? 'h-4 w-4' : 'h-5 w-5';
+
   return (
     <button
       onClick={handleToggle}
       onMouseEnter={() => !isDisabled && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`mr-2 flex h-5 w-5 items-center justify-center rounded-full transition-all duration-300 ${
+      className={`mr-2 flex items-center justify-center rounded-full transition-all duration-300 ${sizeClasses} ${
         completed
           ? "bg-green-500"
           : theme === 'dark'
@@ -61,8 +66,8 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
       }`}
     >
       <svg
-        width="16"
-        height="16"
+        width={size === 'small' ? "12" : "16"}
+        height={size === 'small' ? "12" : "16"}
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -174,7 +179,7 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
     if (date && isValid(date)) {
       return formatDate(date, 'MMM d');
     }
-    return "No due date";
+    return "";
   };
 
   return (
@@ -184,7 +189,7 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
           className="flex items-center justify-center w-auto h-5 mr-2 transition-colors duration-300 focus:outline-none"
           title={hasDueDate ? `Due: ${formatDueDate(dueDate)}` : "Set due date"}
         >
-          {hasDueDate ? (
+          {hasDueDate && dueDate ? (
             <span className={`text-xs ${theme === 'dark' ? 'text-amber-400' : 'text-amber-500'}`}>
               {formatDueDate(dueDate)}
             </span>
@@ -201,8 +206,11 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
         align="start"
       >
         <CustomCalendar
-          selected={hasDueDate ? dueDate : null}
-          onSelect={(date: Date | null) => onSetDueDate(date ? { hasDueDate: true, dueDate: date } : { hasDueDate: false, dueDate: null })}
+          selected={dueDate}
+          onSelect={(date: Date | null) => onSetDueDate({
+            hasDueDate: !!date,
+            dueDate: date
+          })}
         />
       </PopoverContent>
     </Popover>
@@ -228,6 +236,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(todo.description);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubtasksExpanded, setIsSubtasksExpanded] = useState(true);
 
   const handleEdit = useCallback(async () => {
     try {
@@ -246,7 +255,10 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
 
   const handleSetDueDate = useCallback(async ({ hasDueDate, dueDate }: { hasDueDate: boolean; dueDate: Date | null }) => {
     try {
-      await onUpdate(todo.id, { hasDueDate, dueDate });
+      await onUpdate(todo.id, { 
+        hasDueDate, 
+        dueDate
+      });
     } catch (error) {
       console.error('Failed to set due date:', error);
       // Optionally, you can add some user feedback here
@@ -359,23 +371,35 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(({
         </div>
       </div>
       {todo.subtasks && todo.subtasks.length > 0 && (
-        <ul className="mt-2 ml-6 list-disc">
-          {todo.subtasks.map((subtask) => (
-            <li key={subtask.id} className="text-xs text-gray-500">
-              <input
-                type="checkbox"
-                checked={subtask.completed}
-                onChange={() => onUpdate(todo.id, { 
-                  subtasks: todo.subtasks?.map(st => 
-                    st.id === subtask.id ? { ...st, completed: !st.completed } : st
-                  ) 
-                })}
-                className="mr-2"
-              />
-              {subtask.description}
-            </li>
-          ))}
-        </ul>
+        <div className="mt-2 w-full pl-7">
+          <button
+            onClick={() => setIsSubtasksExpanded(!isSubtasksExpanded)}
+            className={`flex items-center text-xs ${theme === 'dark' ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'} transition-colors duration-200`}
+          >
+            {isSubtasksExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            <span className="ml-1">Subtasks ({todo.subtasks.length})</span>
+          </button>
+          {isSubtasksExpanded && (
+            <ul className="mt-2 space-y-2 pl-6">
+              {todo.subtasks.map((subtask) => (
+                <li key={subtask.id} className="flex items-center text-xs">
+                  <AnimatedCheckmark
+                    completed={subtask.completed}
+                    onToggle={() => onUpdate(todo.id, { 
+                      subtasks: todo.subtasks?.map(st => 
+                        st.id === subtask.id ? { ...st, completed: !st.completed } : st
+                      ) 
+                    })}
+                    size="small"
+                  />
+                  <span className={`ml-2 ${subtask.completed ? 'line-through' : ''} ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {subtask.description}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
     </li>
   );
