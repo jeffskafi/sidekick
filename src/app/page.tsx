@@ -1,13 +1,11 @@
-import { AgentProvider } from "../contexts/AgentContext";
 import { TaskProvider } from "../contexts/TaskContext";
 import { db } from "~/server/db";
-import { agents, tasks, type Agent, type Task } from "~/server/db/schema";
+import { tasks, type Task } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
-import TodoApp from "~/_components/TodoApp";
+import dynamic from 'next/dynamic'
+const TodoApp = dynamic(() => import('~/_components/TodoApp'), { ssr: true })
 
-async function getAgents(): Promise<Agent[]> {
-  return db.select().from(agents);
-}
+export const runtime = 'edge'
 
 async function getTasks(projectId: number): Promise<Task[]> {
   return db.select().from(tasks).where(eq(tasks.projectId, projectId));
@@ -15,14 +13,11 @@ async function getTasks(projectId: number): Promise<Task[]> {
 
 export default async function HomePage() {
   const projectId = 1; // You should get this from the user's context or URL params
-  const initialAgents: Agent[] = await getAgents();
   const initialTasks: Task[] = await getTasks(projectId);
 
   return (
-    <AgentProvider initialAgents={initialAgents}>
-      <TaskProvider initialTasks={initialTasks}>
-        <TodoApp />
-      </TaskProvider>
-    </AgentProvider>
+    <TaskProvider initialTasks={initialTasks}>
+      <TodoApp />
+    </TaskProvider>
   );
 }
