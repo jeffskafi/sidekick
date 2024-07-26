@@ -37,65 +37,78 @@ export async function POST(
       .set({ status: 'in_progress' as const })
       .where(eq(tasks.id, taskId));
 
-    // Create OpenAI assistant
-    const assistant = await openai.beta.assistants.create({
-      name: "Task Delegator",
-      instructions: `You are an AI assistant that helps break down tasks into subtasks. Given a task description, create a list of 3-5 specific, actionable subtasks that directly contribute to completing the main task. Your response should be a valid JSON object with the following structure:
-      {
-        "subtasks": [
+    // Create OpenAI API call to GPT-4
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content: `You are an AI assistant that helps break down tasks into subtasks. Given a task description, create a list of 3-5 specific, actionable subtasks that directly contribute to completing the main task. Your response should be a valid JSON object with the following structure:
           {
-            "description": "Subtask 1 description",
-            "estimatedTimeInMinutes": 30
-          },
+            "subtasks": [
+              {
+                "description": "Subtask 1 description",
+                "estimatedTimeInMinutes": 30
+              },
+              {
+                "description": "Subtask 2 description",
+                "estimatedTimeInMinutes": 45
+              },
+              ...
+            ]
+          }
+          Ensure each subtask is clear, concise, and directly related to the main task. Provide an estimated time in minutes for each subtask.
+
+          JSON Schema:
           {
-            "description": "Subtask 2 description",
-            "estimatedTimeInMinutes": 45
-          },
-          ...
-        ]
-      }
-      Ensure each subtask is clear, concise, and directly related to the main task. Provide an estimated time in minutes for each subtask.`,
-      model: "gpt-4-0613",
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+              "subtasks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "estimatedTimeInMinutes": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 480
+                    }
+                  },
+                  "required": ["description", "estimatedTimeInMinutes"]
+                },
+                "minItems": 3,
+                "maxItems": 5
+              }
+            },
+            "required": ["subtasks"]
+          }
+
+          Adhere strictly to this schema when generating the response.`
+        },
+        {
+          role: "user",
+          content: `Please break down this task into subtasks: ${task.description}`
+        }
+      ],
     });
-
-    // Create a thread
-    const thread = await openai.beta.threads.create();
-
-    // Add a message to the thread
-    await openai.beta.threads.messages.create(thread.id, {
-      role: "user",
-      content: `Please break down this task into subtasks: ${task.description}`,
-    });
-
-    // Run the assistant
-    const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: assistant.id,
-    });
-
-    // Wait for the run to complete
-    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-    while (runStatus.status !== 'completed') {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-    }
 
     // Retrieve the messages
-    const messages = await openai.beta.threads.messages.list(thread.id);
+    const message = completion?.choices[0]?.message.content;
 
-    // Extract subtasks from the assistant's response
-    const assistantMessage = messages.data.find(m => m.role === 'assistant');
-    if (!assistantMessage) {
-      throw new Error('No assistant message found');
-    }
-
-    const textContent = assistantMessage.content.find(c => c.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      throw new Error('No text content found in assistant message');
+    if (!message) {
+      throw new Error('No message found in OpenAI response');
     }
 
     let parsedContent: { subtasks: Array<{ description: string; estimatedTimeInMinutes: number }> };
     try {
-      parsedContent = JSON.parse(textContent.text.value) as { subtasks: Array<{ description: string; estimatedTimeInMinutes: number }> };
+      parsedContent = JSON.parse(message) as { subtasks: Array<{ description: string; estimatedTimeInMinutes: number }> };
     } catch (error) {
       console.error('Failed to parse OpenAI response:', error);
       throw new Error('Invalid response format from OpenAI');

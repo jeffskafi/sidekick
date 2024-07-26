@@ -54,7 +54,10 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
   };
 
   const isSelected = (date: Date) => {
-    return selected && date.getTime() === selected.getTime();
+    if (!selected) return false;
+    // Ensure selected is a valid Date object
+    const selectedDate = selected instanceof Date ? selected : new Date(selected);
+    return date.toDateString() === selectedDate.toDateString();
   };
 
   const handleDateClick = (date: Date) => {
