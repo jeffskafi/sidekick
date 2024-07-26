@@ -25,7 +25,7 @@ import dynamic from 'next/dynamic';
 import { useTaskContext } from "~/contexts/TaskContext";
 import type { Task, Subtask } from "~/server/db/schema";
 
-const CustomCalendar = dynamic(() => import('./CustomCalendar'), { ssr: false });
+const CustomCalendar = dynamic(() => import('../components/ui/calendar'), { ssr: false });
 
 interface AnimatedCheckmarkProps {
   completed: boolean;

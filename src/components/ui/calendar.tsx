@@ -1,66 +1,94 @@
-"use client"
+import React, { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTheme } from "../../_components/ThemeProvider";
+import { cn } from "~/lib/utils";
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
-
-import { cn } from "~/lib/utils"
-import { buttonVariants } from "~/components/ui/button"
-
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
-
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
-  return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      classNames={{
-        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
-        caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
-        nav: "space-x-1 flex items-center",
-        nav_button: cn(
-          buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-        ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
-        head_row: "flex",
-        head_cell:
-          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
-        ),
-        day_range_end: "day-range-end",
-        day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
-        day_outside:
-          "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
-      components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-      }}
-      {...props}
-    />
-  )
+interface CustomCalendarProps {
+  selected: Date | null;
+  onSelect: (date: Date | null) => void;
 }
-Calendar.displayName = "Calendar"
 
-export { Calendar }
+const CustomCalendar: React.FC<CustomCalendarProps> = ({ selected, onSelect }) => {
+  const { theme } = useTheme();
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+
+  const changeMonth = (delta: number) => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + delta, 1));
+  };
+
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  };
+
+  const isPast = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date < today;
+  };
+
+  const isSelected = (date: Date) => {
+    return selected && date.toDateString() === selected.toDateString();
+  };
+
+  const handleDateClick = (date: Date) => {
+    if (!isPast(date)) {
+      onSelect(date);
+    }
+  };
+
+  const renderDays = () => {
+    const days = [];
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
+      const dayClasses = cn(
+        "flex justify-center items-center h-10 w-10 rounded-full cursor-pointer transition-colors",
+        theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100",
+        isPast(date) && "text-gray-400 cursor-not-allowed",
+        isToday(date) && "font-bold border border-amber-500",
+        isSelected(date) && "bg-amber-500 text-white"
+      );
+
+      days.push(
+        <div key={i} className={dayClasses} onClick={() => handleDateClick(date)}>
+          {i}
+        </div>
+      );
+    }
+    return days;
+  };
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  return (
+    <div className={cn("font-sans w-full max-w-sm rounded-lg overflow-hidden", theme === "dark" ? "bg-gray-800 text-gray-100" : "bg-white text-gray-800")}>
+      <div className="flex justify-between items-center p-2">
+        <button onClick={() => changeMonth(-1)} className={cn("p-1 rounded-full transition-colors", theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100")}>
+          <ChevronLeft size={20} />
+        </button>
+        <div className="font-semibold">
+          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+        </div>
+        <button onClick={() => changeMonth(1)} className={cn("p-1 rounded-full transition-colors", theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100")}>
+          <ChevronRight size={20} />
+        </button>
+      </div>
+      <div className="grid grid-cols-7 text-center font-medium text-sm p-2">
+        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+          <div key={day}>{day}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1 p-2">
+        {Array(firstDayOfMonth).fill(null).map((_, index) => (
+          <div key={`empty-${index}`} className="h-10 w-10" />
+        ))}
+        {renderDays()}
+      </div>
+    </div>
+  );
+};
+
+export default CustomCalendar;
