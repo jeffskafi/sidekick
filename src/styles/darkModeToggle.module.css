@@ -1,10 +1,3 @@
-body {
-  transition: background-color 0.3s, color 0.3s;
-}
-body.dark-mode {
-  background-color: #333;
-  color: #f0f0f0;
-}
 .toggle-container {
   display: flex;
   align-items: center;
