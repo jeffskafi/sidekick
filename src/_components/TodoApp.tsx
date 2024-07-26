@@ -20,9 +20,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from './ThemeProvider';
 import { cn } from "~/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
-import CustomCalendar from './CustomCalendar';
+import dynamic from 'next/dynamic';
 import { useTaskContext } from "~/contexts/TaskContext";
 import type { Task, Subtask } from "~/server/db/schema";
+
+const CustomCalendar = dynamic(() => import('./CustomCalendar'), { ssr: false });
 
 interface AnimatedCheckmarkProps {
   completed: boolean;
