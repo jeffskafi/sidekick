@@ -127,7 +127,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
       }
     }, [todo.id, todo.hasDueDate, todo.dueDate, onDelegate, isLoading]);
 
-    const iconSize = 16; // Set a consistent size for all icons
+    const iconSize = 14; // Reduced from 16 to match text size better
 
     const hasSubtasks = Array.isArray(todo.subtasks) && todo.subtasks.length > 0;
 
@@ -224,38 +224,40 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
             onMouseEnter={() => setIsHoveringSubtasks(true)}
             onMouseLeave={() => setIsHoveringSubtasks(false)}
           >
-            <button
-              onClick={() => setIsSubtasksExpanded(!isSubtasksExpanded)}
-              className={`flex items-center text-xs ${theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"} transition-colors duration-200`}
-            >
-              {isSubtasksExpanded ? (
-                <ChevronDown size={iconSize} />
-              ) : (
-                <ChevronRight size={iconSize} />
-              )}
-              <span className="ml-1">Subtasks ({todo.subtasks?.length})</span>
-            </button>
-            <AnimatePresence>
-              {(isHoveringSubtasks || isLoading) && (
-                <motion.button
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={handleDelegate}
-                  disabled={isLoading}
-                  className={`absolute right-0 top-0 text-xs ${
-                    theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"
-                  } transition-colors duration-200 flex items-center justify-center w-6 h-6`}
-                  title="Regenerate subtasks"
-                >
-                  {isLoading ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <RefreshCw size={14} />
-                  )}
-                </motion.button>
-              )}
-            </AnimatePresence>
+            <div className="flex items-center justify-between h-6 relative"> {/* Fixed height */}
+              <button
+                onClick={() => setIsSubtasksExpanded(!isSubtasksExpanded)}
+                className={`flex items-center text-xs ${theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"} transition-colors duration-200`}
+              >
+                {isSubtasksExpanded ? (
+                  <ChevronDown size={iconSize} />
+                ) : (
+                  <ChevronRight size={iconSize} />
+                )}
+                <span className="ml-1">Subtasks ({todo.subtasks?.length})</span>
+              </button>
+              <AnimatePresence>
+                {(isHoveringSubtasks || isLoading) && (
+                  <motion.button
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={handleDelegate}
+                    disabled={isLoading}
+                    className={`text-xs ${
+                      theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"
+                    } transition-colors duration-200 flex items-center justify-center w-6 h-6 absolute right-0 top-0`}
+                    title="Regenerate subtasks"
+                  >
+                    {isLoading ? (
+                      <Loader2 size={iconSize} className="animate-spin" />
+                    ) : (
+                      <RefreshCw size={iconSize} />
+                    )}
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
             {isSubtasksExpanded && Array.isArray(todo.subtasks) && (
               <ul className="mt-2 space-y-2 pl-6">
                 {todo.subtasks.map((subtask) => (
