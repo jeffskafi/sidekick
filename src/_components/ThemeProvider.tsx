@@ -13,10 +13,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
-    const storedTheme = localStorage.theme as Theme;
-    if (storedTheme) {
-      setTheme(storedTheme);
-    }
+    const storedTheme = localStorage.theme as Theme || 'dark';
+    updateTheme(storedTheme);
   }, []);
 
   const updateTheme = (newTheme: Theme) => {

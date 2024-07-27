@@ -22,22 +22,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${GeistSans.variable} dark`}>
-        <head>
-          <script dangerouslySetInnerHTML={{
-            __html: `
-              // IMPORTANT: set this in <HEAD> top before any other tag.
-              const setTheme = (theme) => {
-                theme ??= localStorage.theme || "dark";
-                document.documentElement.dataset.theme = theme;
-                document.documentElement.classList.remove('light', 'dark');
-                document.documentElement.classList.add(theme);
-                localStorage.theme = theme;
-              };
-              setTheme();
-            `
-          }} />
-        </head>
+      <html lang="en" className={`${GeistSans.variable} dark`} data-theme="dark">
         <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-dark-bg">
           <ThemeProvider>
             <Header />
