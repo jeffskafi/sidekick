@@ -53,9 +53,12 @@ export async function PUT(
 
     const updatedTaskData = await request.json() as Partial<Task>;
 
-    // Ensure dueDate is properly formatted
+    // Handle dueDate: if it's a valid date string, convert to Date, otherwise set to null
     if (updatedTaskData.dueDate) {
-      updatedTaskData.dueDate = new Date(updatedTaskData.dueDate);
+      const parsedDate = new Date(updatedTaskData.dueDate);
+      updatedTaskData.dueDate = isNaN(parsedDate.getTime()) ? null : parsedDate;
+    } else {
+      updatedTaskData.dueDate = null;
     }
 
     // Update task
