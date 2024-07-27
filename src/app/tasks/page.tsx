@@ -1,7 +1,7 @@
 import { TaskProvider } from "~/contexts/TaskContext";
 import { db } from "~/server/db";
-import { tasks, type Task } from "~/server/db/schema";
-import { eq, and } from "drizzle-orm";
+import { tasks, subtasks, type Task } from "~/server/db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import dynamic from 'next/dynamic'
 import { auth } from "@clerk/nextjs/server";
 
@@ -10,12 +10,21 @@ const TodoApp = dynamic(() => import('~/_components/tasks/TodoApp'), { ssr: true
 export const runtime = 'edge'
 
 async function getTasks(projectId: number, userId: string): Promise<Task[]> {
-  return db.select().from(tasks).where(
+  const fetchedTasks = await db.select().from(tasks).where(
     and(
       eq(tasks.projectId, projectId),
       eq(tasks.userId, userId)
     )
   );
+
+  const taskIds = fetchedTasks.map(task => task.id);
+  const fetchedSubtasks = await db.select().from(subtasks).where(inArray(subtasks.taskId, taskIds));
+
+  return fetchedTasks.map(task => ({
+    ...task,
+    subtasks: fetchedSubtasks.filter(subtask => subtask.taskId === task.id),
+    dueDate: task.dueDate ? new Date(task.dueDate) : null
+  }));
 }
 
 export default async function HomePage() {

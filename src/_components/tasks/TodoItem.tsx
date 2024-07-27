@@ -27,7 +27,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState(todo.description);
     const [isLoading, setIsLoading] = useState(false);
-    const [isSubtasksExpanded, setIsSubtasksExpanded] = useState(true);
+    const [isSubtasksExpanded, setIsSubtasksExpanded] = useState(false);
 
     const handleEdit = useCallback(async () => {
       try {
