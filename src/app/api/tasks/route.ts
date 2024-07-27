@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { db } from "~/server/db";
 import { tasks, subtasks } from "~/server/db/schema";
-import type { Task, NewTask } from "~/server/db/schema";
-import { eq, inArray } from 'drizzle-orm';
+import type { NewTask } from "~/server/db/schema";
+import { eq, inArray, and } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 
-// GET: Fetch all tasks for a project
+// GET: Fetch all tasks for a project and user
 export async function GET(request: Request) {
   try {
     const { userId } = auth();
@@ -20,11 +20,16 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
     }
 
-    // Fetch tasks
+    // Fetch tasks for the specific user and project
     const projectTasks = await db
       .select()
       .from(tasks)
-      .where(eq(tasks.projectId, parseInt(projectId)));
+      .where(
+        and(
+          eq(tasks.projectId, parseInt(projectId)),
+          eq(tasks.userId, userId)
+        )
+      );
 
     // Fetch subtasks for these tasks
     const taskIds = projectTasks.map(task => task.id);
@@ -60,7 +65,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Description and Project ID are required' }, { status: 400 });
     }
 
-    const [newTask] = await db.insert(tasks).values(newTaskData).returning();
+    // Include userId in the new task data
+    const taskWithUserId = { ...newTaskData, userId };
+
+    const [newTask] = await db.insert(tasks).values(taskWithUserId).returning();
 
     return NextResponse.json(newTask, { status: 201 });
   } catch (error) {

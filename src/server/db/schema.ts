@@ -167,6 +167,7 @@ export const tasks = createTable(
   {
     id: serial("id").primaryKey(),
     projectId: integer("project_id").references(() => projects.id).notNull(),
+    userId: varchar("user_id", { length: 256 }).notNull(), // This is correct
     description: text("description").notNull(),
     completed: boolean("completed").notNull().default(false),
     status: taskStatusEnum("status").notNull().default('todo'),
@@ -188,6 +189,7 @@ export const tasks = createTable(
     agentIndex: index("task_agent_idx").on(table.agentId),
     statusIndex: index("task_status_idx").on(table.status),
     projectIndex: index("task_project_idx").on(table.projectId),
+    userIndex: index("task_user_idx").on(table.userId), // Added this line
   })
 );
 
