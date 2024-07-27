@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       const assistant = await openai.beta.assistants.create({
         name: name,
         instructions: `You are an AI agent with the following skills: ${skillNames.join(', ')}. Assist the user to the best of your abilities.`,
-        model: "gpt-4-1106-preview",
+        model: "gpt-4o-mini",
         tools: [{ type: "code_interpreter" }, { type: "file_search" }],
       });
 
