@@ -1,13 +1,12 @@
-import { ChevronDown, ChevronRight, Loader2, X, Zap, Clock } from "lucide-react";
+import { ChevronDown, ChevronRight, Loader2, RefreshCw, X, Zap } from "lucide-react";
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import { useTheme } from "../ThemeProvider";
 import AnimatedCheckmark from "./AnimatedCheckmark";
 import PriorityButton from "./PriorityButton";
 import DueDateButton from "./DueDateButtonProps";
 import type { Subtask, Task } from "~/server/db/schema";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import DeleteButton from "./DeleteButton";
-import { getStatusColor } from "./helpers";
 
 interface TodoItemProps {
   todo: Task & { subtasks?: Subtask[] };
@@ -17,7 +16,7 @@ interface TodoItemProps {
     id: number,
     updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>,
   ) => Promise<void>;
-  onDelegate: (id: number) => void;
+  onDelegate: (id: number, options: { preserveDueDate: boolean, dueDate: Date | null }) => Promise<void>;
 }
 
 const TodoItem: React.FC<TodoItemProps> = React.memo(
@@ -27,6 +26,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
     const [editedText, setEditedText] = useState(todo.description);
     const [isLoading, setIsLoading] = useState(false);
     const [isSubtasksExpanded, setIsSubtasksExpanded] = useState(false);
+    const [isHoveringSubtasks, setIsHoveringSubtasks] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [truncatedText, setTruncatedText] = useState(todo.description);
     const textRef = useRef<HTMLParagraphElement>(null);
@@ -113,18 +113,23 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
     }, [todo.id, todo.priority, onUpdate]);
 
     const handleDelegate = useCallback(async () => {
+      if (isLoading) return;
       try {
         setIsLoading(true);
-        onDelegate(todo.id);
+        await onDelegate(todo.id, {
+          preserveDueDate: todo.hasDueDate,
+          dueDate: todo.dueDate,
+        });
       } catch (error) {
         console.error("Failed to delegate task:", error);
-        // Optionally, you can add some user feedback here
       } finally {
         setIsLoading(false);
       }
-    }, [todo.id, onDelegate]);
+    }, [todo.id, todo.hasDueDate, todo.dueDate, onDelegate, isLoading]);
 
     const iconSize = 16; // Set a consistent size for all icons
+
+    const hasSubtasks = Array.isArray(todo.subtasks) && todo.subtasks.length > 0;
 
     return (
       <li
@@ -186,37 +191,39 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
               onSetDueDate={handleSetDueDate}
               size={iconSize}
             />
-            <motion.button
-              onClick={handleDelegate}
-              disabled={todo.status !== "todo" || isLoading}
-              className={`flex items-center justify-center w-${iconSize} h-${iconSize} transition-colors duration-300 focus:outline-none ${
-                todo.status !== "todo"
-                  ? getStatusColor(todo.status, theme)
-                  : theme === "dark"
-                    ? "hover:text-amber-3000 text-amber-400"
+            {!hasSubtasks && (
+              <motion.button
+                onClick={handleDelegate}
+                disabled={isLoading}
+                className={`flex items-center justify-center w-${iconSize} h-${iconSize} transition-colors duration-300 focus:outline-none ${
+                  theme === "dark"
+                    ? "hover:text-amber-300 text-amber-400"
                     : "text-blue-500 hover:text-blue-600"
-              }`}
-              title={todo.status !== "todo" ? todo.status : "Delegate to AI"}
-              animate={{
-                width: todo.status !== "todo" ? `${iconSize}px` : "auto",
-                height: todo.status !== "todo" ? `${iconSize}px` : "auto",
-                borderRadius: todo.status !== "todo" ? "50%" : "0%",
-              }}
-              transition={{ duration: 0.15 }}
-            >
-              {todo.status === "todo" ? (
-                isLoading ? (
+                }`}
+                title="Delegate to AI"
+                animate={{
+                  width: `${iconSize}px`,
+                  height: `${iconSize}px`,
+                  borderRadius: "50%",
+                }}
+                transition={{ duration: 0.15 }}
+              >
+                {isLoading ? (
                   <Loader2 size={iconSize} className="animate-spin" />
                 ) : (
                   <Zap size={iconSize} />
-                )
-              ) : null}
-            </motion.button>
+                )}
+              </motion.button>
+            )}
             <DeleteButton onDelete={() => onDelete(todo.id)} size={iconSize} />
           </div>
         </div>
-        {mounted && todo.subtasks && todo.subtasks.length > 0 && (
-          <div className="mt-2 w-full pl-7">
+        {mounted && hasSubtasks && (
+          <div 
+            className="mt-2 w-full pl-7 relative"
+            onMouseEnter={() => setIsHoveringSubtasks(true)}
+            onMouseLeave={() => setIsHoveringSubtasks(false)}
+          >
             <button
               onClick={() => setIsSubtasksExpanded(!isSubtasksExpanded)}
               className={`flex items-center text-xs ${theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"} transition-colors duration-200`}
@@ -226,9 +233,30 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
               ) : (
                 <ChevronRight size={iconSize} />
               )}
-              <span className="ml-1">Subtasks ({todo.subtasks.length})</span>
+              <span className="ml-1">Subtasks ({todo.subtasks?.length})</span>
             </button>
-            {isSubtasksExpanded && (
+            <AnimatePresence>
+              {(isHoveringSubtasks || isLoading) && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={handleDelegate}
+                  disabled={isLoading}
+                  className={`absolute right-0 top-0 text-xs ${
+                    theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"
+                  } transition-colors duration-200 flex items-center justify-center w-6 h-6`}
+                  title="Regenerate subtasks"
+                >
+                  {isLoading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <RefreshCw size={14} />
+                  )}
+                </motion.button>
+              )}
+            </AnimatePresence>
+            {isSubtasksExpanded && Array.isArray(todo.subtasks) && (
               <ul className="mt-2 space-y-2 pl-6">
                 {todo.subtasks.map((subtask) => (
                   <li key={subtask.id} className="flex items-center text-xs">

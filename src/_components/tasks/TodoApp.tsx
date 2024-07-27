@@ -56,15 +56,19 @@ const TodoApp: React.FC = React.memo(() => {
     }
   }, [tasks, updateTask]);
 
-  const handleDelegateTask = useCallback(async (taskId: number) => {
+  const handleDelegateTask = useCallback(async (taskId: number, options: { preserveDueDate: boolean, dueDate: Date | null }) => {
     try {
-      await delegateTask(taskId);
-      // The task is already updated in the state by the context
+      const updatedTask = await delegateTask(taskId, options);
+      // Update the task in the local state, replacing all subtasks
+      await updateTask({
+        ...updatedTask,
+        subtasks: updatedTask.subtasks // This should be the new set of subtasks
+      });
     } catch (error) {
       console.error('Failed to delegate task:', error);
       // Optionally, you can add some user feedback here
     }
-  }, [delegateTask]);
+  }, [delegateTask, updateTask]);
 
   const addTodo = useCallback(async () => {
     if (input.trim()) {

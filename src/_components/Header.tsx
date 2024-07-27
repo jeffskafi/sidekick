@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 import { UserButton, SignInButton, useAuth } from "@clerk/nextjs";
 
 const Header = () => {
@@ -9,31 +9,25 @@ const Header = () => {
 
   return (
     <header className="border-b">
-      <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <nav className="container mx-auto flex items-center justify-between px-4 py-4">
         <Link href="/" className="text-xl font-semibold">
           Sidekick
         </Link>
         <div className="flex items-center space-x-6">
-          <Link 
-            href="/tasks" 
-            className="text-foreground hover:text-foreground/80 transition-colors"
-          >
-            Tasks
-          </Link>
-          <Link 
-            href="/settings" 
+          <Link
+            href="/settings"
             className="text-foreground hover:text-foreground/80 transition-colors"
           >
             Settings
           </Link>
           {isSignedIn ? (
             <>
-              <UserButton 
+              <UserButton
                 afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    avatarBox: "w-8 h-8"
-                  }
+                    avatarBox: "w-8 h-8",
+                  },
                 }}
               />
               <SignInButton mode="modal">

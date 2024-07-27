@@ -12,7 +12,7 @@ const openai = new OpenAI({
 });
 
 export async function POST(
-  _: NextRequest,
+  req: NextRequest,
   { params }: { params: { taskId: string } }
 ) {
   try {
@@ -26,18 +26,18 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
     }
 
+    const { preserveDueDate, dueDate } = await req.json() as { preserveDueDate: boolean, dueDate: Date | null };
+
     // Fetch the task
     const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
-    // Update the task status first
-    await db.update(tasks)
-      .set({ status: 'in_progress' as const })
-      .where(eq(tasks.id, taskId));
+    // Delete existing subtasks
+    await db.delete(subtasks).where(eq(subtasks.taskId, taskId));
 
-    // Create OpenAI API call to GPT-4
+    // Generate new subtasks using OpenAI
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       response_format: { type: "json_object" },
@@ -99,9 +99,7 @@ export async function POST(
       ],
     });
 
-    // Retrieve the messages
-    const message = completion?.choices[0]?.message.content;
-
+    const message = completion.choices[0]?.message.content;
     if (!message) {
       throw new Error('No message found in OpenAI response');
     }
@@ -118,7 +116,7 @@ export async function POST(
       throw new Error('Invalid subtasks format in OpenAI response');
     }
 
-    // Create subtasks in the database
+    // Insert new subtasks
     await db.insert(subtasks).values(
       parsedContent.subtasks.map((subtask) => ({
         taskId,
@@ -126,9 +124,18 @@ export async function POST(
         completed: false,
         estimatedTimeInMinutes: subtask.estimatedTimeInMinutes,
       }))
-    ).returning();
+    );
 
-    // Fetch the updated task with subtasks
+    // Update the task status and due date
+    await db.update(tasks)
+      .set({ 
+        status: 'in_progress' as const,
+        hasDueDate: preserveDueDate,
+        dueDate: preserveDueDate && dueDate ? new Date(dueDate) : null
+      })
+      .where(eq(tasks.id, taskId));
+
+    // Fetch the updated task with new subtasks
     const updatedTaskWithSubtasks = await db
       .select({
         task: tasks,

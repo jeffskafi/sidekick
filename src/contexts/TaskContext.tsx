@@ -9,7 +9,7 @@ interface TaskContextType {
   addTask: (newTask: Omit<Partial<Task>, "id" | "createdAt" | "updatedAt">) => Promise<void>;
   updateTask: (updatedTaskData: Partial<Task> & { id: number }) => Promise<Task>;
   deleteTask: (taskId: number) => Promise<void>;
-  delegateTask: (taskId: number) => Promise<Task>;
+  delegateTask: (taskId: number, options: { preserveDueDate: boolean, dueDate: Date | null }) => Promise<Task>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -93,21 +93,30 @@ export function TaskProvider({
     }
   }, []);
 
-  const delegateTask = useCallback(async (taskId: number) => {
+  const delegateTask = useCallback(async (taskId: number, options: { preserveDueDate: boolean, dueDate: Date | null }) => {
     try {
+      // Make API call to delegate task
       const response = await fetch(`/api/tasks/${taskId}/delegate`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(options),
       });
       if (!response.ok) {
         throw new Error('Failed to delegate task');
       }
       const updatedTask = await response.json() as Task;
-      setTasks(prevTasks => prevTasks.map(task => 
-        task.id === updatedTask.id ? updatedTask : task
-      ));
+      
+      // Update the task in the local state
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId ? { ...task, ...updatedTask, hasDueDate: options.preserveDueDate, dueDate: options.dueDate } : task
+        )
+      );
       return updatedTask;
     } catch (error) {
-      console.error('Failed to delegate task:', error);
+      console.error('Error delegating task:', error);
       throw error;
     }
   }, []);

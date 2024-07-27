@@ -1,9 +1,8 @@
-import { TaskProvider } from "../contexts/TaskContext";
+import { TaskProvider } from "~/contexts/TaskContext";
 import { db } from "~/server/db";
 import { tasks, subtasks, type Task } from "~/server/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import dynamic from 'next/dynamic'
-import ClientOnly from '~/_components/ClientOnly';
 import { auth } from "@clerk/nextjs/server";
 
 const TodoApp = dynamic(() => import('~/_components/tasks/TodoApp'), { ssr: false })
@@ -39,13 +38,9 @@ export default async function HomePage() {
 
   const initialTasks: Task[] = await getTasks(projectId, userId);
 
-  console.log('Initial tasks:', JSON.stringify(initialTasks, null, 2));
-
   return (
     <TaskProvider initialTasks={initialTasks}>
-      <ClientOnly>
-        <TodoApp />
-      </ClientOnly>
+      <TodoApp />
     </TaskProvider>
   );
 }

@@ -2,8 +2,8 @@ import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import Header from "~/_components/Header";
 import { ThemeProvider } from "~/_components/ThemeProvider";
+import Header from "~/_components/Header";
 
 export const metadata: Metadata = {
   title: "Sidekick",
