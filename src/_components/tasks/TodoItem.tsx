@@ -146,13 +146,13 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
           <div className="flex-grow min-w-0 relative">
             {isEditing ? (
               <>
-                <textarea
+                <input
+                  type="text"
                   value={editedText}
                   onChange={(e) => setEditedText(e.target.value)}
                   onBlur={handleEdit}
-                  onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleEdit()}
-                  className={`w-full px-1 py-0 pr-6 text-xs resize-none ${theme === "dark" ? "bg-surface-dark text-text-dark" : "bg-surface-light text-text-light"}`}
-                  rows={2}
+                  onKeyPress={(e) => e.key === "Enter" && handleEdit()}
+                  className={`w-full px-1 py-0 pr-6 text-xs ${theme === "dark" ? "bg-surface-dark text-text-dark" : "bg-surface-light text-text-light"}`}
                   autoFocus
                 />
                 <button
