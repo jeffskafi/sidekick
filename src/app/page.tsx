@@ -17,6 +17,10 @@ async function getTasks(projectId: number, userId: string): Promise<Task[]> {
     )
   );
 
+  if (fetchedTasks.length === 0) {
+    return []; // Return an empty array if there are no tasks
+  }
+
   const taskIds = fetchedTasks.map(task => task.id);
   const fetchedSubtasks = await db.select().from(subtasks).where(inArray(subtasks.taskId, taskIds));
 
