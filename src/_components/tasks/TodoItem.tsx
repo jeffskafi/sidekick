@@ -1,5 +1,5 @@
-import { ChevronDown, ChevronRight, Loader2, X, Zap } from "lucide-react";
-import React, { useCallback, useState, useEffect } from "react";
+import { ChevronDown, ChevronRight, Loader2, X, Zap, Clock } from "lucide-react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import { useTheme } from "../ThemeProvider";
 import AnimatedCheckmark from "./AnimatedCheckmark";
 import PriorityButton from "./PriorityButton";
@@ -8,7 +8,6 @@ import type { Subtask, Task } from "~/server/db/schema";
 import { motion } from "framer-motion";
 import DeleteButton from "./DeleteButton";
 import { getStatusColor } from "./helpers";
-
 
 interface TodoItemProps {
   todo: Task & { subtasks?: Subtask[] };
@@ -29,10 +28,41 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
     const [isLoading, setIsLoading] = useState(false);
     const [isSubtasksExpanded, setIsSubtasksExpanded] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [truncatedText, setTruncatedText] = useState(todo.description);
+    const textRef = useRef<HTMLParagraphElement>(null);
 
     useEffect(() => {
       setMounted(true);
     }, []);
+
+    useEffect(() => {
+      if (textRef.current) {
+        const element = textRef.current;
+        const lineHeight = parseInt(window.getComputedStyle(element).lineHeight);
+        const maxHeight = lineHeight * 2;
+
+        if (element.scrollHeight > maxHeight) {
+          let low = 0;
+          let high = todo.description.length;
+          let mid;
+
+          while (low < high) {
+            mid = Math.floor((low + high + 1) / 2);
+            element.textContent = todo.description.slice(0, mid) + '...';
+
+            if (element.scrollHeight <= maxHeight) {
+              low = mid;
+            } else {
+              high = mid - 1;
+            }
+          }
+
+          setTruncatedText(todo.description.slice(0, low) + '...');
+        } else {
+          setTruncatedText(todo.description);
+        }
+      }
+    }, [todo.description]);
 
     const handleEdit = useCallback(async () => {
       try {
@@ -94,65 +124,72 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
       }
     }, [todo.id, onDelegate]);
 
+    const iconSize = 16; // Set a consistent size for all icons
+
     return (
       <li
         className={`group flex flex-col items-start justify-between rounded-lg ${theme === "dark" ? "bg-background-dark" : "bg-background-light"} w-full p-3 shadow-sm transition-colors duration-200`}
       >
-        <div className="flex w-full items-center justify-between">
-          <div className="mr-2 flex flex-grow items-center">
+        <div className="flex w-full items-start">
+          <div className="flex-shrink-0 mr-2 flex items-center">
             <AnimatedCheckmark
               completed={todo.completed}
               onToggle={() => onToggle(todo.id)}
+              size={iconSize}
             />
             <PriorityButton
               priority={todo.priority}
               onToggle={togglePriority}
+              size={iconSize}
             />
-            <div className="relative flex-grow">
-              {isEditing ? (
-                <>
-                  <input
-                    type="text"
-                    value={editedText}
-                    onChange={(e) => setEditedText(e.target.value)}
-                    onBlur={handleEdit}
-                    onKeyPress={(e) => e.key === "Enter" && handleEdit()}
-                    className={`h-6 w-full px-1 py-0 pr-6 text-xs ${theme === "dark" ? "bg-surface-dark text-text-dark" : "bg-surface-light text-text-light"}`}
-                    autoFocus
-                  />
-                  <button
-                    onClick={cancelEdit}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 transform text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                  >
-                    <X size={12} />
-                  </button>
-                </>
-              ) : (
-                <span
-                  className={`cursor-pointer text-xs transition-all ${
-                    todo.completed
-                      ? "text-text-light-dark"
-                      : theme === "dark"
-                        ? "text-text-dark"
-                        : "text-text-light"
-                  }`}
-                  onClick={() => setIsEditing(true)}
-                >
-                  {todo.description}
-                </span>
-              )}
-            </div>
           </div>
-          <div className="flex items-center space-x-1">
+          <div className="flex-grow min-w-0 relative">
+            {isEditing ? (
+              <>
+                <textarea
+                  value={editedText}
+                  onChange={(e) => setEditedText(e.target.value)}
+                  onBlur={handleEdit}
+                  onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleEdit()}
+                  className={`w-full px-1 py-0 pr-6 text-xs resize-none ${theme === "dark" ? "bg-surface-dark text-text-dark" : "bg-surface-light text-text-light"}`}
+                  rows={2}
+                  autoFocus
+                />
+                <button
+                  onClick={cancelEdit}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 transform text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  <X size={iconSize} />
+                </button>
+              </>
+            ) : (
+              <p
+                ref={textRef}
+                className={`cursor-pointer text-xs transition-all line-clamp-2 ${
+                  todo.completed
+                    ? "text-text-light-dark"
+                    : theme === "dark"
+                      ? "text-text-dark"
+                      : "text-text-light"
+                }`}
+                onClick={() => setIsEditing(true)}
+                title={todo.description}
+              >
+                {truncatedText}
+              </p>
+            )}
+          </div>
+          <div className="flex-shrink-0 flex items-center space-x-2 ml-2">
             <DueDateButton
               hasDueDate={todo.hasDueDate}
               dueDate={todo.dueDate}
               onSetDueDate={handleSetDueDate}
+              size={iconSize}
             />
             <motion.button
               onClick={handleDelegate}
               disabled={todo.status !== "todo" || isLoading}
-              className={`transition-colors duration-300 focus:outline-none ${
+              className={`flex items-center justify-center w-${iconSize} h-${iconSize} transition-colors duration-300 focus:outline-none ${
                 todo.status !== "todo"
                   ? getStatusColor(todo.status, theme)
                   : theme === "dark"
@@ -161,21 +198,21 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
               }`}
               title={todo.status !== "todo" ? todo.status : "Delegate to AI"}
               animate={{
-                width: todo.status !== "todo" ? "14px" : "auto",
-                height: todo.status !== "todo" ? "14px" : "auto",
+                width: todo.status !== "todo" ? `${iconSize}px` : "auto",
+                height: todo.status !== "todo" ? `${iconSize}px` : "auto",
                 borderRadius: todo.status !== "todo" ? "50%" : "0%",
               }}
               transition={{ duration: 0.15 }}
             >
               {todo.status === "todo" ? (
                 isLoading ? (
-                  <Loader2 size={14} className="animate-spin" />
+                  <Loader2 size={iconSize} className="animate-spin" />
                 ) : (
-                  <Zap size={14} />
+                  <Zap size={iconSize} />
                 )
               ) : null}
             </motion.button>
-            <DeleteButton onDelete={() => onDelete(todo.id)} />
+            <DeleteButton onDelete={() => onDelete(todo.id)} size={iconSize} />
           </div>
         </div>
         {mounted && todo.subtasks && todo.subtasks.length > 0 && (
@@ -185,9 +222,9 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
               className={`flex items-center text-xs ${theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"} transition-colors duration-200`}
             >
               {isSubtasksExpanded ? (
-                <ChevronDown size={14} />
+                <ChevronDown size={iconSize} />
               ) : (
-                <ChevronRight size={14} />
+                <ChevronRight size={iconSize} />
               )}
               <span className="ml-1">Subtasks ({todo.subtasks.length})</span>
             </button>
@@ -206,7 +243,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
                           ),
                         })
                       }
-                      size="small"
+                      size={iconSize}
                     />
                     <span
                       className={`ml-2 ${subtask.completed ? "line-through" : ""} ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}

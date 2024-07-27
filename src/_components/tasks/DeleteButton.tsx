@@ -1,19 +1,20 @@
 import { X } from "lucide-react";
 
 interface DeleteButtonProps {
-    onDelete: () => void;
+  onDelete: () => void;
+  size?: number;
 }
 
-const DeleteButton: React.FC<DeleteButtonProps> = ({ onDelete }) => {
-    return (
-      <button
-        onClick={onDelete}
-        className="flex h-5 w-5 items-center justify-center rounded-full transition-all duration-300"
-        aria-label="Delete task"
-      >
-        <X size={14} className="text-red-500" />
-      </button>
-    );
-  };
+const DeleteButton: React.FC<DeleteButtonProps> = ({ onDelete, size = 16 }) => {
+  return (
+    <button
+      onClick={onDelete}
+      className={`flex items-center justify-center rounded-full transition-all duration-300 h-${size} w-${size}`}
+      aria-label="Delete task"
+    >
+      <X size={size} className="text-red-500" />
+    </button>
+  );
+};
 
 export default DeleteButton;

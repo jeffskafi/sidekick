@@ -14,12 +14,14 @@ interface DueDateButtonProps {
   hasDueDate: boolean;
   dueDate: Date | null;
   onSetDueDate: (params: { hasDueDate: boolean; dueDate: Date | null }) => void;
+  size?: number;
 }
 
 const DueDateButton: React.FC<DueDateButtonProps> = ({
   hasDueDate,
   dueDate,
   onSetDueDate,
+  size = 16,
 }) => {
   const { theme } = useTheme();
 
@@ -38,7 +40,7 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
             </span>
           ) : (
             <Clock
-              size={14}
+              size={size}
               className={`${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}
             />
           )}

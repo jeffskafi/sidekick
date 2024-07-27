@@ -4,13 +4,13 @@ import { useTheme } from "../ThemeProvider";
 interface AnimatedCheckmarkProps {
   completed: boolean;
   onToggle: () => void;
-  size?: "normal" | "small";
+  size?: number;
 }
 
 const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
   completed,
   onToggle,
-  size = "normal",
+  size = 20,
 }) => {
   const { theme } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
@@ -24,14 +24,12 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
     }
   };
 
-  const sizeClasses = size === "small" ? "h-4 w-4" : "h-5 w-5";
-
   return (
     <button
       onClick={handleToggle}
       onMouseEnter={() => !isDisabled && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`mr-2 flex items-center justify-center rounded-full transition-all duration-300 ${sizeClasses} ${
+      className={`mr-2 flex items-center justify-center rounded-full transition-all duration-300 h-${size} w-${size} ${
         completed
           ? "bg-green-500"
           : theme === "dark"
@@ -40,8 +38,8 @@ const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
       }`}
     >
       <svg
-        width={size === "small" ? "12" : "16"}
-        height={size === "small" ? "12" : "16"}
+        width={size * 0.8}
+        height={size * 0.8}
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
