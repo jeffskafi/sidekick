@@ -4,6 +4,7 @@ import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "~/_components/ThemeProvider";
 import Header from "~/_components/Header";
+import { CSPostHogProvider } from "~/app/_analytics/provider";
 
 export const metadata: Metadata = {
   title: "Sidekick",
@@ -12,9 +13,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
-  viewportFit: 'cover',
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -22,14 +23,20 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${GeistSans.variable} dark`} data-theme="dark">
-        <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-dark-bg">
-          <ThemeProvider>
-            <Header />
-            <main className="flex-grow">{children}</main>
-          </ThemeProvider>
-        </body>
-      </html>
+      <CSPostHogProvider>
+        <html
+          lang="en"
+          className={`${GeistSans.variable} dark`}
+          data-theme="dark"
+        >
+          <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-dark-bg">
+            <ThemeProvider>
+              <Header />
+              <main className="flex-grow">{children}</main>
+            </ThemeProvider>
+          </body>
+        </html>
+      </CSPostHogProvider>
     </ClerkProvider>
   );
 }

@@ -167,13 +167,13 @@ export const tasks = createTable(
   {
     id: serial("id").primaryKey(),
     projectId: integer("project_id").references(() => projects.id).notNull(),
-    userId: varchar("user_id", { length: 256 }).notNull(), // This is correct
+    userId: varchar("user_id", { length: 256 }).notNull(),
     description: text("description").notNull(),
     completed: boolean("completed").notNull().default(false),
     status: taskStatusEnum("status").notNull().default('todo'),
     priority: varchar("priority", { length: 10 }).notNull().default('none'),
     hasDueDate: boolean("has_due_date").notNull().default(false),
-    dueDate: timestamp("due_date", { withTimezone: true }),
+    dueDate: varchar("due_date", { length: 30 }), // Store as ISO string
     agentId: integer("agent_id").references(() => agents.id),
     openaiAssistantId: varchar("openai_assistant_id", { length: 256 }),
     openaiThreadId: varchar("openai_thread_id", { length: 256 }),
@@ -181,15 +181,14 @@ export const tasks = createTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
-    ),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
     agentIndex: index("task_agent_idx").on(table.agentId),
     statusIndex: index("task_status_idx").on(table.status),
     projectIndex: index("task_project_idx").on(table.projectId),
-    userIndex: index("task_user_idx").on(table.userId), // Added this line
+    userIndex: index("task_user_idx").on(table.userId),
   })
 );
 
@@ -216,7 +215,7 @@ export const subtasks = createTable(
 // Update the Task type
 export type Task = InferSelectModel<typeof tasks> & {
   subtasks?: Subtask[];
-  dueDate: Date | null;
+  dueDate: string | null;
 };
 export type NewTask = InferInsertModel<typeof tasks>;
 export type Subtask = InferSelectModel<typeof subtasks>;

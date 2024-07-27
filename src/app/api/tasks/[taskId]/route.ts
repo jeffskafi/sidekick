@@ -51,39 +51,49 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
     }
 
-    const updatedTaskData = await request.json() as Partial<Task>;
+    const updatedTaskData = await request.json() as Task;
 
-    // Handle dueDate: if it's a valid date string, convert to Date, otherwise set to null
     if (updatedTaskData.dueDate) {
-      const parsedDate = new Date(updatedTaskData.dueDate);
-      updatedTaskData.dueDate = isNaN(parsedDate.getTime()) ? null : parsedDate;
+      try {
+        const dateObject = new Date(updatedTaskData.dueDate);
+        updatedTaskData.dueDate = dateObject.toISOString();
+        updatedTaskData.hasDueDate = true;
+      } catch (error) {
+        updatedTaskData.dueDate = null;
+        updatedTaskData.hasDueDate = false;
+      }
     } else {
       updatedTaskData.dueDate = null;
+      updatedTaskData.hasDueDate = false;
     }
 
-    // Update task
-    const [updatedTask] = await db.update(tasks)
-      .set(updatedTaskData)
-      .where(eq(tasks.id, taskId))
-      .returning();
+    const { updatedAt, createdAt, subtasks: _, ...dataToUpdate } = updatedTaskData;
 
-    if (!updatedTask) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    try {
+      const [updatedTask] = await db.update(tasks)
+        .set(dataToUpdate)
+        .where(eq(tasks.id, taskId))
+        .returning();
+
+      if (!updatedTask) {
+        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+      }
+
+      const taskSubtasks = await db.select().from(subtasks).where(eq(subtasks.taskId, taskId));
+
+      const taskWithSubtasks = {
+        ...updatedTask,
+        subtasks: taskSubtasks,
+      };
+
+      return NextResponse.json(taskWithSubtasks, { status: 200 });
+    } catch (dbError) {
+      const error = dbError as Error;
+      return NextResponse.json({ error: 'Database update failed', details: error.message }, { status: 500 });
     }
-
-    // Fetch subtasks
-    const taskSubtasks = await db.select().from(subtasks).where(eq(subtasks.taskId, taskId));
-
-    // Combine task and subtasks
-    const taskWithSubtasks = {
-      ...updatedTask,
-      subtasks: taskSubtasks,
-    };
-
-    return NextResponse.json(taskWithSubtasks, { status: 200 });
   } catch (error) {
-    console.error('Error updating task:', error);
-    return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
+    const err = error as Error;
+    return NextResponse.json({ error: 'Failed to update task', details: err.message }, { status: 500 });
   }
 }
 
@@ -103,10 +113,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
     }
 
-    // Delete subtasks first
     await db.delete(subtasks).where(eq(subtasks.taskId, taskId));
 
-    // Then delete the task
     const [deletedTask] = await db.delete(tasks).where(eq(tasks.id, taskId)).returning();
 
     if (!deletedTask) {
