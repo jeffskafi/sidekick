@@ -1,9 +1,10 @@
+import { auth } from "@clerk/nextjs/server";
 import { TaskProvider } from "~/contexts/TaskContext";
 import { db } from "~/server/db";
 import { tasks, subtasks, type Task } from "~/server/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import dynamic from 'next/dynamic'
-import { auth } from "@clerk/nextjs/server";
+import LandingPage from "~/_components/LandingPage";
 
 const TodoApp = dynamic(() => import('~/_components/tasks/TodoApp'), { ssr: false })
 
@@ -33,13 +34,12 @@ async function getTasks(projectId: number, userId: string): Promise<Task[]> {
 
 export default async function HomePage() {
   const { userId } = auth();
-  const projectId = 1; // You should get this from the user's context or URL params
   
   if (!userId) {
-    // Handle unauthenticated user
-    return <div>Please sign in to view your tasks.</div>;
+    return <LandingPage />;
   }
 
+  const projectId = 1; // You should get this from the user's context or URL params
   const initialTasks: Task[] = await getTasks(projectId, userId);
 
   return (
