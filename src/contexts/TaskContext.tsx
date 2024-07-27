@@ -21,7 +21,7 @@ export function TaskProvider({
   children: React.ReactNode;
   initialTasks: Task[];
 }) {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
 
   useEffect(() => {
     setTasks(initialTasks);

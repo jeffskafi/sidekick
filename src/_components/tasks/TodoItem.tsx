@@ -178,7 +178,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
             <DeleteButton onDelete={() => onDelete(todo.id)} />
           </div>
         </div>
-        {todo.subtasks && todo.subtasks.length > 0 && (
+        {mounted && todo.subtasks && todo.subtasks.length > 0 && (
           <div className="mt-2 w-full pl-7">
             <button
               onClick={() => setIsSubtasksExpanded(!isSubtasksExpanded)}
@@ -191,7 +191,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
               )}
               <span className="ml-1">Subtasks ({todo.subtasks.length})</span>
             </button>
-            {isSubtasksExpanded && mounted && (
+            {isSubtasksExpanded && (
               <ul className="mt-2 space-y-2 pl-6">
                 {todo.subtasks.map((subtask) => (
                   <li key={subtask.id} className="flex items-center text-xs">

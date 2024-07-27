@@ -26,6 +26,11 @@ const TodoApp: React.FC = React.memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const todoListRef = useRef<HTMLUListElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleTodo = useCallback(async (id: number) => {
     const task = tasks.find(t => t.id === id);
@@ -114,6 +119,10 @@ const TodoApp: React.FC = React.memo(() => {
   const handleMicrophoneMode = () => {
     // Implement microphone mode logic
   };
+
+  if (!mounted) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8">
