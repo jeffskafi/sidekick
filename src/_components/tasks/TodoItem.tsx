@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight, Loader2, X, Zap } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useTheme } from "../ThemeProvider";
 import AnimatedCheckmark from "./AnimatedCheckmark";
 import PriorityButton from "./PriorityButton";
@@ -28,6 +28,11 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
     const [editedText, setEditedText] = useState(todo.description);
     const [isLoading, setIsLoading] = useState(false);
     const [isSubtasksExpanded, setIsSubtasksExpanded] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+      setMounted(true);
+    }, []);
 
     const handleEdit = useCallback(async () => {
       try {
@@ -186,7 +191,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
               )}
               <span className="ml-1">Subtasks ({todo.subtasks.length})</span>
             </button>
-            {isSubtasksExpanded && (
+            {isSubtasksExpanded && mounted && (
               <ul className="mt-2 space-y-2 pl-6">
                 {todo.subtasks.map((subtask) => (
                   <li key={subtask.id} className="flex items-center text-xs">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import type { Task } from "~/server/db/schema";
 
 interface TaskContextType {
@@ -21,7 +21,11 @@ export function TaskProvider({
   children: React.ReactNode;
   initialTasks: Task[];
 }) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
 
   const addTask = useCallback(
     async (newTask: Omit<Partial<Task>, "id" | "createdAt" | "updatedAt">) => {

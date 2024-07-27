@@ -14,6 +14,8 @@ async function getTasks(projectId: number): Promise<Task[]> {
 export default async function HomePage() {
   const projectId = 1; // You should get this from the user's context or URL params
   const initialTasks: Task[] = await getTasks(projectId);
+  
+  console.log('Initial tasks:', JSON.stringify(initialTasks, null, 2));
 
   return (
     <TaskProvider initialTasks={initialTasks}>
