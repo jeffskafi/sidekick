@@ -15,8 +15,9 @@ interface TodoItemProps {
   onUpdate: (
     id: number,
     updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>,
+    subtasks?: Partial<Subtask>[],
   ) => Promise<void>;
-  onDelegate: (id: number, options: { preserveDueDate: boolean, dueDate: Date | null }) => Promise<void>;
+  onDelegate: (id: number, options: { preserveDueDate: boolean, dueDate: string | null }) => Promise<void>;
 }
 
 const TodoItem: React.FC<TodoItemProps> = React.memo(
@@ -66,13 +67,12 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
 
     const handleEdit = useCallback(async () => {
       try {
-        await onUpdate(todo.id, { description: editedText });
+        await onUpdate(todo.id, { description: editedText }, todo.subtasks);
         setIsEditing(false);
       } catch (error) {
         console.error("Failed to update task:", error);
-        // Optionally, you can add some user feedback here
       }
-    }, [todo.id, editedText, onUpdate]);
+    }, [todo.id, editedText, onUpdate, todo.subtasks]);
 
     const cancelEdit = () => {
       setEditedText(todo.description);
@@ -85,16 +85,15 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
         dueDate,
       }: {
         hasDueDate: boolean;
-        dueDate: Date | null;
+        dueDate: string | null;
       }) => {
         try {
-          await onUpdate(todo.id, {
+          await onUpdate(todo.id, {  // Make sure todo.id is a number
             hasDueDate,
             dueDate,
           });
         } catch (error) {
           console.error("Failed to set due date:", error);
-          // Optionally, you can add some user feedback here
         }
       },
       [todo.id, onUpdate],
@@ -105,12 +104,11 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
       const currentIndex = priorities.indexOf(todo.priority);
       const nextPriority = priorities[(currentIndex + 1) % priorities.length];
       try {
-        await onUpdate(todo.id, { priority: nextPriority });
+        await onUpdate(todo.id, { priority: nextPriority }, todo.subtasks);
       } catch (error) {
         console.error("Failed to update priority:", error);
-        // Optionally, you can add some user feedback here
       }
-    }, [todo.id, todo.priority, onUpdate]);
+    }, [todo.id, todo.priority, onUpdate, todo.subtasks]);
 
     const handleDelegate = useCallback(async () => {
       if (isLoading) return;
@@ -127,7 +125,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
       }
     }, [todo.id, todo.hasDueDate, todo.dueDate, onDelegate, isLoading]);
 
-    const iconSize = 14; // Reduced from 16 to match text size better
+    const iconSize = 14;
 
     const hasSubtasks = Array.isArray(todo.subtasks) && todo.subtasks.length > 0;
 
@@ -224,7 +222,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
             onMouseEnter={() => setIsHoveringSubtasks(true)}
             onMouseLeave={() => setIsHoveringSubtasks(false)}
           >
-            <div className="flex items-center justify-between h-6 relative"> {/* Fixed height */}
+            <div className="flex items-center justify-between h-6 relative">
               <button
                 onClick={() => setIsSubtasksExpanded(!isSubtasksExpanded)}
                 className={`flex items-center text-xs ${theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"} transition-colors duration-200`}
@@ -271,7 +269,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
                               ? { ...st, completed: !st.completed }
                               : st,
                           ),
-                        })
+                        }, todo.subtasks)
                       }
                       size={iconSize}
                     />

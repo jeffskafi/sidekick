@@ -10,7 +10,7 @@ interface CustomCalendarProps {
 
 const CustomCalendar: React.FC<CustomCalendarProps> = ({ selected, onSelect }) => {
   const { theme } = useTheme();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(selected ?? new Date());
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();

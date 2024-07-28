@@ -12,37 +12,10 @@ export const getStatusColor = (status: Task['status'], theme: 'light' | 'dark') 
     }
 };
 
-// Custom isValid function
-const isDateValid = (date: unknown): boolean => {
-    return date instanceof Date && !isNaN(date.getTime());
-};
-
-// Custom format function
-const formatDate = (date: Date, formatString: string): string => {
-    if (!isDateValid(date)) {
-        return "Invalid date";
-    }
-
-    const months = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    ];
-
-    const day = date.getDate();
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-
-    return formatString
-        .replace('MMM', month ?? '')
-        .replace('d', day.toString())
-        .replace('yyyy', year.toString());
-};
-
-export const formatDueDate = (date: Date | null): string => {
-    if (date && isDateValid(date)) {
-        return formatDate(date, 'MMM d');
-    }
-    return "";
+export const formatDueDate = (dueDate: string | null): string => {
+    if (!dueDate) return '';
+    const date = new Date(dueDate);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
 export const isInputEmpty = (input: string): boolean => {

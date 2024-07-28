@@ -1,15 +1,29 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import type { Task } from "~/server/db/schema";
 
 interface TaskContextType {
   tasks: Task[];
   setTasks: (tasks: Task[]) => void;
-  addTask: (newTask: Omit<Partial<Task>, "id" | "createdAt" | "updatedAt">) => Promise<void>;
-  updateTask: (updatedTaskData: Partial<Task> & { id: number }) => Promise<Task>;
+  addTask: (
+    newTask: Omit<Partial<Task>, "id" | "createdAt" | "updatedAt">,
+  ) => Promise<void>;
+  updateTask: (
+    taskId: number,
+    updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>,
+  ) => Promise<Task>;
   deleteTask: (taskId: number) => Promise<void>;
-  delegateTask: (taskId: number, options: { preserveDueDate: boolean, dueDate: Date | null }) => Promise<Task>;
+  delegateTask: (
+    taskId: number,
+    options: { preserveDueDate: boolean; dueDate: string | null },
+  ) => Promise<Task>;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -52,74 +66,82 @@ export function TaskProvider({
     [],
   );
 
-  const updateTask = useCallback(async (updatedTaskData: Partial<Task> & { id: number }) => {
-    try {
-      const response = await fetch(`/api/tasks/${updatedTaskData.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedTaskData),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update task');
+  const updateTask = useCallback(
+    async (
+      taskId: number,
+      updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>,
+    ) => {
+      try {
+        const response = await fetch(`/api/tasks/${taskId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updates),
+        });
+        if (!response.ok) {
+          throw new Error("Failed to update task");
+        }
+        const updatedTask = (await response.json()) as Task;
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.id === updatedTask.id ? updatedTask : task,
+          ),
+        );
+        return updatedTask;
+      } catch (error) {
+        console.error("Failed to update task:", error);
+        throw error;
       }
-      const updatedTask = await response.json() as Task;
-      setTasks(prevTasks => prevTasks.map(task => 
-        task.id === updatedTask.id ? {
-          ...updatedTask,
-          dueDate: updatedTask.dueDate ? new Date(updatedTask.dueDate) : null
-        } : task
-      ));
-      return updatedTask;
-    } catch (error) {
-      console.error('Failed to update task:', error);
-      throw error;
-    }
-  }, []);
+    },
+    [],
+  );
 
   const deleteTask = useCallback(async (taskId: number) => {
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!response.ok) {
-        throw new Error('Failed to delete task');
+        throw new Error("Failed to delete task");
       }
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
     } catch (error) {
-      console.error('Failed to delete task:', error);
+      console.error("Failed to delete task:", error);
       throw error;
     }
   }, []);
 
-  const delegateTask = useCallback(async (taskId: number, options: { preserveDueDate: boolean, dueDate: Date | null }) => {
-    try {
-      // Make API call to delegate task
-      const response = await fetch(`/api/tasks/${taskId}/delegate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(options),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delegate task');
+  const delegateTask = useCallback(
+    async (
+      taskId: number,
+      options: { preserveDueDate: boolean; dueDate: string | null },
+    ) => {
+      try {
+        const response = await fetch(`/api/tasks/${taskId}/delegate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(options),
+        });
+        if (!response.ok) {
+          throw new Error("Failed to delegate task");
+        }
+        const updatedTask = (await response.json()) as Task;
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.id === updatedTask.id ? updatedTask : task,
+          ),
+        );
+        return updatedTask;
+      } catch (error) {
+        console.error("Error delegating task:", error);
+        throw error;
       }
-      const updatedTask = await response.json() as Task;
-      
-      // Update the task in the local state
-      setTasks(prevTasks => 
-        prevTasks.map(task => 
-          task.id === taskId ? { ...task, ...updatedTask, hasDueDate: options.preserveDueDate, dueDate: options.dueDate } : task
-        )
-      );
-      return updatedTask;
-    } catch (error) {
-      console.error('Error delegating task:', error);
-      throw error;
-    }
-  }, []);
+    },
+    [],
+  );
 
   return (
     <TaskContext.Provider

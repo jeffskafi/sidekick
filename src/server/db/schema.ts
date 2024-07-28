@@ -173,7 +173,7 @@ export const tasks = createTable(
     status: taskStatusEnum("status").notNull().default('todo'),
     priority: varchar("priority", { length: 10 }).notNull().default('none'),
     hasDueDate: boolean("has_due_date").notNull().default(false),
-    dueDate: varchar("due_date", { length: 30 }), // Store as ISO string
+    dueDate: varchar("due_date", { length: 30 }), // ISO string
     agentId: integer("agent_id").references(() => agents.id),
     openaiAssistantId: varchar("openai_assistant_id", { length: 256 }),
     openaiThreadId: varchar("openai_thread_id", { length: 256 }),
@@ -181,8 +181,9 @@ export const tasks = createTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date()
+    ),
   },
   (table) => ({
     agentIndex: index("task_agent_idx").on(table.agentId),

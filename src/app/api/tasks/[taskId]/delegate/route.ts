@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { db } from "~/server/db";
 import { tasks, subtasks } from "~/server/db/schema";
-import type { Subtask } from "~/server/db/schema";
 import { eq } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
@@ -26,7 +25,7 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
     }
 
-    const { preserveDueDate, dueDate } = await req.json() as { preserveDueDate: boolean, dueDate: Date | null };
+    const { preserveDueDate, dueDate } = await req.json() as { preserveDueDate: boolean, dueDate: string | null };
 
     // Fetch the task
     const [task] = await db.select().from(tasks).where(eq(tasks.id, taskId));
@@ -131,24 +130,18 @@ export async function POST(
       .set({ 
         status: 'in_progress' as const,
         hasDueDate: preserveDueDate,
-        dueDate: preserveDueDate && dueDate ? new Date(dueDate) : null
+        dueDate: preserveDueDate ? dueDate : null
       })
       .where(eq(tasks.id, taskId));
 
     // Fetch the updated task with new subtasks
-    const updatedTaskWithSubtasks = await db
-      .select({
-        task: tasks,
-        subtask: subtasks,
-      })
-      .from(tasks)
-      .leftJoin(subtasks, eq(tasks.id, subtasks.taskId))
-      .where(eq(tasks.id, taskId));
+    const [updatedTask] = await db.select().from(tasks).where(eq(tasks.id, taskId));
+    const updatedSubtasks = await db.select().from(subtasks).where(eq(subtasks.taskId, taskId));
 
     // Format the response
-    const formattedTask = updatedTaskWithSubtasks[0] ? {
-      ...updatedTaskWithSubtasks[0].task,
-      subtasks: updatedTaskWithSubtasks.map(row => row.subtask).filter((subtask): subtask is Subtask => subtask !== null),
+    const formattedTask = updatedTask ? {
+      ...updatedTask,
+      subtasks: updatedSubtasks,
     } : null;
 
     return NextResponse.json(formattedTask, { status: 200 });
