@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from "~/server/db";
-import { tasks } from "~/server/db/schema";
-import type { Task, NewTask } from "~/server/db/schema";
-import { eq, and } from 'drizzle-orm';
+import { tasks, taskRelationships, type Task, type NewTask } from "~/server/db/schema";
+import { eq, gt, sql, count } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 
-// GET: Fetch all tasks for a project and user
+type TaskWithChildCount = Omit<Task, 'childCount'> & { childCount: number };
+type TaskWithParentId = Omit<Task, 'parentId'> & { parentId: string | null };
+
 export async function GET(request: Request) {
   try {
     const { userId } = auth();
@@ -14,52 +15,42 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const projectId = searchParams.get('projectId');
+    const limit = parseInt(searchParams.get('limit') ?? '10');
+    const offset = parseInt(searchParams.get('offset') ?? '0');
 
-    if (!projectId) {
-      return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
-    }
+    const tasksWithChildCounts = await db
+      .select({
+        id: tasks.id,
+        childCount: count(taskRelationships.id).as('childCount')
+      })
+      .from(tasks)
+      .leftJoin(
+        taskRelationships,
+        eq(tasks.id, taskRelationships.parentTaskId)
+      )
+      .where(eq(tasks.userId, userId))
+      .groupBy(tasks.id)
+      .having(gt(count(taskRelationships.id), 0))
+      .limit(limit)
+      .offset(offset);
 
-    const allTasks = await db
+    const fullTasks = await db
       .select()
       .from(tasks)
-      .where(
-        and(
-          eq(tasks.projectId, parseInt(projectId)),
-          eq(tasks.userId, userId)
-        )
-      );
+      .where(eq(tasks.id, sql`ANY(${tasksWithChildCounts.map(t => t.id)})`));
 
-    const taskTree = buildTaskTree(allTasks);
+    const result: TaskWithChildCount[] = fullTasks.map(task => ({
+      ...task,
+      childCount: tasksWithChildCounts.find(t => t.id === task.id)?.childCount ?? 0
+    }));
 
-    return NextResponse.json(taskTree, { status: 200 });
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error('Error fetching tasks:', error);
     return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 });
   }
 }
 
-function buildTaskTree(tasks: Task[]): Task[] {
-  const taskMap = new Map<number, Task & { subtasks: Task[] }>();
-  const rootTasks: (Task & { subtasks: Task[] })[] = [];
-
-  tasks.forEach(task => {
-    const taskWithSubtasks = { ...task, subtasks: [] };
-    taskMap.set(task.id, taskWithSubtasks);
-    if (task.parentId === null) {
-      rootTasks.push(taskWithSubtasks);
-    } else {
-      const parent = taskMap.get(task.parentId);
-      if (parent) {
-        parent.subtasks.push(taskWithSubtasks);
-      }
-    }
-  });
-
-  return rootTasks;
-}
-
-// POST: Create a new task
 export async function POST(request: Request) {
   try {
     const { userId } = auth();
@@ -67,16 +58,38 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const newTaskData = await request.json() as NewTask;
+    const body = await request.json() as TaskWithParentId;
+    const { parentId, ...taskData } = body;
 
-    if (!newTaskData.description || !newTaskData.projectId) {
-      return NextResponse.json({ error: 'Description and Project ID are required' }, { status: 400 });
+    // Validate required fields
+    if (!taskData.description) {
+      return NextResponse.json({ error: 'Description is required' }, { status: 400 });
     }
 
-    // Include userId in the new task data
-    const taskWithUserId = { ...newTaskData, userId };
+    const newTaskData: NewTask = {
+      userId,
+      description: taskData.description,
+      status: taskData.status ?? 'todo',
+      priority: taskData.priority ?? 'none',
+      dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
+    };
 
-    const [newTask] = await db.insert(tasks).values(taskWithUserId).returning();
+    const [newTask] = await db.insert(tasks).values(newTaskData).returning();
+
+    if (!newTask) {
+      throw new Error('Failed to create task');
+    }
+
+    if (parentId != null) {
+      const parentIdNumber = Number(parentId);
+      if (isNaN(parentIdNumber)) {
+        return NextResponse.json({ error: 'Invalid parentId' }, { status: 400 });
+      }
+      await db.insert(taskRelationships).values({
+        parentTaskId: parentIdNumber,
+        childTaskId: newTask.id,
+      });
+    }
 
     return NextResponse.json(newTask, { status: 201 });
   } catch (error) {
