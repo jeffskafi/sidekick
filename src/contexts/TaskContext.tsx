@@ -7,7 +7,11 @@ import React, {
   useCallback,
   useEffect,
 } from "react";
-import type { Task } from "~/server/db/schema";
+import type { Task as BaseTask } from "~/server/db/schema";
+
+interface Task extends BaseTask {
+  subtasks?: Task[];
+}
 
 interface TaskContextType {
   tasks: Task[];
@@ -78,13 +82,34 @@ export function TaskProvider({
 
       const updatedTask = await response.json() as Task;
 
-      setTasks((prevTasks) =>
-        prevTasks.map((task): Task =>
-          task.id === taskId
-            ? { ...task, ...updatedTask }
-            : task
-        )
-      );
+      setTasks((prevTasks) => {
+        return prevTasks.map((task): Task => {
+          if (task.id === taskId) {
+            // Update the task itself
+            const updatedTaskWithSubtasks = { ...task, ...updatedTask };
+            
+            // If this task has subtasks, update them as well
+            if (updatedTaskWithSubtasks.subtasks) {
+              updatedTaskWithSubtasks.subtasks = updatedTaskWithSubtasks.subtasks.map(subtask => 
+                subtask.id === updates.id ? { ...subtask, ...updates } : subtask
+              );
+            }
+            
+            return updatedTaskWithSubtasks;
+          } else if (task.subtasks) {
+            // Check if this task contains the updated subtask
+            const updatedSubtasks = task.subtasks.map(subtask => 
+              subtask.id === taskId ? { ...subtask, ...updatedTask } : subtask
+            );
+            
+            // If subtasks were updated, return a new task object
+            if (updatedSubtasks.some(subtask => subtask.id === taskId)) {
+              return { ...task, subtasks: updatedSubtasks };
+            }
+          }
+          return task;
+        });
+      });
 
       return updatedTask;
     } catch (error) {
