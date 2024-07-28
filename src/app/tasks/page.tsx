@@ -54,8 +54,6 @@ export default async function HomePage() {
 
   const initialTasks: Task[] = await getTasks(projectId, userId);
 
-  console.log('Initial tasks:', initialTasks);
-
   return (
     <TaskProvider initialTasks={initialTasks}>
       <TodoApp />

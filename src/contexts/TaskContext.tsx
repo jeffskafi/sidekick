@@ -17,7 +17,7 @@ interface TaskContextType {
   ) => Promise<void>;
   updateTask: (
     taskId: number,
-    updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>,
+    updates: Partial<Task>,
   ) => Promise<Task>;
   deleteTask: (taskId: number) => Promise<void>;
   delegateTask: (
@@ -66,37 +66,27 @@ export function TaskProvider({
     [],
   );
 
-  const updateTask = useCallback(async (taskId: number, updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>) => {
-    console.log('updateTask called with taskId:', taskId, 'Type:', typeof taskId);
-    console.log('Updates:', JSON.stringify(updates, null, 2));
+  const updateTask = useCallback(async (taskId: number, updates: Partial<Task>) => {
     try {
-      if (typeof taskId !== 'number') {
-        throw new Error('Invalid taskId: must be a number');
-      }
-      if (!updates || Object.keys(updates).length === 0) {
-        throw new Error('No updates provided');
-      }
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({id: taskId, ...updates}),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
       });
-      if (!response.ok) {
-        const errorData = await response.json() as { error?: string };
-        throw new Error(errorData.error ?? 'Failed to update task');
-      }
-      const updatedTask = await response.json() as Task;
+
+      if (!response.ok) throw new Error("Failed to update task");
+
+      const updatedTask = await response.json();
+
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
-          task.id === updatedTask.id ? updatedTask : task
+          task.id === taskId
+            ? { ...task, ...updatedTask, subtasks: task.subtasks } // Preserve subtasks
+            : task
         )
       );
-      return updatedTask;
     } catch (error) {
-      console.error("Failed to update task:", error);
-      throw error;
+      console.error("Error updating task:", error);
     }
   }, []);
 
