@@ -66,36 +66,39 @@ export function TaskProvider({
     [],
   );
 
-  const updateTask = useCallback(
-    async (
-      taskId: number,
-      updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>,
-    ) => {
-      try {
-        const response = await fetch(`/api/tasks/${taskId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(updates),
-        });
-        if (!response.ok) {
-          throw new Error("Failed to update task");
-        }
-        const updatedTask = (await response.json()) as Task;
-        setTasks((prevTasks) =>
-          prevTasks.map((task) =>
-            task.id === updatedTask.id ? updatedTask : task,
-          ),
-        );
-        return updatedTask;
-      } catch (error) {
-        console.error("Failed to update task:", error);
-        throw error;
+  const updateTask = useCallback(async (taskId: number, updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>) => {
+    console.log('updateTask called with taskId:', taskId, 'Type:', typeof taskId);
+    console.log('Updates:', JSON.stringify(updates, null, 2));
+    try {
+      if (typeof taskId !== 'number') {
+        throw new Error('Invalid taskId: must be a number');
       }
-    },
-    [],
-  );
+      if (!updates || Object.keys(updates).length === 0) {
+        throw new Error('No updates provided');
+      }
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({id: taskId, ...updates}),
+      });
+      if (!response.ok) {
+        const errorData = await response.json() as { error?: string };
+        throw new Error(errorData.error ?? 'Failed to update task');
+      }
+      const updatedTask = await response.json() as Task;
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === updatedTask.id ? updatedTask : task
+        )
+      );
+      return updatedTask;
+    } catch (error) {
+      console.error("Failed to update task:", error);
+      throw error;
+    }
+  }, []);
 
   const deleteTask = useCallback(async (taskId: number) => {
     try {
@@ -118,7 +121,7 @@ export function TaskProvider({
       options: { preserveDueDate: boolean; dueDate: string | null },
     ) => {
       try {
-        const response = await fetch(`/api/tasks/${taskId}/delegate`, {
+        const response = await fetch(`/api/tasks/${taskId}/generate-subtasks`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -131,7 +134,7 @@ export function TaskProvider({
         const updatedTask = (await response.json()) as Task;
         setTasks((prevTasks) =>
           prevTasks.map((task) =>
-            task.id === updatedTask.id ? updatedTask : task,
+            task.id === updatedTask.id ? updatedTask : task
           ),
         );
         return updatedTask;

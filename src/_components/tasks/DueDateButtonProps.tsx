@@ -11,14 +11,12 @@ import CustomCalendar from "~/components/ui/calendar";
 import { Clock } from "lucide-react";
 
 interface DueDateButtonProps {
-  hasDueDate: boolean;
   dueDate: string | null;
-  onSetDueDate: (params: { hasDueDate: boolean; dueDate: string | null }) => void;
+  onSetDueDate: (dueDate: string | null) => void;
   size?: number;
 }
 
 const DueDateButton: React.FC<DueDateButtonProps> = ({
-  hasDueDate,
   dueDate,
   onSetDueDate,
   size = 16,
@@ -26,10 +24,7 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
   const { theme } = useTheme();
 
   const handleDateSelect = (date: Date | null) => {
-    onSetDueDate({
-      hasDueDate: !!date,
-      dueDate: date ? date.toISOString() : null,
-    });
+    onSetDueDate(date ? date.toISOString() : null);
   };
 
   return (
@@ -37,9 +32,9 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
       <PopoverTrigger asChild>
         <button
           className="mr-2 flex h-5 w-auto items-center justify-center transition-colors duration-300 focus:outline-none"
-          title={hasDueDate ? `Due: ${formatDueDate(dueDate)}` : "Set due date"}
+          title={dueDate ? `Due: ${formatDueDate(dueDate)}` : "Set due date"}
         >
-          {hasDueDate && dueDate ? (
+          {dueDate ? (
             <span
               className={`text-xs ${theme === "dark" ? "text-amber-400" : "text-amber-500"}`}
             >

@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { TaskProvider } from "~/contexts/TaskContext";
 import { db } from "~/server/db";
-import { tasks, subtasks, type Task } from "~/server/db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { tasks, type Task } from "~/server/db/schema";
+import { eq, and } from "drizzle-orm";
 import dynamic from 'next/dynamic'
 import LandingPage from "~/_components/LandingPage";
 
@@ -11,25 +11,42 @@ const TodoApp = dynamic(() => import('~/_components/tasks/TodoApp'), { ssr: fals
 export const runtime = 'edge'
 
 async function getTasks(projectId: number, userId: string): Promise<Task[]> {
-  const fetchedTasks = await db.select().from(tasks).where(
+  const allTasks = await db.select().from(tasks).where(
     and(
       eq(tasks.projectId, projectId),
       eq(tasks.userId, userId)
     )
   );
 
-  if (fetchedTasks.length === 0) {
+  if (allTasks.length === 0) {
     return []; // Return an empty array if there are no tasks
   }
 
-  const taskIds = fetchedTasks.map(task => task.id);
-  const fetchedSubtasks = await db.select().from(subtasks).where(inArray(subtasks.taskId, taskIds));
+  // Create a map to store tasks by their ID
+  const taskMap = new Map<number, Task & { subtasks: Task[] }>();
 
-  return fetchedTasks.map(task => ({
-    ...task,
-    subtasks: fetchedSubtasks.filter(subtask => subtask.taskId === task.id),
-    dueDate: task.dueDate ? new Date(task.dueDate) : null
-  }));
+  // First pass: create task objects with empty subtasks arrays
+  allTasks.forEach(task => {
+    taskMap.set(task.id, { ...task, subtasks: [] });
+  });
+
+  // Second pass: populate subtasks
+  allTasks.forEach(task => {
+    if (task.parentId !== null) {
+      const parentTask = taskMap.get(task.parentId);
+      if (parentTask) {
+        parentTask.subtasks.push(task);
+      }
+    }
+  });
+
+  // Return only top-level tasks (tasks without a parent)
+  return Array.from(taskMap.values())
+    .filter(task => task.parentId === null)
+    .map(task => ({
+      ...task,
+      dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : null
+    }));
 }
 
 export default async function HomePage() {

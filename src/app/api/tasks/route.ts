@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { db } from "~/server/db";
-import { tasks, subtasks } from "~/server/db/schema";
-import type { NewTask } from "~/server/db/schema";
-import { eq, inArray, and } from 'drizzle-orm';
+import { tasks } from "~/server/db/schema";
+import type { Task, NewTask } from "~/server/db/schema";
+import { eq, and } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 
 // GET: Fetch all tasks for a project and user
@@ -20,8 +20,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
     }
 
-    // Fetch tasks for the specific user and project
-    const projectTasks = await db
+    const allTasks = await db
       .select()
       .from(tasks)
       .where(
@@ -31,24 +30,33 @@ export async function GET(request: Request) {
         )
       );
 
-    // Fetch subtasks for these tasks
-    const taskIds = projectTasks.map(task => task.id);
-    const projectSubtasks = await db
-      .select()
-      .from(subtasks)
-      .where(inArray(subtasks.taskId, taskIds));
+    const taskTree = buildTaskTree(allTasks);
 
-    // Combine tasks and subtasks
-    const tasksWithSubtasks = projectTasks.map(task => ({
-      ...task,
-      subtasks: projectSubtasks.filter(subtask => subtask.taskId === task.id)
-    }));
-
-    return NextResponse.json(tasksWithSubtasks, { status: 200 });
+    return NextResponse.json(taskTree, { status: 200 });
   } catch (error) {
     console.error('Error fetching tasks:', error);
     return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 });
   }
+}
+
+function buildTaskTree(tasks: Task[]): Task[] {
+  const taskMap = new Map<number, Task & { subtasks: Task[] }>();
+  const rootTasks: (Task & { subtasks: Task[] })[] = [];
+
+  tasks.forEach(task => {
+    const taskWithSubtasks = { ...task, subtasks: [] };
+    taskMap.set(task.id, taskWithSubtasks);
+    if (task.parentId === null) {
+      rootTasks.push(taskWithSubtasks);
+    } else {
+      const parent = taskMap.get(task.parentId);
+      if (parent) {
+        parent.subtasks.push(taskWithSubtasks);
+      }
+    }
+  });
+
+  return rootTasks;
 }
 
 // POST: Create a new task

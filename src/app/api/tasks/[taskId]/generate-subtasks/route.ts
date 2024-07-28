@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { db } from "~/server/db";
-import { tasks, subtasks } from "~/server/db/schema";
+import { tasks } from "~/server/db/schema";
+import type { NewTask } from "~/server/db/schema";
 import { eq } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
@@ -34,11 +35,11 @@ export async function POST(
     }
 
     // Delete existing subtasks
-    await db.delete(subtasks).where(eq(subtasks.taskId, taskId));
+    await db.delete(tasks).where(eq(tasks.parentId, taskId));
 
     // Generate new subtasks using OpenAI
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o-mini",  // Make sure this is a valid model name
       response_format: { type: "json_object" },
       messages: [
         {
@@ -116,27 +117,30 @@ export async function POST(
     }
 
     // Insert new subtasks
-    await db.insert(subtasks).values(
-      parsedContent.subtasks.map((subtask) => ({
-        taskId,
-        description: subtask.description,
-        completed: false,
-        estimatedTimeInMinutes: subtask.estimatedTimeInMinutes,
-      }))
-    );
+    const newSubtasks: NewTask[] = parsedContent.subtasks.map((subtask) => ({
+      parentId: taskId,
+      projectId: task.projectId,  // Use the parent task's projectId
+      userId: userId,
+      description: subtask.description,
+      completed: false,
+      status: 'todo',
+      priority: 'none',
+      estimatedTimeInMinutes: subtask.estimatedTimeInMinutes,
+    }));
+
+    await db.insert(tasks).values(newSubtasks);
 
     // Update the task status and due date
     await db.update(tasks)
       .set({ 
         status: 'in_progress' as const,
-        hasDueDate: preserveDueDate,
         dueDate: preserveDueDate ? dueDate : null
       })
       .where(eq(tasks.id, taskId));
 
     // Fetch the updated task with new subtasks
     const [updatedTask] = await db.select().from(tasks).where(eq(tasks.id, taskId));
-    const updatedSubtasks = await db.select().from(subtasks).where(eq(subtasks.taskId, taskId));
+    const updatedSubtasks = await db.select().from(tasks).where(eq(tasks.parentId, taskId));
 
     // Format the response
     const formattedTask = updatedTask ? {

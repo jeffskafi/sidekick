@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { db } from "~/server/db";
-import { tasks, subtasks } from "~/server/db/schema";
+import { tasks } from "~/server/db/schema";
 import type { Task } from "~/server/db/schema";
 import { eq } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
@@ -33,10 +34,13 @@ export async function GET(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
-    const taskSubtasks = await db.select().from(subtasks).where(eq(subtasks.taskId, taskId));
-    console.log('Retrieved subtasks:', taskSubtasks);
+    const subtasks = await db
+      .select()
+      .from(tasks)
+      .where(eq(tasks.parentId, taskId));
+    console.log('Retrieved subtasks:', subtasks);
 
-    const response = { ...task, subtasks: taskSubtasks };
+    const response = { ...task, subtasks };
     console.log('Sending response:', response);
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
@@ -47,37 +51,57 @@ export async function GET(
 
 // PUT: Update a specific task
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { taskId: string } }
 ) {
+  console.log('PUT request received');
+  console.log('Params:', JSON.stringify(params, null, 2));
+  console.log('taskId:', params.taskId, 'type:', typeof params.taskId);
+
+  const taskId = parseInt(params.taskId, 10);
+
+  console.log('Parsed taskId:', taskId);
+
+  if (isNaN(taskId)) {
+    console.log('Invalid taskId:', params.taskId);
+    return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
+  }
+
   try {
-    const { userId } = auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const updates = await request.json() as Partial<Task>;
+    console.log('Received updates:', JSON.stringify(updates, null, 2));
+
+    if (!updates || Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No updates provided' }, { status: 400 });
     }
 
-    const taskId = parseInt(params.taskId, 10);
-    if (isNaN(taskId)) {
-      return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
-    }
-
-    const updates = await request.json() as Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>;
-
-    try {
-      const [updatedTask] = await db.update(tasks)
-        .set(updates)
-        .where(eq(tasks.id, taskId))
-        .returning();
-
-      if (!updatedTask) {
-        return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    // Handle dueDate
+    if (updates.dueDate) {
+      if (typeof updates.dueDate === 'string') {
+        // If it's a string, parse it to ensure it's a valid date
+        const parsedDate = new Date(updates.dueDate);
+        if (isNaN(parsedDate.getTime())) {
+          return NextResponse.json({ error: 'Invalid date format for dueDate' }, { status: 400 });
+        }
+        // Store the date as an ISO string
+        updates.dueDate = parsedDate.toISOString();
+      } else {
+        // If it's not a string (e.g., null), remove it from updates
+        delete updates.dueDate;
       }
-
-      return NextResponse.json(updatedTask, { status: 200 });
-    } catch (dbError) {
-      console.error('Database update failed:', dbError);
-      return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
     }
+
+    const [updatedTask] = await db.update(tasks)
+      .set(updates)
+      .where(eq(tasks.id, taskId))
+      .returning();
+
+    if (!updatedTask) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    console.log('Updated task:', JSON.stringify(updatedTask, null, 2));
+    return NextResponse.json(updatedTask, { status: 200 });
   } catch (error) {
     console.error('Failed to update task:', error);
     return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
@@ -105,10 +129,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
     }
 
-    console.log('Deleting subtasks for taskId:', taskId);
-    await db.delete(subtasks).where(eq(subtasks.taskId, taskId));
+    // Delete all subtasks
+    await db.delete(tasks).where(eq(tasks.parentId, taskId));
 
-    console.log('Deleting task with id:', taskId);
+    // Delete the main task
     const [deletedTask] = await db.delete(tasks).where(eq(tasks.id, taskId)).returning();
 
     if (!deletedTask) {
@@ -116,8 +140,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
-    console.log('Task deleted successfully:', deletedTask);
-    return NextResponse.json({ message: 'Task deleted successfully' }, { status: 200 });
+    console.log('Task and subtasks deleted successfully:', deletedTask);
+    return NextResponse.json({ message: 'Task and subtasks deleted successfully' }, { status: 200 });
   } catch (error) {
     console.error('Error deleting task:', error);
     return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });

@@ -1,23 +1,32 @@
-import { ChevronDown, ChevronRight, Loader2, RefreshCw, X, Zap } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
+  X,
+  Zap,
+} from "lucide-react";
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import { useTheme } from "../ThemeProvider";
 import AnimatedCheckmark from "./AnimatedCheckmark";
 import PriorityButton from "./PriorityButton";
 import DueDateButton from "./DueDateButtonProps";
-import type { Subtask, Task } from "~/server/db/schema";
+import type { Task } from "~/server/db/schema";
 import { motion, AnimatePresence } from "framer-motion";
 import DeleteButton from "./DeleteButton";
 
 interface TodoItemProps {
-  todo: Task & { subtasks?: Subtask[] };
+  todo: Task & { subtasks?: Task[] };
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
   onUpdate: (
     id: number,
     updates: Partial<Omit<Task, "id" | "createdAt" | "updatedAt">>,
-    subtasks?: Partial<Subtask>[],
   ) => Promise<void>;
-  onDelegate: (id: number, options: { preserveDueDate: boolean, dueDate: string | null }) => Promise<void>;
+  onDelegate: (
+    id: number,
+    options: { preserveDueDate: boolean; dueDate: string | null },
+  ) => Promise<void>;
 }
 
 const TodoItem: React.FC<TodoItemProps> = React.memo(
@@ -39,7 +48,9 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
     useEffect(() => {
       if (textRef.current) {
         const element = textRef.current;
-        const lineHeight = parseInt(window.getComputedStyle(element).lineHeight);
+        const lineHeight = parseInt(
+          window.getComputedStyle(element).lineHeight,
+        );
         const maxHeight = lineHeight * 2;
 
         if (element.scrollHeight > maxHeight) {
@@ -49,7 +60,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
 
           while (low < high) {
             mid = Math.floor((low + high + 1) / 2);
-            element.textContent = todo.description.slice(0, mid) + '...';
+            element.textContent = todo.description.slice(0, mid) + "...";
 
             if (element.scrollHeight <= maxHeight) {
               low = mid;
@@ -58,7 +69,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
             }
           }
 
-          setTruncatedText(todo.description.slice(0, low) + '...');
+          setTruncatedText(todo.description.slice(0, low) + "...");
         } else {
           setTruncatedText(todo.description);
         }
@@ -67,12 +78,12 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
 
     const handleEdit = useCallback(async () => {
       try {
-        await onUpdate(todo.id, { description: editedText }, todo.subtasks);
+        await onUpdate(todo.id, { description: editedText });
         setIsEditing(false);
       } catch (error) {
         console.error("Failed to update task:", error);
       }
-    }, [todo.id, editedText, onUpdate, todo.subtasks]);
+    }, [todo.id, editedText, onUpdate]);
 
     const cancelEdit = () => {
       setEditedText(todo.description);
@@ -80,18 +91,9 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
     };
 
     const handleSetDueDate = useCallback(
-      async ({
-        hasDueDate,
-        dueDate,
-      }: {
-        hasDueDate: boolean;
-        dueDate: string | null;
-      }) => {
+      async (dueDate: string | null) => {
         try {
-          await onUpdate(todo.id, {  // Make sure todo.id is a number
-            hasDueDate,
-            dueDate,
-          });
+          await onUpdate(todo.id, { dueDate });
         } catch (error) {
           console.error("Failed to set due date:", error);
         }
@@ -104,18 +106,18 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
       const currentIndex = priorities.indexOf(todo.priority);
       const nextPriority = priorities[(currentIndex + 1) % priorities.length];
       try {
-        await onUpdate(todo.id, { priority: nextPriority }, todo.subtasks);
+        await onUpdate(todo.id, { priority: nextPriority });
       } catch (error) {
         console.error("Failed to update priority:", error);
       }
-    }, [todo.id, todo.priority, onUpdate, todo.subtasks]);
+    }, [todo.id, todo.priority, onUpdate]);
 
     const handleDelegate = useCallback(async () => {
       if (isLoading) return;
       try {
         setIsLoading(true);
         await onDelegate(todo.id, {
-          preserveDueDate: todo.hasDueDate,
+          preserveDueDate: !!todo.dueDate,
           dueDate: todo.dueDate,
         });
       } catch (error) {
@@ -123,18 +125,19 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
       } finally {
         setIsLoading(false);
       }
-    }, [todo.id, todo.hasDueDate, todo.dueDate, onDelegate, isLoading]);
+    }, [todo.id, todo.dueDate, onDelegate, isLoading]);
 
     const iconSize = 14;
 
-    const hasSubtasks = Array.isArray(todo.subtasks) && todo.subtasks.length > 0;
+    const hasSubtasks =
+      Array.isArray(todo.subtasks) && todo.subtasks.length > 0;
 
     return (
       <li
         className={`group flex flex-col items-start justify-between rounded-lg ${theme === "dark" ? "bg-background-dark" : "bg-background-light"} w-full p-3 shadow-sm transition-colors duration-200`}
       >
         <div className="flex w-full items-start">
-          <div className="flex-shrink-0 mr-2 flex items-center">
+          <div className="mr-2 flex flex-shrink-0 items-center">
             <AnimatedCheckmark
               completed={todo.completed}
               onToggle={() => onToggle(todo.id)}
@@ -146,7 +149,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
               size={iconSize}
             />
           </div>
-          <div className="flex-grow min-w-0 relative">
+          <div className="relative min-w-0 flex-grow">
             {isEditing ? (
               <>
                 <input
@@ -168,7 +171,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
             ) : (
               <p
                 ref={textRef}
-                className={`cursor-pointer text-xs transition-all line-clamp-2 ${
+                className={`line-clamp-2 cursor-pointer text-xs transition-all ${
                   todo.completed
                     ? "text-text-light-dark"
                     : theme === "dark"
@@ -182,9 +185,8 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
               </p>
             )}
           </div>
-          <div className="flex-shrink-0 flex items-center space-x-2 ml-2">
+          <div className="ml-2 flex flex-shrink-0 items-center space-x-2">
             <DueDateButton
-              hasDueDate={todo.hasDueDate}
               dueDate={todo.dueDate}
               onSetDueDate={handleSetDueDate}
               size={iconSize}
@@ -195,7 +197,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
                 disabled={isLoading}
                 className={`flex items-center justify-center w-${iconSize} h-${iconSize} transition-colors duration-300 focus:outline-none ${
                   theme === "dark"
-                    ? "hover:text-amber-300 text-amber-400"
+                    ? "text-amber-400 hover:text-amber-300"
                     : "text-blue-500 hover:text-blue-600"
                 }`}
                 title="Delegate to AI"
@@ -217,12 +219,12 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
           </div>
         </div>
         {mounted && hasSubtasks && (
-          <div 
-            className="mt-2 w-full pl-7 relative"
+          <div
+            className="relative mt-2 w-full pl-7"
             onMouseEnter={() => setIsHoveringSubtasks(true)}
             onMouseLeave={() => setIsHoveringSubtasks(false)}
           >
-            <div className="flex items-center justify-between h-6 relative">
+            <div className="relative flex h-6 items-center justify-between">
               <button
                 onClick={() => setIsSubtasksExpanded(!isSubtasksExpanded)}
                 className={`flex items-center text-xs ${theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"} transition-colors duration-200`}
@@ -243,8 +245,10 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
                     onClick={handleDelegate}
                     disabled={isLoading}
                     className={`text-xs ${
-                      theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-600 hover:text-gray-800"
-                    } transition-colors duration-200 flex items-center justify-center w-6 h-6 absolute right-0 top-0`}
+                      theme === "dark"
+                        ? "text-gray-400 hover:text-gray-300"
+                        : "text-gray-600 hover:text-gray-800"
+                    } absolute right-0 top-0 flex h-6 w-6 items-center justify-center transition-colors duration-200`}
                     title="Regenerate subtasks"
                   >
                     {isLoading ? (
@@ -263,13 +267,7 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
                     <AnimatedCheckmark
                       completed={subtask.completed}
                       onToggle={() =>
-                        onUpdate(todo.id, {
-                          subtasks: todo.subtasks?.map((st) =>
-                            st.id === subtask.id
-                              ? { ...st, completed: !st.completed }
-                              : st,
-                          ),
-                        }, todo.subtasks)
+                        onUpdate(subtask.id, { completed: !subtask.completed })
                       }
                       size={iconSize}
                     />

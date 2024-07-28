@@ -36,7 +36,7 @@ const TodoApp: React.FC = React.memo(() => {
     const task = tasks.find(t => t.id === id);
     if (task) {
       try {
-        await updateTask({ id, completed: !task.completed });
+        await updateTask(id, { completed: !task.completed });
       } catch (error) {
         console.error('Failed to toggle task:', error);
         // Optionally, you can add some user feedback here
@@ -45,30 +45,22 @@ const TodoApp: React.FC = React.memo(() => {
   }, [tasks, updateTask]);
 
   const updateTodo = useCallback(async (id: number, updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>) => {
-    const task = tasks.find(t => t.id === id);
-    if (task) {
-      try {
-        await updateTask({ id, ...updates });
-      } catch (error) {
-        console.error('Failed to update task:', error);
-        // Optionally, you can add some user feedback here
-      }
-    }
-  }, [tasks, updateTask]);
-
-  const handleDelegateTask = useCallback(async (taskId: number, options: { preserveDueDate: boolean, dueDate: Date | null }) => {
     try {
-      const updatedTask = await delegateTask(taskId, options);
-      // Update the task in the local state, replacing all subtasks
-      await updateTask({
-        ...updatedTask,
-        subtasks: updatedTask.subtasks // This should be the new set of subtasks
-      });
+      await updateTask(id, updates);
+    } catch (error) {
+      console.error('Failed to update task:', error);
+      // Optionally, you can add some user feedback here
+    }
+  }, [updateTask]);
+
+  const handleDelegateTask = useCallback(async (taskId: number, options: { preserveDueDate: boolean, dueDate: string | null }) => {
+    try {
+      await delegateTask(taskId, options);
     } catch (error) {
       console.error('Failed to delegate task:', error);
       // Optionally, you can add some user feedback here
     }
-  }, [delegateTask, updateTask]);
+  }, [delegateTask]);
 
   const addTodo = useCallback(async () => {
     if (input.trim()) {
@@ -78,7 +70,6 @@ const TodoApp: React.FC = React.memo(() => {
           projectId: 1, // You should get this from the user's context or URL params
           status: 'todo',
           priority: 'none',
-          hasDueDate: false,
           dueDate: null,
         });
         setInput("");
