@@ -4,7 +4,6 @@ import {
   Loader2,
   RefreshCw,
   X,
-  Zap,
 } from "lucide-react";
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import { useTheme } from "../ThemeProvider";
@@ -14,6 +13,7 @@ import DueDateButton from "./DueDateButtonProps";
 import type { Task } from "~/server/db/schema";
 import { motion, AnimatePresence } from "framer-motion";
 import DeleteButton from "./DeleteButton";
+import AnimatedRefreshIcon from '~/components/ui/animated-refresh-icon';
 
 interface TodoItemProps {
   todo: Task & { subtasks?: Task[] };
@@ -143,11 +143,6 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
               onToggle={() => onToggle(todo.id)}
               size={iconSize}
             />
-            <PriorityButton
-              priority={todo.priority}
-              onToggle={togglePriority}
-              size={iconSize}
-            />
           </div>
           <div className="relative min-w-0 flex-grow">
             {isEditing ? (
@@ -186,35 +181,28 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
             )}
           </div>
           <div className="ml-2 flex flex-shrink-0 items-center space-x-2">
+            <PriorityButton
+              priority={todo.priority}
+              onToggle={togglePriority}
+              size={iconSize}
+            />
             <DueDateButton
               dueDate={todo.dueDate}
               onSetDueDate={handleSetDueDate}
               size={iconSize}
             />
-            {!hasSubtasks && (
-              <motion.button
-                onClick={handleDelegate}
-                disabled={isLoading}
-                className={`flex items-center justify-center w-${iconSize} h-${iconSize} transition-colors duration-300 focus:outline-none ${
-                  theme === "dark"
-                    ? "text-amber-400 hover:text-amber-300"
-                    : "text-blue-500 hover:text-blue-600"
-                }`}
-                title="Delegate to AI"
-                animate={{
-                  width: `${iconSize}px`,
-                  height: `${iconSize}px`,
-                  borderRadius: "50%",
-                }}
-                transition={{ duration: 0.15 }}
-              >
-                {isLoading ? (
-                  <Loader2 size={iconSize} className="animate-spin" />
-                ) : (
-                  <Zap size={iconSize} />
-                )}
-              </motion.button>
-            )}
+            <motion.button
+              onClick={handleDelegate}
+              disabled={isLoading}
+              className={`flex items-center justify-center w-${iconSize} h-${iconSize} transition-colors duration-300 focus:outline-none ${
+                theme === "dark"
+                  ? "text-amber-400 hover:text-amber-300"
+                  : "text-blue-500 hover:text-blue-600"
+              }`}
+              title="Delegate to AI"
+            >
+              <AnimatedRefreshIcon isLoading={isLoading} size={iconSize} />
+            </motion.button>
             <DeleteButton onDelete={() => onDelete(todo.id)} size={iconSize} />
           </div>
         </div>
@@ -236,34 +224,11 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
                 )}
                 <span className="ml-1">Subtasks ({todo.subtasks?.length})</span>
               </button>
-              <AnimatePresence>
-                {(isHoveringSubtasks || isLoading) && (
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={handleDelegate}
-                    disabled={isLoading}
-                    className={`text-xs ${
-                      theme === "dark"
-                        ? "text-gray-400 hover:text-gray-300"
-                        : "text-gray-600 hover:text-gray-800"
-                    } absolute right-0 top-0 flex h-6 w-6 items-center justify-center transition-colors duration-200`}
-                    title="Regenerate subtasks"
-                  >
-                    {isLoading ? (
-                      <Loader2 size={iconSize} className="animate-spin" />
-                    ) : (
-                      <RefreshCw size={iconSize} />
-                    )}
-                  </motion.button>
-                )}
-              </AnimatePresence>
             </div>
             {isSubtasksExpanded && Array.isArray(todo.subtasks) && (
-              <ul className="mt-2 space-y-2 pl-6">
+              <ul className="mt-2 space-y-2">
                 {todo.subtasks.map((subtask) => (
-                  <li key={subtask.id} className="flex items-center text-xs">
+                  <li key={subtask.id} className="flex items-center">
                     <AnimatedCheckmark
                       completed={subtask.completed}
                       onToggle={() =>
@@ -272,7 +237,13 @@ const TodoItem: React.FC<TodoItemProps> = React.memo(
                       size={iconSize}
                     />
                     <span
-                      className={`ml-2 ${subtask.completed ? "line-through" : ""} ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                      className={`ml-2 ${subtask.completed ? "line-through" : ""} ${
+                        todo.completed
+                          ? "text-text-light-dark"
+                          : theme === "dark"
+                            ? "text-text-dark"
+                            : "text-text-light"
+                      } text-xs`}
                     >
                       {subtask.description}
                     </span>
