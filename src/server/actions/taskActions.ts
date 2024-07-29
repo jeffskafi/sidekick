@@ -1,17 +1,17 @@
 'use server'
 
 import { db } from '~/server/db';
-import { tasks, taskRelationships, type Task, type NewTask, type TaskUpdate, type TaskSearchParams } from '~/server/db/schema';
+import type { Task, NewTask, TaskUpdate, TaskSearchParams, TaskSelect } from '~/server/db/schema';
+import { tasks, taskRelationships } from '~/server/db/schema';
 import { eq, and, inArray, or, ilike } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
-import type { UUID } from 'crypto'; // Add this import if not already present
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function getTasks(): Promise<Task[]> {
+export async function getTopLevelTasks(): Promise<Task[]> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -76,7 +76,7 @@ export async function createTask(newTask: NewTask): Promise<Task> {
   }
 }
 
-export async function updateTask(id: UUID, updates: TaskUpdate): Promise<Task> {
+export async function updateTask(id: TaskSelect['id'], updates: TaskUpdate): Promise<Task> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -109,7 +109,7 @@ export async function updateTask(id: UUID, updates: TaskUpdate): Promise<Task> {
   });
 }
 
-export async function deleteTask(id: UUID): Promise<void> {
+export async function deleteTask(id: TaskSelect['id']): Promise<void> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -120,7 +120,7 @@ export async function deleteTask(id: UUID): Promise<void> {
   });
 }
 
-export async function moveTask(taskId: UUID, newParentId: UUID | null): Promise<void> {
+export async function moveTask(taskId: TaskSelect['id'], newParentId: TaskSelect['id'] | null): Promise<void> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -188,7 +188,7 @@ export async function searchTasks(params: TaskSearchParams): Promise<Task[]> {
   }));
 }
 
-export async function generateSubtasks(taskId: UUID): Promise<Task[]> {
+export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -315,7 +315,7 @@ export async function generateSubtasks(taskId: UUID): Promise<Task[]> {
   }
 }
 
-export async function getSubtasks(taskId: UUID): Promise<Task[]> {
+export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
