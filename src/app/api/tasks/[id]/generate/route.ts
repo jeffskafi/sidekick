@@ -12,8 +12,8 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const taskId = parseInt(params.id, 10);
-    if (isNaN(taskId)) {
+    const taskId = params.id;
+    if (!taskId) {
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
     }
 
