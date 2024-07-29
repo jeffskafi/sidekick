@@ -14,6 +14,7 @@
   transition: background-color 0.3s;
   overflow: hidden;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  background-color: #1a1a1a; /* Dark mode by default */
 }
 .toggleButton {
   position: absolute;
@@ -23,16 +24,16 @@
   top: 2px;
   left: 2px;
   transition: transform 0.3s, background-color 0.3s;
-  background: radial-gradient(circle at 35% 35%, #fff, #f0f0f0);
+  background: radial-gradient(circle at 35% 35%, #f0f0f0, #d0d0d0);
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   z-index: 1;
 }
-.toggleSwitch.darkMode {
-  background-color: #1a1a1a;
+.toggleSwitch.lightMode {
+  background-color: #87CEEB; /* Light sky blue for light mode */
 }
-.toggleSwitch.darkMode .toggleButton {
+.toggleSwitch.lightMode .toggleButton {
   transform: translateX(30px);
-  background: radial-gradient(circle at 35% 35%, #f0f0f0, #d0d0d0);
+  background: radial-gradient(circle at 35% 35%, #fff, #f0f0f0);
 }
 .toggleSwitch .sun,
 .toggleSwitch .moon {
@@ -41,14 +42,14 @@
   height: 18px;
   border-radius: 50%;
   top: 6px;
-  left: 6px;
+  right: 6px; /* Changed from left to right */
   transition: transform 0.3s, opacity 0.3s;
   z-index: 2;
 }
 .toggleSwitch .sun {
   background: radial-gradient(circle at 30% 30%, #ffd700, #ffa500);
   box-shadow: 0 0 5px #ffa500;
-  opacity: 1;
+  opacity: 0; /* Start with sun hidden */
 }
 .toggleSwitch .sun::after {
   content: '';
@@ -99,17 +100,17 @@
     inset -4px 4px 1px rgba(0,0,0,0.03),
     inset 4px -4px 1px rgba(0,0,0,0.03),
     inset -4px -4px 1px rgba(0,0,0,0.03);
-  opacity: 0;
+  opacity: 1;
   transition: transform 0.3s ease, opacity 0.3s ease;
   border: 1px solid #808080;
 }
-.toggleSwitch.darkMode .sun {
-  transform: translateX(30px);
-  opacity: 0;
-}
-.toggleSwitch.darkMode .moon {
-  transform: translateX(30px);
+.toggleSwitch.lightMode .sun {
+  transform: translateX(0);
   opacity: 1;
+}
+.toggleSwitch.lightMode .moon {
+  transform: translateX(0);
+  opacity: 0;
 }
 .toggleSwitch .moon::after {
   content: '';
@@ -132,6 +133,7 @@
   right: 0;
   bottom: 0;
   background: linear-gradient(to bottom, #87CEEB, #E0F6FF); /* Gradient sky */
+  opacity: 0; /* Start with light mode background hidden */
   transition: opacity 0.3s;
   z-index: 1;
 }
@@ -145,7 +147,7 @@
   right: 0;
   bottom: 0;
   background: linear-gradient(to bottom, #000000, #0a0f1a, #1a2130); /* Much darker night sky gradient */
-  opacity: 0;
+  opacity: 1; /* Start with dark mode background visible */
   transition: opacity 0.3s;
   z-index: 1;
 }
@@ -156,6 +158,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  opacity: 0; /* Start with clouds hidden */
   transition: opacity 0.3s;
   z-index: 2;
 }
@@ -167,7 +170,7 @@
   background: linear-gradient(to bottom, #ffffff 5%, #f1f1f1 100%);
   border-radius: 6px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  animation: moveCloud 15s linear infinite;
+  animation: moveCloud 20s linear infinite;
 }
 
 .cloud::before,
@@ -194,33 +197,37 @@
 
 .cloud:nth-child(1) {
   top: 20%;
-  left: -16px;
+  left: 100%;
   opacity: 0.9;
 }
 
 .cloud:nth-child(2) {
   top: 40%;
-  left: -20px;
+  left: 120%;
   opacity: 0.7;
   transform: scale(0.8);
-  animation-delay: -5s;
+  animation-delay: -6s;
 }
 
 .cloud:nth-child(3) {
   top: 60%;
-  left: -14px;
+  left: 140%;
   opacity: 0.8;
   transform: scale(0.6);
-  animation-delay: -8s;
+  animation-delay: -12s;
 }
 
 @keyframes moveCloud {
   0% {
-    transform: translateX(-16px);
+    transform: translateX(0);
   }
   100% {
-    transform: translateX(76px);
+    transform: translateX(-160px); /* Move further to the left */
   }
+}
+
+.toggleSwitch.lightMode .clouds {
+  opacity: 1; /* Show clouds in light mode */
 }
 
 /* Stars for dark mode */
@@ -228,7 +235,7 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  opacity: 0;
+  opacity: 1; /* Start with stars visible */
   transition: opacity 0.3s;
   z-index: 2;
 }
@@ -253,17 +260,18 @@
   }
 }
 
-.toggleSwitch.darkMode::before {
-  opacity: 0;
-}
-
-.toggleSwitch.darkMode::after {
+.toggleSwitch.lightMode::before {
   opacity: 1;
 }
 
-.toggleSwitch.darkMode .clouds {
+.toggleSwitch.lightMode::after {
   opacity: 0;
 }
-.toggleSwitch.darkMode .stars {
-  opacity: 1;
+
+.toggleSwitch.lightMode .clouds {
+  opacity: 1; /* Show clouds in light mode */
+}
+
+.toggleSwitch.lightMode .stars {
+  opacity: 0; /* Hide stars in light mode */
 }

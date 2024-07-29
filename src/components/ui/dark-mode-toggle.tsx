@@ -13,7 +13,7 @@ const DarkModeToggle: React.FC = () => {
 
   return (
     <div
-      className={cn(styles.toggleSwitch, isDarkMode && styles.darkMode)}
+      className={cn(styles.toggleSwitch, !isDarkMode && styles.lightMode)}
       onClick={handleToggle}
     >
       <div className={styles.clouds}>
