@@ -4,12 +4,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ListTodo, GitBranch, Workflow, Zap, Target, Lightbulb } from 'lucide-react';
 
-// HowItWorks component
+// Updated HowItWorks component with enhanced icon styling and z-index
 const HowItWorks: React.FC = () => {
   const steps = [
-    { icon: <ListTodo className="w-6 h-6 sm:w-8 sm:h-8" />, title: "Create Your Main Task", description: "Start by adding your primary goal or task." },
-    { icon: <GitBranch className="w-6 h-6 sm:w-8 sm:h-8" />, title: "Break It Down", description: "Add subtasks to your main task, creating a hierarchical structure." },
-    { icon: <Workflow className="w-6 h-6 sm:w-8 sm:h-8" />, title: "Build Your Journey", description: "Continue adding layers of subtasks to create a detailed sequence of events." },
+    { icon: ListTodo, title: "Create Your Main Task", description: "Start by adding your primary goal or task." },
+    { icon: GitBranch, title: "Break It Down", description: "Add subtasks to your main task, creating a hierarchical structure." },
+    { icon: Workflow, title: "Build Your Journey", description: "Continue adding layers of subtasks to create a detailed sequence of events." },
   ];
 
   return (
@@ -24,7 +24,7 @@ const HowItWorks: React.FC = () => {
           How It Works
         </motion.h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12">
-          {steps.map((step, index) => (
+          {steps.map((Step, index) => (
             <motion.div 
               key={index}
               className="flex flex-col items-center text-center"
@@ -32,11 +32,11 @@ const HowItWorks: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.2 }}
             >
-              <div className="mb-3 sm:mb-4 rounded-full bg-primary dark:bg-primary-dark p-3 sm:p-4 text-white">
-                {step.icon}
+              <div className="mb-6 relative z-10">
+                <Step.icon className="w-12 h-12 text-primary dark:text-primary-dark drop-shadow-lg" />
               </div>
-              <h3 className="mb-2 text-lg sm:text-xl font-semibold text-secondary dark:text-primary">{step.title}</h3>
-              <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-text-light dark:text-text-light-dark">{step.description}</p>
+              <h3 className="mb-2 text-lg sm:text-xl font-semibold text-secondary dark:text-primary">{Step.title}</h3>
+              <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-text-light dark:text-text-light-dark">{Step.description}</p>
               <div className="text-base sm:text-lg font-bold text-primary dark:text-primary-dark">Step {index + 1}</div>
             </motion.div>
           ))}
@@ -46,12 +46,12 @@ const HowItWorks: React.FC = () => {
   );
 };
 
-// New Features component
+// New Features component with enhanced icon styling
 const Features: React.FC = () => {
   const features = [
-    { icon: <Zap className="w-8 h-8" />, title: "Boost Productivity", description: "Break down complex tasks into manageable steps, increasing your efficiency." },
-    { icon: <Target className="w-8 h-8" />, title: "Stay Focused", description: "Visualize your entire journey, helping you stay on track and motivated." },
-    { icon: <Lightbulb className="w-8 h-8" />, title: "Inspire Creativity", description: "Organize your thoughts and ideas in a structured, hierarchical manner." },
+    { icon: Zap, title: "Boost Productivity", description: "Break down complex tasks into manageable steps, increasing your efficiency." },
+    { icon: Target, title: "Stay Focused", description: "Visualize your entire journey, helping you stay on track and motivated." },
+    { icon: Lightbulb, title: "Inspire Creativity", description: "Organize your thoughts and ideas in a structured, hierarchical manner." },
   ];
 
   return (
@@ -59,7 +59,7 @@ const Features: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-secondary dark:text-primary text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Why Choose Sidekick?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
-          {features.map((feature, index) => (
+          {features.map((Feature, index) => (
             <motion.div 
               key={index}
               className="flex flex-col items-center text-center"
@@ -67,11 +67,11 @@ const Features: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.2 }}
             >
-              <div className="mb-4 text-primary dark:text-primary-dark">
-                {feature.icon}
+              <div className="mb-6 relative z-10">
+                <Feature.icon className="w-12 h-12 text-primary dark:text-primary-dark drop-shadow-lg" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-secondary dark:text-primary">{feature.title}</h3>
-              <p className="text-text-light dark:text-text-light-dark">{feature.description}</p>
+              <h3 className="mb-2 text-xl font-semibold text-secondary dark:text-primary">{Feature.title}</h3>
+              <p className="text-text-light dark:text-text-light-dark">{Feature.description}</p>
             </motion.div>
           ))}
         </div>
