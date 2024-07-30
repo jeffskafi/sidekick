@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 
 interface AddTaskFormProps {
-  userId: string;
+  userId: string | null;
   parentId?: string | null;
   onComplete?: () => void;
 }
@@ -16,7 +16,7 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (description.trim()) {
+    if (description.trim() && userId) {
       await addTask({ description, userId, status: "todo", parentId });
       setDescription("");
       onComplete?.();
@@ -33,7 +33,7 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
           placeholder="Add a new task"
           className="flex-grow"
         />
-        <Button type="submit">Add Task</Button>
+        <Button type="submit" disabled={!userId}>Add Task</Button>
       </div>
     </form>
   );

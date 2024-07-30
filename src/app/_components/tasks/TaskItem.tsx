@@ -12,140 +12,96 @@ interface TaskItemProps {
 }
 
 export default function TaskItem({ task, level }: TaskItemProps) {
-  const { updateTask, deleteTask, loadSubtasks, generateAISubtasks } =
-    useTaskContext();
+  const { tasks, updateTask, deleteTask, loadSubtasks, generateAISubtasks, userId } = useTaskContext();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAddSubtask, setShowAddSubtask] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [subtasks, setSubtasks] = useState<Task[]>([]);
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
 
+  const subtasks = tasks.filter(t => task.children.includes(t.id));
+  const hasChildren = task.children.length > 0;
+
   useEffect(() => {
-    if (isExpanded && task.children.length > 0 && subtasks.length === 0) {
-      loadSubtasks(task.id)
-        .then((loadedSubtasks) => {
-          setSubtasks(loadedSubtasks);
-        })
-        .catch((err) => {
-          console.error("Failed to load subtasks:", err);
-          setError("Failed to load subtasks");
-        });
+    if (isExpanded && hasChildren && subtasks.length === 0) {
+      loadSubtasks(task.id).catch(error => {
+        console.error("Failed to load subtasks:", error);
+        setError("Failed to load subtasks");
+      });
     }
-  }, [isExpanded, task.children, subtasks.length, loadSubtasks, task.id]);
+  }, [isExpanded, hasChildren, subtasks.length, loadSubtasks, task.id]);
 
   const handleStatusChange = async () => {
-    try {
-      await updateTask(task.id, {
-        status: task.status === "done" ? "todo" : "done",
-      });
-    } catch (err) {
-      setError("Failed to update task status");
-      console.error(err);
-    }
+    const newStatus = task.status === "done" ? "todo" : "done";
+    await updateTask(task.id, { status: newStatus });
   };
 
   const handleDelete = async () => {
-    try {
-      await deleteTask(task.id);
-    } catch (err) {
-      setError("Failed to delete task");
-      console.error(err);
-    }
+    await deleteTask(task.id);
   };
 
-  const handleExpand = async () => {
-    if (!isExpanded && task.children.length > 0) {
-      try {
-        await loadSubtasks(task.id);
-        setIsExpanded(true);
-      } catch (err) {
-        setError("Failed to load subtasks");
-        console.error(err);
-      }
-    } else {
-      setIsExpanded(!isExpanded);
-    }
-  };
-
-  const handleGenerateAISubtasks = async () => {
+  const handleGenerateSubtasks = async () => {
     setIsGeneratingSubtasks(true);
-    setError(null);
     try {
       await generateAISubtasks(task.id);
       setIsExpanded(true);
-    } catch (err) {
-      setError("Failed to generate AI subtasks");
-      console.error(err);
+    } catch (error) {
+      console.error("Failed to generate subtasks:", error);
+      setError("Failed to generate subtasks");
     } finally {
       setIsGeneratingSubtasks(false);
     }
   };
 
   return (
-    <li className={`mb-2 ${level > 0 ? "ml-4" : ""}`}>
-      {error && <div className="mb-2 text-red-500">{error}</div>}
-      <div
-        className={`flex items-center justify-between rounded bg-white p-2 shadow dark:bg-gray-800 ${level > 0 ? "border-l-2 border-gray-300" : ""}`}
-      >
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            checked={task.status === "done"}
-            onCheckedChange={() => void handleStatusChange()}
-          />
-          {task.children.length > 0 && (
-            <button onClick={() => void handleExpand()}>
-              {isExpanded ? (
-                <ChevronDown size={16} />
-              ) : (
-                <ChevronRight size={16} />
-              )}
-            </button>
-          )}
-          <span className={task.status === "done" ? "line-through" : ""}>
-            {task.description}
-          </span>
-        </div>
-        <div className="flex space-x-2">
+    <li className="mb-2">
+      <div className="flex items-center" style={{ marginLeft: `${level * 20}px` }}>
+        {hasChildren ? (
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              setShowAddSubtask(!showAddSubtask);
-            }}
+            onClick={() => setIsExpanded(!isExpanded)}
           >
-            <Plus size={16} />
+            {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => void handleGenerateAISubtasks()}
-            disabled={isGeneratingSubtasks}
-          >
-            {isGeneratingSubtasks ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <Zap size={16} />
-            )}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => void handleDelete()}
-          >
-            Delete
-          </Button>
-        </div>
+        ) : (
+          <div style={{ width: '24px' }}></div>
+        )}
+        <Checkbox
+          checked={task.status === "done"}
+          onCheckedChange={() => void handleStatusChange()}
+        />
+        <span className={task.status === "done" ? "line-through" : ""}>
+          {task.description}
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowAddSubtask(!showAddSubtask)}
+        >
+          <Plus size={16} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => void handleGenerateSubtasks()}
+          disabled={isGeneratingSubtasks}
+        >
+          {isGeneratingSubtasks ? <Loader2 className="animate-spin" size={16} /> : <Zap size={16} />}
+        </Button>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => void handleDelete()}
+        >
+          Delete
+        </Button>
       </div>
-      {showAddSubtask && (
-        <div className="ml-4 mt-2">
-          <AddTaskForm
-            userId={task.userId}
-            parentId={task.id}
-            onComplete={() => {
-              setShowAddSubtask(false);
-            }}
-          />
-        </div>
+      {showAddSubtask && userId && (
+        <AddTaskForm
+          userId={userId}
+          parentId={task.id}
+          onComplete={() => setShowAddSubtask(false)}
+        />
       )}
       {isExpanded && subtasks.length > 0 && (
         <ul className="mt-2">
@@ -154,6 +110,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           ))}
         </ul>
       )}
+      {error && <p className="text-red-500">{error}</p>}
     </li>
   );
 }
