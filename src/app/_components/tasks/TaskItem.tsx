@@ -1,115 +1,109 @@
-"use client";
-
-import { ChevronRight, Zap } from "lucide-react";
-import React from "react";
-import AnimatedCheckmark from "./AnimatedCheckmark";
-import PriorityButton from "./PriorityButton";
-import DueDateButton from "./DueDateButton";
+import React, { useState, useEffect } from "react";
+import { useTaskContext } from "~/app/_contexts/TaskContext";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Button } from "~/components/ui/button";
+import { ChevronDown, ChevronRight, Plus, Zap } from "lucide-react";
 import type { Task } from "~/server/db/schema";
-import DeleteButton from "./DeleteButton";
-import {
-  updateTask,
-  deleteTask,
-  generateSubtasks,
-  getSubtasks,
-} from "~/server/actions/taskActions";
+import AddTaskForm from "./AddTaskForm";
 
 interface TaskItemProps {
   task: Task;
-  depth?: number;
+  level: number;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, depth = 0 }) => {
-  const iconSize = 14;
+export default function TaskItem({ task, level }: TaskItemProps) {
+  const { tasks, updateTask, deleteTask, loadSubtasks, generateAISubtasks } = useTaskContext();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showAddSubtask, setShowAddSubtask] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [subtasks, setSubtasks] = useState<Task[]>([]);
 
-  const handleToggle = async () => {
-    await updateTask(task.id, { completed: !task.completed });
+  useEffect(() => {
+    setSubtasks(task.children.map(childId => tasks.find(t => t.id === childId)).filter((t): t is Task => t !== undefined));
+  }, [task, tasks]);
+
+  const handleStatusChange = async () => {
+    try {
+      await updateTask(task.id, { status: task.status === "done" ? "todo" : "done" });
+    } catch (err) {
+      setError("Failed to update task status");
+      console.error(err);
+    }
   };
 
   const handleDelete = async () => {
-    await deleteTask(task.id);
+    try {
+      await deleteTask(task.id);
+    } catch (err) {
+      setError("Failed to delete task");
+      console.error(err);
+    }
   };
 
-  const handleUpdate = async (
-    updates: Partial<Omit<Task, "id" | "userId" | "createdAt" | "updatedAt">>,
-  ) => {
-    await updateTask(task.id, updates);
+  const handleExpand = async () => {
+    if (!isExpanded && task.children.length > 0) {
+      try {
+        await loadSubtasks(task.id);
+        setIsExpanded(true);
+      } catch (err) {
+        setError("Failed to load subtasks");
+        console.error(err);
+      }
+    } else {
+      setIsExpanded(!isExpanded);
+    }
   };
 
-  const handleGenerateSubtasks = async () => {
-    await generateSubtasks(task.id);
-  };
-
-  const handleExpandSubtasks = async () => {
-    await getSubtasks(task.id);
+  const handleGenerateAISubtasks = async () => {
+    try {
+      await generateAISubtasks(task.id);
+      setIsExpanded(true);
+    } catch (err) {
+      setError("Failed to generate AI subtasks");
+      console.error(err);
+    }
   };
 
   return (
-    <li
-      className={`group flex w-full flex-col items-start justify-between rounded-lg bg-background-light p-3 shadow-sm transition-colors duration-200 dark:bg-background-dark`}
-      style={{ marginLeft: `${depth * 20}px` }}
-    >
-      <div className="flex w-full items-start">
-        <div className="mr-2 flex flex-shrink-0 items-center">
-          <AnimatedCheckmark
-            completed={task.completed}
-            onToggle={handleToggle}
-            size={iconSize}
+    <li className="mb-2">
+      {error && <div className="text-red-500 mb-2">{error}</div>}
+      <div className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded shadow">
+        <div className="flex items-center space-x-2">
+          {task.children.length > 0 && (
+            <button onClick={() => void handleExpand()}>
+              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+          )}
+          <Checkbox
+            checked={task.status === "done"}
+            onCheckedChange={() => void handleStatusChange()}
           />
-        </div>
-        <div className="relative min-w-0 flex-grow">
-          <p
-            className={`line-clamp-2 cursor-pointer text-xs transition-all ${
-              task.completed
-                ? "text-text-light-dark"
-                : "text-text-light dark:text-text-dark"
-            }`}
-            title={task.description}
-          >
+          <span className={task.status === "done" ? "line-through" : ""}>
             {task.description}
-          </p>
+          </span>
         </div>
-        <div className="ml-2 flex flex-shrink-0 items-center space-x-2">
-          <PriorityButton
-            priority={task.priority}
-            onToggle={() =>
-              handleUpdate({
-                priority: task.priority === "high" ? "low" : "high",
-              })
-            }
-            size={iconSize}
-          />
-          <DueDateButton
-            dueDate={task.dueDate}
-            onSetDueDate={(date) => handleUpdate({ dueDate: date })}
-            size={iconSize}
-            theme="light"
-          />
-          <button
-            onClick={handleGenerateSubtasks}
-            className={`flex items-center justify-center w-${iconSize} h-${iconSize} text-blue-500 transition-colors duration-300 hover:text-blue-600 focus:outline-none dark:text-amber-400 dark:hover:text-amber-300`}
-            title="Generate subtasks"
-          >
-            <Zap size={iconSize} className="pulse" />
-          </button>
-          <DeleteButton onDelete={handleDelete} size={iconSize} />
+        <div className="flex space-x-2">
+          <Button variant="ghost" size="sm" onClick={() => setShowAddSubtask(!showAddSubtask)}>
+            <Plus size={16} />
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => void handleGenerateAISubtasks()}>
+            <Zap size={16} />
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => void handleDelete()}>
+            Delete
+          </Button>
         </div>
       </div>
-      {task.children.length > 0 && (
-        <div className="relative mt-2 w-full">
-          <div className="relative flex h-6 items-center justify-between">
-            <button
-              onClick={handleExpandSubtasks}
-              className={`flex items-center text-xs text-gray-600 transition-colors duration-200 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300`}
-            >
-              <ChevronRight size={iconSize} />
-              <span className="ml-1">Subtasks ({task.children.length})</span>
-            </button>
-          </div>
-        </div>
+      {showAddSubtask && (
+        <AddTaskForm userId={task.userId} parentId={task.id} onComplete={() => setShowAddSubtask(false)} />
+      )}
+      {isExpanded && subtasks.length > 0 && (
+        <ul className={`ml-${level * 4}`}>
+          {subtasks.map(subtask => (
+            <TaskItem key={subtask.id} task={subtask} level={level + 1} />
+          ))}
+        </ul>
       )}
     </li>
   );
-};
-
-export default TaskItem;
+}
