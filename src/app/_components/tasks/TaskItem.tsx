@@ -12,7 +12,7 @@ interface TaskItemProps {
 }
 
 export default function TaskItem({ task, level }: TaskItemProps) {
-  const { tasks, updateTask, deleteTask, loadSubtasks, generateAISubtasks } =
+  const { updateTask, deleteTask, loadSubtasks, generateAISubtasks } =
     useTaskContext();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAddSubtask, setShowAddSubtask] = useState(false);
@@ -21,7 +21,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
 
   useEffect(() => {
-    if (isExpanded && task.children.length > 0) {
+    if (isExpanded && task.children.length > 0 && subtasks.length === 0) {
       loadSubtasks(task.id)
         .then((loadedSubtasks) => {
           setSubtasks(loadedSubtasks);
@@ -31,11 +31,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           setError("Failed to load subtasks");
         });
     }
-  }, [isExpanded, task.id, task.children.length, loadSubtasks]);
-
-  useEffect(() => {
-    setSubtasks(tasks.filter((t) => task.children.includes(t.id)));
-  }, [tasks, task.children]);
+  }, [isExpanded, task.children, subtasks.length, loadSubtasks, task.id]);
 
   const handleStatusChange = async () => {
     try {
@@ -92,6 +88,10 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         className={`flex items-center justify-between rounded bg-white p-2 shadow dark:bg-gray-800 ${level > 0 ? "border-l-2 border-gray-300" : ""}`}
       >
         <div className="flex items-center space-x-2">
+          <Checkbox
+            checked={task.status === "done"}
+            onCheckedChange={() => void handleStatusChange()}
+          />
           {task.children.length > 0 && (
             <button onClick={() => void handleExpand()}>
               {isExpanded ? (
@@ -101,10 +101,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               )}
             </button>
           )}
-          <Checkbox
-            checked={task.status === "done"}
-            onCheckedChange={() => void handleStatusChange()}
-          />
           <span className={task.status === "done" ? "line-through" : ""}>
             {task.description}
           </span>

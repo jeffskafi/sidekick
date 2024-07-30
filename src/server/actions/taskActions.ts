@@ -3,9 +3,8 @@
 import { db } from '~/server/db';
 import type { Task, NewTask, TaskUpdate, TaskSearchParams, TaskSelect } from '~/server/db/schema';
 import { tasks, taskRelationships } from '~/server/db/schema';
-import { eq, and, inArray, or, ilike, isNull } from 'drizzle-orm';
-import { auth, currentUser } from "@clerk/nextjs/server";
-import type { User } from '@clerk/nextjs/server';
+import { eq, and, inArray, or, ilike } from 'drizzle-orm';
+import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
@@ -16,37 +15,49 @@ export async function getTopLevelTasks(): Promise<Task[]> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
-  const topLevelTasks = await db
+  const allTasks = await db
     .select()
     .from(tasks)
-    .leftJoin(taskRelationships, eq(tasks.id, taskRelationships.childTaskId))
-    .where(
-      and(
-        eq(tasks.userId, userId),
-        isNull(taskRelationships.parentTaskId)
-      )
-    )
+    .where(eq(tasks.userId, userId))
     .execute();
-
-  if (topLevelTasks.length === 0) {
-    return []; // Return an empty array if there are no top-level tasks
-  }
-
-  const taskIds = topLevelTasks.map(t => t.tasks.id);
 
   const relationships = await db
     .select()
     .from(taskRelationships)
-    .where(inArray(taskRelationships.parentTaskId, taskIds))
     .execute();
 
-  return topLevelTasks.map(task => ({
-    ...task.tasks,
-    children: relationships
-      .filter(r => r.parentTaskId === task.tasks.id)
-      .map(r => r.childTaskId),
-    parentId: null,
-  }));
+  const taskMap = new Map<string, Task>();
+  const topLevelTasks: Task[] = [];
+
+  // Create Task objects and store them in the map
+  allTasks.forEach(task => {
+    taskMap.set(task.id, {
+      ...task,
+      children: [],
+      parentId: null,
+    });
+  });
+
+  // Establish parent-child relationships
+  relationships.forEach(rel => {
+    if (rel.parentTaskId !== null) {  // Add this check
+      const childTask = taskMap.get(rel.childTaskId);
+      const parentTask = taskMap.get(rel.parentTaskId);
+      if (childTask && parentTask) {
+        childTask.parentId = rel.parentTaskId;
+        parentTask.children.push(rel.childTaskId);
+      }
+    }
+  });
+
+  // Collect top-level tasks
+  taskMap.forEach(task => {
+    if (task.parentId === null) {
+      topLevelTasks.push(task);
+    }
+  });
+
+  return topLevelTasks;
 }
 
 export async function createTask(newTask: NewTask): Promise<Task> {
@@ -122,56 +133,68 @@ export async function updateTask(id: TaskSelect['id'], updates: TaskUpdate): Pro
 }
 
 export async function deleteTask(id: TaskSelect['id']): Promise<void> {
-  const user = await currentUser();
+  const { userId } = auth();
+  if (!userId) throw new Error('Unauthorized');
 
-  if (!user) {
-    throw new Error('Unauthorized: No user found');
-  }
-
-  console.log(`Starting deletion of task ${id}`);
+  const descendantIds = await getDescendantTaskIds(id);
+  const allTaskIds = [id, ...descendantIds];
 
   await db.transaction(async (tx) => {
-    async function recursiveDelete(taskId: TaskSelect['id'], userId: User['id'], depth = 0) {
-      const indent = '  '.repeat(depth);
-      console.log(`${indent}Deleting task ${taskId}`);
+    // Delete all relationships
+    await tx
+      .delete(taskRelationships)
+      .where(
+        or(
+          inArray(taskRelationships.parentTaskId, allTaskIds),
+          inArray(taskRelationships.childTaskId, allTaskIds)
+        )
+      );
 
-      const childTasks = await tx
-        .select()
-        .from(taskRelationships)
-        .where(eq(taskRelationships.parentTaskId, taskId));
+    // Delete all tasks
+    await tx
+      .delete(tasks)
+      .where(
+        and(
+          inArray(tasks.id, allTaskIds),
+          eq(tasks.userId, userId)
+        )
+      );
+  });
+}
 
-      console.log(`${indent}Found ${childTasks.length} child tasks`);
+async function getDescendantTaskIds(taskId: TaskSelect['id']): Promise<TaskSelect['id'][]> {
+  const { userId } = auth();
+  if (!userId) throw new Error('Unauthorized');
 
-      for (const childTask of childTasks) {
-        await recursiveDelete(childTask.childTaskId, userId, depth + 1);
+  const allTasks = await db
+    .select()
+    .from(tasks)
+    .where(eq(tasks.userId, userId))
+    .execute();
+
+  const relationships = await db
+    .select()
+    .from(taskRelationships)
+    .execute();
+
+  const taskMap = new Map(allTasks.map(task => [task.id, { ...task, children: [] as string[] }]));
+
+  relationships.forEach(rel => {
+    if (rel.parentTaskId) {  // Check if parentTaskId is not null
+      const parentTask = taskMap.get(rel.parentTaskId);
+      if (parentTask) {
+        parentTask.children.push(rel.childTaskId);
       }
-
-      console.log(`${indent}Deleting relationships for task ${taskId}`);
-      await tx
-        .delete(taskRelationships)
-        .where(eq(taskRelationships.childTaskId, taskId));
-
-      await tx
-        .delete(taskRelationships)
-        .where(eq(taskRelationships.parentTaskId, taskId));
-
-      console.log(`${indent}Deleting task ${taskId}`);
-      const result = await tx
-        .delete(tasks)
-        .where(
-          and(
-            eq(tasks.id, taskId),
-            eq(tasks.userId, userId)
-          )
-        );
-
-      console.log(`${indent}Deletion result:`, result);
     }
-
-    await recursiveDelete(id, user.id);
   });
 
-  console.log(`Finished deletion of task ${id}`);
+  function collectDescendants(id: TaskSelect['id']): TaskSelect['id'][] {
+    const task = taskMap.get(id);
+    if (!task) return [];
+    return [id, ...task.children.flatMap(collectDescendants)];
+  }
+
+  return collectDescendants(taskId).filter(id => id !== taskId);
 }
 
 export async function moveTask(taskId: TaskSelect['id'], newParentId: TaskSelect['id'] | null): Promise<void> {
