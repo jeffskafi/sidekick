@@ -3,7 +3,7 @@
 import { db } from '~/server/db';
 import type { Task, NewTask, TaskUpdate, TaskSearchParams, TaskSelect } from '~/server/db/schema';
 import { tasks, taskRelationships } from '~/server/db/schema';
-import { eq, and, inArray, or, ilike } from 'drizzle-orm';
+import { eq, and, inArray, or, ilike, isNull } from 'drizzle-orm';
 import { auth, currentUser } from "@clerk/nextjs/server";
 import type { User } from '@clerk/nextjs/server';
 import OpenAI from 'openai';
@@ -19,21 +19,32 @@ export async function getTopLevelTasks(): Promise<Task[]> {
   const topLevelTasks = await db
     .select()
     .from(tasks)
-    .where(eq(tasks.userId, userId))
+    .leftJoin(taskRelationships, eq(tasks.id, taskRelationships.childTaskId))
+    .where(
+      and(
+        eq(tasks.userId, userId),
+        isNull(taskRelationships.parentTaskId)
+      )
+    )
     .execute();
 
-  if (topLevelTasks.length === 0) return [];
+  if (topLevelTasks.length === 0) {
+    return []; // Return an empty array if there are no top-level tasks
+  }
+
+  const taskIds = topLevelTasks.map(t => t.tasks.id);
 
   const relationships = await db
     .select()
     .from(taskRelationships)
-    .where(inArray(taskRelationships.parentTaskId, topLevelTasks.map(t => t.id)))
+    .where(inArray(taskRelationships.parentTaskId, taskIds))
     .execute();
 
-
   return topLevelTasks.map(task => ({
-    ...task,
-    children: relationships.filter(r => r.parentTaskId === task.id).map(r => r.childTaskId),
+    ...task.tasks,
+    children: relationships
+      .filter(r => r.parentTaskId === task.tasks.id)
+      .map(r => r.childTaskId),
     parentId: null,
   }));
 }
@@ -117,32 +128,35 @@ export async function deleteTask(id: TaskSelect['id']): Promise<void> {
     throw new Error('Unauthorized: No user found');
   }
 
+  console.log(`Starting deletion of task ${id}`);
+
   await db.transaction(async (tx) => {
-    // Function to recursively delete tasks and their relationships
-    async function recursiveDelete(taskId: TaskSelect['id'], userId: User['id']) {
-      // Get all child tasks
+    async function recursiveDelete(taskId: TaskSelect['id'], userId: User['id'], depth = 0) {
+      const indent = '  '.repeat(depth);
+      console.log(`${indent}Deleting task ${taskId}`);
+
       const childTasks = await tx
         .select()
         .from(taskRelationships)
         .where(eq(taskRelationships.parentTaskId, taskId));
 
-      // Recursively delete all child tasks
+      console.log(`${indent}Found ${childTasks.length} child tasks`);
+
       for (const childTask of childTasks) {
-        await recursiveDelete(childTask.childTaskId, userId);
+        await recursiveDelete(childTask.childTaskId, userId, depth + 1);
       }
 
-      // Delete relationships where this task is a child
+      console.log(`${indent}Deleting relationships for task ${taskId}`);
       await tx
         .delete(taskRelationships)
         .where(eq(taskRelationships.childTaskId, taskId));
 
-      // Delete relationships where this task is a parent
       await tx
         .delete(taskRelationships)
         .where(eq(taskRelationships.parentTaskId, taskId));
 
-      // Delete the task itself
-      await tx
+      console.log(`${indent}Deleting task ${taskId}`);
+      const result = await tx
         .delete(tasks)
         .where(
           and(
@@ -150,11 +164,14 @@ export async function deleteTask(id: TaskSelect['id']): Promise<void> {
             eq(tasks.userId, userId)
           )
         );
+
+      console.log(`${indent}Deletion result:`, result);
     }
 
-    // Start the recursive deletion from the given task ID
     await recursiveDelete(id, user.id);
   });
+
+  console.log(`Finished deletion of task ${id}`);
 }
 
 export async function moveTask(taskId: TaskSelect['id'], newParentId: TaskSelect['id'] | null): Promise<void> {
@@ -356,13 +373,15 @@ export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
-  // First, verify that the parent task exists and belongs to the user
-  const [parentTask] = await db
+  const parentTask = await db
     .select()
     .from(tasks)
-    .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
+    .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
+    .execute();
 
-  if (!parentTask) throw new Error('Parent task not found');
+  if (parentTask.length === 0) {
+    return []; // Return an empty array if the parent task is not found
+  }
 
   // Fetch subtasks
   const subtasks = await db

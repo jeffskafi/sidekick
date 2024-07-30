@@ -21,12 +21,21 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
 
   useEffect(() => {
-    setSubtasks(
-      task.children
-        .map((childId) => tasks.find((t) => t.id === childId))
-        .filter((t): t is Task => t !== undefined),
-    );
-  }, [task, tasks]);
+    if (isExpanded && task.children.length > 0) {
+      loadSubtasks(task.id)
+        .then((loadedSubtasks) => {
+          setSubtasks(loadedSubtasks);
+        })
+        .catch((err) => {
+          console.error("Failed to load subtasks:", err);
+          setError("Failed to load subtasks");
+        });
+    }
+  }, [isExpanded, task.id, task.children.length, loadSubtasks]);
+
+  useEffect(() => {
+    setSubtasks(tasks.filter((t) => task.children.includes(t.id)));
+  }, [tasks, task.children]);
 
   const handleStatusChange = async () => {
     try {
