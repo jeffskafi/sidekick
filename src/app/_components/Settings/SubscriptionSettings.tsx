@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import SettingsSection from "./SettingsSection";
 import { loadStripe } from "@stripe/stripe-js";
-import { useTheme } from '../ThemeProvider';
 import styles from "./SubscriptionSettings.module.css";
+import { useUser } from "@clerk/nextjs";
 
 interface CheckoutSession {
   id: string;
@@ -17,42 +17,20 @@ const stripePromise = loadStripe(
 );
 
 export default function SubscriptionSettings() {
+  const { user, isLoaded } = useUser();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [billingCycle, setBillingCycle] = useState<string>("monthly");
-  const { theme } = useTheme();
 
-  const glitterParticles = useMemo(() => {
-    return Array.from({ length: 200 }, (_, i) => ({
-      id: i,
-      style: {
-        '--x': `${Math.random() * 100}%`,
-        '--y': `${Math.random() * 100}%`,
-        '--size': `${Math.random() * 3 + 1}px`,
-        '--duration': `${Math.random() * 20 + 10}s`,
-        '--delay': `${Math.random() * -20}s`,
-        '--tx': `${(Math.random() - 0.5) * 20}px`,
-        '--ty': `${(Math.random() - 0.5) * 20}px`,
-      } as React.CSSProperties,
-    }));
-  }, []);
+  useEffect(() => {
+    if (isLoaded && user) {
+      document.documentElement.classList.toggle('dark', user.unsafeMetadata.darkMode as boolean || false);
+    }
+  }, [isLoaded, user]);
 
   const handleUpgrade = async () => {
-    setError(null);
     setLoading(true);
-    const stripe = await stripePromise;
-    if (!stripe) {
-      setError("Stripe failed to load");
-      setLoading(false);
-      return;
-    }
-
-    if (!process.env.NEXT_PUBLIC_STRIPE_PRICE_ID) {
-      setError("Stripe Price ID is not set");
-      setLoading(false);
-      return;
-    }
-
+    setError(null);
     try {
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
@@ -60,52 +38,52 @@ export default function SubscriptionSettings() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
+          priceId: billingCycle === "monthly" ? "price_monthly" : "price_yearly",
         }),
       });
-
-      if (!response.ok) {
-        const errorData = (await response.json()) as { error?: string };
-        throw new Error(
-          errorData.error ?? `HTTP error! status: ${response.status}`,
-        );
-      }
-
-      const session = (await response.json()) as CheckoutSession;
-
-      if (!session.id) {
-        throw new Error("Session ID is missing from the response");
-      }
-
-      const result = await stripe.redirectToCheckout({
+      const session: CheckoutSession = await response.json() as CheckoutSession;
+      const stripe = await stripePromise;
+      const { error } = await stripe!.redirectToCheckout({
         sessionId: session.id,
       });
-
-      if (result.error) {
-        throw result.error;
+      if (error) {
+        setError(error.message ?? "An unknown error occurred");
       }
-    } catch (error) {
-      console.error("Error in handleUpgrade:", error);
-      setError((error as Error).message);
+    } catch (err) {
+      setError("Failed to initiate checkout. Please try again.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  const glitterParticles = Array.from({ length: 20 }).map((_, index) => ({
+    id: index,
+    style: {
+      "--x": `${Math.random() * 100}%`,
+      "--y": `${Math.random() * 100}%`,
+      "--size": `${Math.random() * 3 + 1}px`,
+      "--duration": `${Math.random() * 2 + 1}s`,
+      "--delay": `${Math.random()}s`,
+      "--tx": `${(Math.random() - 0.5) * 20}px`,
+      "--ty": `${(Math.random() - 0.5) * 20}px`,
+    },
+  }));
+
   return (
     <SettingsSection title="Subscription & Billing">
-      <div className={`space-y-6 rounded-lg ${theme === 'dark' ? 'bg-surface-dark' : 'bg-surface-light'} p-6 shadow-lg`}>
+      <div className="space-y-6 rounded-lg bg-surface-light dark:bg-surface-dark p-6 shadow-lg">
         <div className="space-y-4">
           <div>
-            <Label className={`block text-sm font-medium ${theme === 'dark' ? 'text-text-dark' : 'text-text-light'}`}>
+            <Label className="block text-sm font-medium text-text-light dark:text-text-dark">
               Current Plan
             </Label>
-            <p className={`mt-1 text-sm ${theme === 'dark' ? 'text-text-light-dark' : 'text-text-light-light'}`}>
+            <p className="mt-1 text-sm text-text-light-light dark:text-text-light-dark">
               Free Tier
             </p>
           </div>
           <div>
-            <Label className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-text-dark' : 'text-text-light'}`}>
+            <Label className="block text-sm font-medium mb-2 text-text-light dark:text-text-dark">
               Billing Cycle
             </Label>
             <div className="flex space-x-2">
@@ -113,7 +91,7 @@ export default function SubscriptionSettings() {
                 className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                   billingCycle === "monthly" 
                     ? "bg-primary text-white" 
-                    : `${theme === 'dark' ? 'bg-gray-700 text-text-light-dark hover:bg-gray-600' : 'bg-gray-200 text-text-light-light hover:bg-gray-300'}`
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 }`}
                 onClick={() => setBillingCycle("monthly")}
               >
@@ -123,7 +101,7 @@ export default function SubscriptionSettings() {
                 className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                   billingCycle === "annually" 
                     ? "bg-primary text-white" 
-                    : `${theme === 'dark' ? 'bg-gray-700 text-text-light-dark hover:bg-gray-600' : 'bg-gray-200 text-text-light-light hover:bg-gray-300'}`
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 }`}
                 onClick={() => setBillingCycle("annually")}
               >
@@ -132,13 +110,13 @@ export default function SubscriptionSettings() {
             </div>
           </div>
           <div>
-            <Label className={`block text-sm font-medium ${theme === 'dark' ? 'text-text-dark' : 'text-text-light'}`}>
+            <Label className="block text-sm font-medium text-text-light dark:text-text-dark">
               Payment Method
             </Label>
-            <p className={`mt-1 text-sm ${theme === 'dark' ? 'text-text-light-dark' : 'text-text-light-light'}`}>
+            <p className="mt-1 text-sm text-text-light-light dark:text-text-light-dark">
               Visa ending in 1234
             </p>
-            <Button variant="outline" className={`mt-2 w-full ${theme === 'dark' ? 'border-gray-600 text-text-dark hover:bg-gray-700' : 'border-gray-300 text-text-light hover:bg-gray-100'}`}>
+            <Button variant="outline" className="mt-2 w-full border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
               Update Payment Method
             </Button>
           </div>
@@ -156,12 +134,12 @@ export default function SubscriptionSettings() {
               <div
                 key={particle.id}
                 className={styles.glitterParticle}
-                style={particle.style}
+                style={particle.style as React.CSSProperties}
               />
             ))}
           </div>
         </button>
-        {error && <p className={`mt-4 text-sm ${theme === 'dark' ? 'text-red-400' : 'text-red-500'}`}>{error}</p>}
+        {error && <p className="mt-4 text-sm text-red-500 dark:text-red-400">{error}</p>}
       </div>
     </SettingsSection>
   );
