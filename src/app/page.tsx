@@ -17,7 +17,7 @@ export default async function HomePage() {
   }
 
   // Fetch user preferences
-  const user = await clerkClient.users.getUser(userId);
+  const user = await clerkClient().users.getUser(userId);
   const preferences = user.publicMetadata as UserPreferences;
   const theme = preferences.darkMode ? "dark" : "light";
 
