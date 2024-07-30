@@ -49,7 +49,7 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
   const generateAISubtasks = useCallback(async (taskId: TaskSelect['id']) => {
     const generatedSubtasks = await generateSubtasks(taskId);
     setTasks(prevTasks => {
-      const updatedTasks = updateTaskInTree(prevTasks, { id: taskId, children: [...(prevTasks.find(t => t.id === taskId)?.children || []), ...generatedSubtasks.map(st => st.id)] });
+      const updatedTasks = updateTaskInTree(prevTasks, { id: taskId, children: [...(prevTasks.find(t => t.id === taskId)?.children ?? []), ...generatedSubtasks.map(st => st.id)] });
       return [...updatedTasks, ...generatedSubtasks.filter(st => !updatedTasks.some(t => t.id === st.id))];
     });
   }, []);
