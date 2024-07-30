@@ -2,19 +2,17 @@ import React from "react";
 import type { Task } from "~/server/db/schema";
 import EmptyState from "./EmptyState";
 import TaskItem from "./TaskItem";
-import { getTopLevelTasks } from "~/server/actions/taskActions";
 import { auth } from "@clerk/nextjs/server";
 import AddTaskForm from "./AddTaskForm";
 
 interface TasksProps {
   theme: "light" | "dark";
+  tasks: Task[];
 }
 
-export default async function Tasks({ theme }: TasksProps) {
+export default function Tasks({ theme, tasks }: TasksProps) {
   const { userId } = auth();
   if (!userId) throw new Error("User must be logged in");
-
-  const tasks = await getTopLevelTasks();
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark">
