@@ -1,6 +1,6 @@
 import React from "react";
 import { Label } from "~/components/ui/label";
-import SettingsSection from "~/_components/Settings/SettingsSection";
+import SettingsSection from "~/app/_components/Settings/SettingsSection";
 import DarkModeToggle from "~/components/ui/dark-mode-toggle";
 
 export default function AppearanceSettings() {

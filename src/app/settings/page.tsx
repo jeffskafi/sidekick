@@ -5,12 +5,12 @@ import dynamic from 'next/dynamic';
 import { Button } from "~/components/ui/button";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { useTheme } from '~/_components/ThemeProvider';
+import { useTheme } from '~/app/_components/ThemeProvider';
 
-const AppearanceSettings = dynamic(() => import('~/_components/Settings/AppearanceSettings'), { ssr: true });
-const SubscriptionSettings = dynamic(() => import('~/_components/Settings/SubscriptionSettings'), { ssr: true });
-const NotificationSettings = dynamic(() => import('~/_components/Settings/NotificationSettings'), { ssr: true });
-const DataPrivacySettings = dynamic(() => import('~/_components/Settings/DataPrivacySettings'), { ssr: true });
+const AppearanceSettings = dynamic(() => import('~/app/_components/Settings/AppearanceSettings'), { ssr: true });
+const SubscriptionSettings = dynamic(() => import('~/app/_components/Settings/SubscriptionSettings'), { ssr: true });
+const NotificationSettings = dynamic(() => import('~/app/_components/Settings/NotificationSettings'), { ssr: true });
+const DataPrivacySettings = dynamic(() => import('~/app/_components/Settings/DataPrivacySettings'), { ssr: true });
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 

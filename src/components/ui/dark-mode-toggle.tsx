@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '~/_components/ThemeProvider';
+import { useTheme } from '~/app/_components/ThemeProvider';
 import { cn } from '~/lib/utils';
 import styles from '~/styles/darkModeToggle.module.css';
 

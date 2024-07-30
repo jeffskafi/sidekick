@@ -1,30 +1,24 @@
 import React from "react";
-import { useTheme } from "../ThemeProvider";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { formatDueDate } from "./helpers";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { cn } from "~/lib/utils";
 import CustomCalendar from "~/components/ui/calendar";
 import { Clock } from "lucide-react";
 
 interface DueDateButtonProps {
-  dueDate: string | null;
-  onSetDueDate: (dueDate: string | null) => void;
+  dueDate: Date | null;
+  onSetDueDate: (dueDate: Date | null) => Promise<void>;
   size?: number;
+  theme: 'light' | 'dark';
 }
 
-const DueDateButton: React.FC<DueDateButtonProps> = ({
+const DueDateButton: React.FC<DueDateButtonProps> = async ({
   dueDate,
   onSetDueDate,
   size = 16,
+  theme,
 }) => {
-  const { theme } = useTheme();
-
-  const handleDateSelect = (date: Date | null) => {
-    onSetDueDate(date ? date.toISOString() : null);
+  const handleDateSelect = async (date: Date | null) => {
+    await onSetDueDate(date);
   };
 
   return (
@@ -32,13 +26,13 @@ const DueDateButton: React.FC<DueDateButtonProps> = ({
       <PopoverTrigger asChild>
         <button
           className="mr-2 flex h-5 w-auto items-center justify-center transition-colors duration-300 focus:outline-none"
-          title={dueDate ? `Due: ${formatDueDate(dueDate)}` : "Set due date"}
+          title={dueDate ? `Due: ${dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : "Set due date"}
         >
           {dueDate ? (
             <span
               className={`text-xs ${theme === "dark" ? "text-amber-400" : "text-amber-500"}`}
             >
-              {formatDueDate(dueDate)}
+              {dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           ) : (
             <Clock

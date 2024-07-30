@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useTheme } from "../../_components/ThemeProvider";
+import { useTheme } from "../../app/_components/ThemeProvider";
 import { cn } from "~/lib/utils";
 
 interface CustomCalendarProps {

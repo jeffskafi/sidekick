@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { UserButton, useAuth } from "@clerk/nextjs";
-import AuthButtons from "../components/ui/auth-buttons";
+import AuthButtons from "../../components/ui/auth-buttons";
 
 const Header = () => {
   const { isSignedIn } = useAuth();

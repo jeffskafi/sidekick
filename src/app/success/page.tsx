@@ -1,4 +1,4 @@
-import MessagePage from "~/_components/MessagePage";
+import MessagePage from "~/app/_components/MessagePage";
 
 export default function SuccessPage() {
   return (
