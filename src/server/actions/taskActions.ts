@@ -4,7 +4,8 @@ import { db } from '~/server/db';
 import type { Task, NewTask, TaskUpdate, TaskSearchParams, TaskSelect } from '~/server/db/schema';
 import { tasks, taskRelationships } from '~/server/db/schema';
 import { eq, and, inArray, or, ilike } from 'drizzle-orm';
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import type { User } from '@clerk/nextjs/server';
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
@@ -110,13 +111,49 @@ export async function updateTask(id: TaskSelect['id'], updates: TaskUpdate): Pro
 }
 
 export async function deleteTask(id: TaskSelect['id']): Promise<void> {
-  const { userId } = auth();
-  if (!userId) throw new Error('Unauthorized');
+  const user = await currentUser();
+
+  if (!user) {
+    throw new Error('Unauthorized: No user found');
+  }
 
   await db.transaction(async (tx) => {
-    await tx.delete(taskRelationships).where(eq(taskRelationships.childTaskId, id));
-    const result = await tx.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
-    if (result.rowCount === 0) throw new Error('Task not found or not owned by user');
+    // Function to recursively delete tasks and their relationships
+    async function recursiveDelete(taskId: TaskSelect['id'], userId: User['id']) {
+      // Get all child tasks
+      const childTasks = await tx
+        .select()
+        .from(taskRelationships)
+        .where(eq(taskRelationships.parentTaskId, taskId));
+
+      // Recursively delete all child tasks
+      for (const childTask of childTasks) {
+        await recursiveDelete(childTask.childTaskId, userId);
+      }
+
+      // Delete relationships where this task is a child
+      await tx
+        .delete(taskRelationships)
+        .where(eq(taskRelationships.childTaskId, taskId));
+
+      // Delete relationships where this task is a parent
+      await tx
+        .delete(taskRelationships)
+        .where(eq(taskRelationships.parentTaskId, taskId));
+
+      // Delete the task itself
+      await tx
+        .delete(tasks)
+        .where(
+          and(
+            eq(tasks.id, taskId),
+            eq(tasks.userId, userId)
+          )
+        );
+    }
+
+    // Start the recursive deletion from the given task ID
+    await recursiveDelete(id, user.id);
   });
 }
 
