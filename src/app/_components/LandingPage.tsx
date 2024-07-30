@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ListTodo, GitBranch, Workflow } from 'lucide-react';
+import { ListTodo, GitBranch, Workflow, Zap, Target, Lightbulb } from 'lucide-react';
 
 // HowItWorks component
 const HowItWorks: React.FC = () => {
@@ -46,6 +46,40 @@ const HowItWorks: React.FC = () => {
   );
 };
 
+// New Features component
+const Features: React.FC = () => {
+  const features = [
+    { icon: <Zap className="w-8 h-8" />, title: "Boost Productivity", description: "Break down complex tasks into manageable steps, increasing your efficiency." },
+    { icon: <Target className="w-8 h-8" />, title: "Stay Focused", description: "Visualize your entire journey, helping you stay on track and motivated." },
+    { icon: <Lightbulb className="w-8 h-8" />, title: "Inspire Creativity", description: "Organize your thoughts and ideas in a structured, hierarchical manner." },
+  ];
+
+  return (
+    <section className="py-16 sm:py-20 bg-surface-light dark:bg-surface-dark">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-secondary dark:text-primary text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Why Choose Sidekick?</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+          {features.map((feature, index) => (
+            <motion.div 
+              key={index}
+              className="flex flex-col items-center text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+            >
+              <div className="mb-4 text-primary dark:text-primary-dark">
+                {feature.icon}
+              </div>
+              <h3 className="mb-2 text-xl font-semibold text-secondary dark:text-primary">{feature.title}</h3>
+              <p className="text-text-light dark:text-text-light-dark">{feature.description}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // LandingPage component
 export default function LandingPage() {
   return (
@@ -81,30 +115,8 @@ export default function LandingPage() {
 
       <HowItWorks />
 
-      {/* Testimonials Section */}
-      <section className="py-16 sm:py-20 bg-surface-light dark:bg-surface-dark">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-secondary dark:text-primary text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">User Testimonials</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            {[
-              { name: 'Alex Johnson', role: 'Project Manager', quote: 'Sidekick has revolutionized how I manage my team\'s tasks.' },
-              { name: 'Sarah Lee', role: 'Freelance Designer', quote: 'As a freelancer, Sidekick has been a game-changer for my productivity.' },
-            ].map((testimonial, index) => (
-              <motion.div 
-                key={index} 
-                className="bg-surface-light dark:bg-surface-dark p-4 sm:p-6 rounded-lg shadow-sm"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-              >
-                <p className="text-text-light-light dark:text-text-light-dark text-sm italic mb-4">&quot;{testimonial.quote}&quot;</p>
-                <p className="text-primary dark:text-primary font-semibold">{testimonial.name}</p>
-                <p className="text-text-light-light dark:text-text-light-dark text-xs sm:text-sm">{testimonial.role}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* New Features Section */}
+      <Features />
 
       {/* CTA Section */}
       <section className="bg-primary dark:bg-primary-dark py-12 sm:py-16 text-white">
