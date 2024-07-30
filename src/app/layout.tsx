@@ -2,7 +2,6 @@ import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { ThemeProvider } from "~/app/_components/ThemeProvider";
 import Header from "~/app/_components/Header";
 import { CSPostHogProvider } from "~/app/_analytics/provider";
 
@@ -30,10 +29,8 @@ export default function RootLayout({
           data-theme="dark"
         >
           <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-dark-bg">
-            <ThemeProvider>
-              <Header />
-              <main className="flex-grow">{children}</main>
-            </ThemeProvider>
+            <Header />
+            <main className="flex-grow">{children}</main>
           </body>
         </html>
       </CSPostHogProvider>

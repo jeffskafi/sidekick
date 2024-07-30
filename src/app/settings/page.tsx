@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic';
 import { Button } from "~/components/ui/button";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { useTheme } from '~/app/_components/ThemeProvider';
 
 const AppearanceSettings = dynamic(() => import('~/app/_components/Settings/AppearanceSettings'), { ssr: true });
 const SubscriptionSettings = dynamic(() => import('~/app/_components/Settings/SubscriptionSettings'), { ssr: true });
@@ -15,14 +14,13 @@ const DataPrivacySettings = dynamic(() => import('~/app/_components/Settings/Dat
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function SettingsPage() {
-  const { theme } = useTheme();
   return (
     <Elements stripe={stripePromise}>
-      <div className={`min-h-screen py-8 sm:py-12 ${theme === 'dark' ? 'bg-background-dark' : 'bg-background-light'}`}>
+      <div className={`min-h-screen py-8 sm:py-12 bg-background-light`}>
         <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <h1 className={`text-3xl sm:text-4xl font-bold mb-8 text-center ${theme === 'dark' ? 'text-text-dark' : 'text-text-light'}`}>Sidekick Settings</h1>
+          <h1 className={`text-3xl sm:text-4xl font-bold mb-8 text-center text-text-light`}>Sidekick Settings</h1>
           
-          <div className={`space-y-8 ${theme === 'dark' ? 'bg-surface-dark' : 'bg-surface-light'} shadow-lg rounded-lg p-6 md:p-8`}>
+          <div className={`space-y-8 bg-surface-light shadow-lg rounded-lg p-6 md:p-8`}>
             <div className="grid gap-8 md:grid-cols-2">
               <div>
                 <Suspense fallback={<div>Loading appearance settings...</div>}>

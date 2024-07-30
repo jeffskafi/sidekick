@@ -39,12 +39,6 @@ body {
   @apply bg-surface-light text-primary border-2 border-primary hover:bg-primary hover:text-white dark:bg-surface-dark dark:text-primary dark:border-primary dark:hover:bg-primary dark:hover:text-text-dark;
 }
 
-@media (max-width: 640px) {
-  html {
-    font-size: 14px;
-  }
-}
-
 /* Add these new styles for the Calendar component */
 .rdp {
   --rdp-cell-size: 40px;
@@ -82,16 +76,6 @@ body {
   background-color: #374151;
 }
 
-body {
-  transition: background-color 0.3s, color 0.3s;
-}
-
-body.dark-mode {
-  background-color: #333;
-  color: #f0f0f0;
-}
-
-/* Add this at the end of the file */
 @keyframes spin-slow {
   from {
     transform: rotate(0deg);
