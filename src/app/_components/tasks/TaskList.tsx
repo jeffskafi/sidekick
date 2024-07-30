@@ -11,11 +11,16 @@ interface TaskListProps {
 export default function TaskList({ filter }: TaskListProps) {
   const { tasks } = useTaskContext();
 
-  const filteredTasks = filter === "all" 
-    ? tasks.filter(task => task.parentId === null)
-    : tasks.filter(task => task.status === filter && task.parentId === null);
+  const filteredTasks =
+    filter === "all"
+      ? tasks.filter((task) => task.parentId === null)
+      : tasks.filter(
+          (task) => task.status === filter && task.parentId === null,
+        );
 
-  if (filteredTasks.length === 0) return <EmptyState />;
+  if (filteredTasks.length === 0) {
+    return <EmptyState />;
+  }
 
   return (
     <ul className="space-y-2">

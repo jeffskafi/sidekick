@@ -12,7 +12,7 @@ interface TasksProps {
   userId: string;
 }
 
-export default function Tasks({ theme, initialTasks, userId }: TasksProps) {
+export default function Tasks({ initialTasks, userId }: TasksProps) {
   return (
     <TaskProvider initialTasks={initialTasks}>
       <div className="min-h-screen bg-background-light dark:bg-background-dark">

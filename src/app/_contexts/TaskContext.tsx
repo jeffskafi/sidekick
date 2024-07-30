@@ -20,17 +20,30 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
 
   const addTask = useCallback(async (newTask: NewTask) => {
     const createdTask = await createTask(newTask);
-    setTasks(prevTasks => addTaskToTree(prevTasks, createdTask));
+    setTasks(prevTasks => {
+      const updatedTasks = addTaskToTree(prevTasks, createdTask);
+      return updatedTasks;
+    });
   }, []);
 
   const updateTaskContext = useCallback(async (id: TaskSelect['id'], updates: TaskUpdate) => {
     const updatedTask = await updateTask(id, updates);
-    setTasks(prevTasks => updateTaskInTree(prevTasks, updatedTask));
+    setTasks(prevTasks => {
+      const updatedTasks = updateTaskInTree(prevTasks, updatedTask);
+      return updatedTasks;
+    });
   }, []);
 
   const deleteTaskContext = useCallback(async (id: TaskSelect['id']) => {
-    await deleteTask(id);
-    setTasks(prevTasks => removeTaskFromTree(prevTasks, id));
+    try {
+      await deleteTask(id);
+      setTasks(prevTasks => {
+        const updatedTasks = removeTaskFromTree(prevTasks, id);
+        return updatedTasks;
+      });
+    } catch (error) {
+      // Optionally, you can set an error state here to display to the user
+    }
   }, []);
 
   const loadSubtasks = useCallback(async (taskId: TaskSelect['id']) => {
@@ -38,11 +51,11 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     setTasks(prevTasks => {
       const taskToUpdate = prevTasks.find(t => t.id === taskId);
       if (!taskToUpdate) {
-        console.warn(`Task with id ${taskId} not found when loading subtasks`);
         return prevTasks;
       }
       const updatedTasks = updateTaskInTree(prevTasks, { ...taskToUpdate, children: subtasks.map(st => st.id) });
-      return [...updatedTasks, ...subtasks.filter(st => !updatedTasks.some(t => t.id === st.id))];
+      const finalTasks = [...updatedTasks, ...subtasks.filter(st => !updatedTasks.some(t => t.id === st.id))];
+      return finalTasks;
     });
   }, []);
 
@@ -50,7 +63,8 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     const generatedSubtasks = await generateSubtasks(taskId);
     setTasks(prevTasks => {
       const updatedTasks = updateTaskInTree(prevTasks, { id: taskId, children: [...(prevTasks.find(t => t.id === taskId)?.children ?? []), ...generatedSubtasks.map(st => st.id)] });
-      return [...updatedTasks, ...generatedSubtasks.filter(st => !updatedTasks.some(t => t.id === st.id))];
+      const finalTasks = [...updatedTasks, ...generatedSubtasks.filter(st => !updatedTasks.some(t => t.id === st.id))];
+      return finalTasks;
     });
   }, []);
 
@@ -92,7 +106,6 @@ function addTaskToTree(tasks: Task[], newTask: Task): Task[] {
 function updateTaskInTree(tasks: Task[], updatedTask: Partial<Task> & { id: TaskSelect['id'] }): Task[] {
   return tasks.map(task => {
     if (!task) {
-      console.warn('Encountered undefined task in updateTaskInTree');
       return task;
     }
     if (task.id === updatedTask.id) {
@@ -109,14 +122,19 @@ function updateTaskInTree(tasks: Task[], updatedTask: Partial<Task> & { id: Task
 }
 
 function removeTaskFromTree(tasks: Task[], idToRemove: TaskSelect['id']): Task[] {
-  return tasks.filter(task => task.id !== idToRemove).map(task => {
+  return tasks.filter((task): task is Task => {
+    if (!task) {
+      return false; // Filter out undefined tasks
+    }
+    return task.id !== idToRemove;
+  }).map(task => {
     if (task.children.includes(idToRemove)) {
       return { ...task, children: task.children.filter(id => id !== idToRemove) };
     } else if (task.children.length > 0) {
       return { 
         ...task, 
         children: removeTaskFromTree(
-          task.children.map(id => tasks.find(t => t.id === id)!),
+          task.children.map(id => tasks.find(t => t?.id === id)!),
           idToRemove
         ).map(t => t.id) 
       };
