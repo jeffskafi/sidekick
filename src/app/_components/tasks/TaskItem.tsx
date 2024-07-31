@@ -29,7 +29,10 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
 
-  const INDENTATION_WIDTH = 24; // Increased for better visual hierarchy
+  const CHEVRON_WIDTH = 1.5; // rem units
+  const CHECKBOX_WIDTH = 1; // rem units
+  const INDENTATION_WIDTH = CHEVRON_WIDTH + CHECKBOX_WIDTH; // rem units
+  const INITIAL_OFFSET = 0.5; // rem units
 
   useEffect(() => {
     if (isExpanded && hasChildren && subtasks.length === 0) {
@@ -77,65 +80,72 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   return (
     <li className="mb-2">
-      <div className="flex items-center" style={{ marginLeft: `${level * INDENTATION_WIDTH}px` }}>
-        <Checkbox
-          checked={task.status === "done"}
-          onCheckedChange={() => void handleStatusChange()}
-          className={`mr-2 h-4 w-4 rounded-sm transition-colors duration-200 ease-in-out ${
-            task.status === "done"
-              ? "bg-amber-500 text-white"
-              : "border-2 border-amber-300 hover:border-amber-500"
-          }`}
-        />
-        <Button
-          variant="ghost"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className={`h-6 w-6 p-0 mr-1 transition-transform duration-200 ease-in-out ${
-            isExpanded ? "rotate-90" : ""
-          }`}
-        >
-          <ChevronRight size={16} className={hasChildren ? "text-amber-500" : "text-gray-300"} />
-        </Button>
-        <input
-          value={task.description}
-          onChange={(e) => void updateTask(task.id, { description: e.target.value })}
-          className={`flex-grow bg-transparent py-1 text-sm focus:outline-none ${
-            task.status === "done" ? "text-gray-400 line-through" : "text-gray-700"
-          }`}
-        />
-        <div className="flex space-x-1 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="flex items-center">
+        <div className="flex items-center" style={{ width: `${level * INDENTATION_WIDTH + INITIAL_OFFSET}rem` }}></div>
+        <div className="flex items-center">
           <Button
             variant="ghost"
-            onClick={() => setShowAddSubtask(!showAddSubtask)}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`h-6 w-6 p-0 mr-2 transition-transform duration-200 ease-in-out ${
+              isExpanded ? "rotate-90" : ""
+            }`}
+            style={{ width: `${CHEVRON_WIDTH}rem` }}
           >
-            <Plus size={16} />
+            <ChevronRight size={16} className={hasChildren ? "text-amber-500" : "text-gray-300"} />
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-            disabled={isGeneratingSubtasks}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
-          >
-            {isGeneratingSubtasks ? (
-              <Loader2 className="animate-spin" size={16} />
-            ) : hasChildren ? (
-              <RefreshCw size={16} />
-            ) : (
-              <Zap size={16} />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => void handleDelete()}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-          >
-            <X size={16} />
-          </Button>
+          <Checkbox
+            checked={task.status === "done"}
+            onCheckedChange={() => void handleStatusChange()}
+            className={`mr-2 h-4 w-4 rounded-sm transition-colors duration-200 ease-in-out ${
+              task.status === "done"
+                ? "bg-amber-500 text-white"
+                : "border-2 border-amber-300 hover:border-amber-500"
+            }`}
+            style={{ width: `${CHECKBOX_WIDTH}rem` }}
+          />
+        </div>
+        <div className="flex flex-grow items-center group">
+          <input
+            value={task.description}
+            onChange={(e) => void updateTask(task.id, { description: e.target.value })}
+            className={`flex-grow bg-transparent py-1 text-sm focus:outline-none ${
+              task.status === "done" ? "text-gray-400 line-through" : "text-gray-700"
+            }`}
+          />
+          <div className="flex space-x-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <Button
+              variant="ghost"
+              onClick={() => setShowAddSubtask(!showAddSubtask)}
+              className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+            >
+              <Plus size={16} />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
+              disabled={isGeneratingSubtasks}
+              className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+            >
+              {isGeneratingSubtasks ? (
+                <Loader2 className="animate-spin" size={16} />
+              ) : hasChildren ? (
+                <RefreshCw size={16} />
+              ) : (
+                <Zap size={16} />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => void handleDelete()}
+              className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+            >
+              <X size={16} />
+            </Button>
+          </div>
         </div>
       </div>
       {isExpanded && (
-        <div className="mt-1 space-y-1" style={{ marginLeft: `${(level + 1) * INDENTATION_WIDTH}px` }}>
+        <div className="mt-1 space-y-1">
           {showAddSubtask && userId && (
             <AddTaskForm
               userId={userId}
@@ -153,7 +163,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         </div>
       )}
       {error && (
-        <p className="mt-1 text-xs text-red-500" style={{ marginLeft: `${(level + 1) * INDENTATION_WIDTH}px` }}>
+        <p className="mt-1 text-xs text-red-500" style={{ marginLeft: `${(level + 1) * INDENTATION_WIDTH + INITIAL_OFFSET}rem` }}>
           {error}
         </p>
       )}
