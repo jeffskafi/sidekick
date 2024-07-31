@@ -30,9 +30,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
 
   const CHEVRON_WIDTH = 1.5; // rem units
-  const CHECKBOX_WIDTH = 1; // rem units
-  const INDENTATION_WIDTH = CHEVRON_WIDTH + CHECKBOX_WIDTH; // rem units
-  const INITIAL_OFFSET = 0.5; // rem units
+  const CHECKBOX_SIZE = 1; // rem units
+  const TOTAL_WIDTH = CHEVRON_WIDTH + CHECKBOX_SIZE; // rem units
 
   useEffect(() => {
     if (isExpanded && hasChildren && subtasks.length === 0) {
@@ -81,34 +80,38 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   return (
     <li className="mb-2">
       <div className="flex items-center">
-        <div className="flex items-center" style={{ width: `${level * INDENTATION_WIDTH + INITIAL_OFFSET}rem` }}></div>
+        <div style={{ width: `${level * TOTAL_WIDTH}rem`, flexShrink: 0 }}></div>
         <div className="flex items-center">
-          <Button
-            variant="ghost"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={`h-6 w-6 p-0 mr-2 transition-transform duration-200 ease-in-out ${
-              isExpanded ? "rotate-90" : ""
-            }`}
-            style={{ width: `${CHEVRON_WIDTH}rem` }}
-          >
-            <ChevronRight size={16} className={hasChildren ? "text-amber-500" : "text-gray-300"} />
-          </Button>
-          <Checkbox
-            checked={task.status === "done"}
-            onCheckedChange={() => void handleStatusChange()}
-            className={`mr-2 h-4 w-4 rounded-sm transition-colors duration-200 ease-in-out ${
-              task.status === "done"
-                ? "bg-amber-500 text-white"
-                : "border-2 border-amber-300 hover:border-amber-500"
-            }`}
-            style={{ width: `${CHECKBOX_WIDTH}rem` }}
-          />
+          <div style={{ width: `${CHEVRON_WIDTH}rem`, flexShrink: 0 }}>
+            {hasChildren && (
+              <Button
+                variant="ghost"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className={`h-6 w-6 p-0 transition-transform duration-200 ease-in-out ${
+                  isExpanded ? "rotate-90" : ""
+                }`}
+              >
+                <ChevronRight size={16} className="text-amber-500" />
+              </Button>
+            )}
+          </div>
+          <div style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem`, flexShrink: 0 }} className="flex items-center justify-center">
+            <Checkbox
+              checked={task.status === "done"}
+              onCheckedChange={() => void handleStatusChange()}
+              className={`h-full w-full rounded-full transition-colors duration-200 ease-in-out ${
+                task.status === "done"
+                  ? "bg-amber-500 text-white"
+                  : "border-2 border-amber-300 hover:border-amber-500"
+              }`}
+            />
+          </div>
         </div>
-        <div className="flex flex-grow items-center group">
+        <div className="flex flex-grow items-center group overflow-hidden ml-2">
           <input
             value={task.description}
             onChange={(e) => void updateTask(task.id, { description: e.target.value })}
-            className={`flex-grow bg-transparent py-1 text-sm focus:outline-none ${
+            className={`flex-grow bg-transparent py-1 text-sm focus:outline-none overflow-ellipsis ${
               task.status === "done" ? "text-gray-400 line-through" : "text-gray-700"
             }`}
           />
@@ -145,25 +148,23 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         </div>
       </div>
       {isExpanded && (
-        <div className="mt-1 space-y-1">
+        <ul className="mt-1 space-y-1">
           {showAddSubtask && userId && (
-            <AddTaskForm
-              userId={userId}
-              parentId={task.id}
-              onComplete={() => setShowAddSubtask(false)}
-            />
+            <li>
+              <AddTaskForm
+                userId={userId}
+                parentId={task.id}
+                onComplete={() => setShowAddSubtask(false)}
+              />
+            </li>
           )}
-          {subtasks.length > 0 && (
-            <ul className="space-y-1">
-              {subtasks.map((subtask) => (
-                <TaskItem key={subtask.id} task={subtask} level={level + 1} />
-              ))}
-            </ul>
-          )}
-        </div>
+          {subtasks.map((subtask) => (
+            <TaskItem key={subtask.id} task={subtask} level={level + 1} />
+          ))}
+        </ul>
       )}
       {error && (
-        <p className="mt-1 text-xs text-red-500" style={{ marginLeft: `${(level + 1) * INDENTATION_WIDTH + INITIAL_OFFSET}rem` }}>
+        <p className="mt-1 text-xs text-red-500" style={{ marginLeft: `${level * TOTAL_WIDTH}rem` }}>
           {error}
         </p>
       )}
