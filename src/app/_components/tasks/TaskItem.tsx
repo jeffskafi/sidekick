@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "~/components/ui/button";
-import { ChevronRight, Plus, Zap, Loader2, X, RefreshCw, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, Plus, Zap, Loader2, X, RefreshCw } from "lucide-react";
 import type { Task } from "~/server/db/schema";
 import AddTaskForm from "./AddTaskForm";
 
@@ -30,10 +30,11 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
 
+  const ZAP_BUTTON_WIDTH = 1.5; // rem units
   const CHEVRON_WIDTH = 1.5; // rem units
   const CHECKBOX_SIZE = 1; // rem units
   const CHEVRON_RIGHT_PADDING = 0.25; // rem units
-  const TOTAL_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING + CHECKBOX_SIZE; // rem units
+  const TOTAL_WIDTH = ZAP_BUTTON_WIDTH + CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING + CHECKBOX_SIZE; // rem units
 
   useEffect(() => {
     if (isExpanded && hasChildren && subtasks.length === 0) {
@@ -124,6 +125,20 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           />
           <Button
             variant="ghost"
+            onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
+            disabled={isGeneratingSubtasks}
+            className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+          >
+            {isGeneratingSubtasks ? (
+              <Loader2 className="animate-spin" size={16} />
+            ) : hasChildren ? (
+              <RefreshCw size={16} />
+            ) : (
+              <Zap size={16} />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
             onClick={toggleIconsVisibility}
             className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500 mr-1"
           >
@@ -137,20 +152,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
               >
                 <Plus size={16} />
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-                disabled={isGeneratingSubtasks}
-                className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
-              >
-                {isGeneratingSubtasks ? (
-                  <Loader2 className="animate-spin" size={16} />
-                ) : hasChildren ? (
-                  <RefreshCw size={16} />
-                ) : (
-                  <Zap size={16} />
-                )}
               </Button>
               <Button
                 variant="ghost"
