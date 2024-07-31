@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "~/components/ui/button";
@@ -25,17 +25,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [showAddSubtask, setShowAddSubtask] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
-
-  const handleMouseEnter = useCallback(() => {
-    if (window.matchMedia("(hover: hover)").matches) {
-      setIsHovering(true);
-    }
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    setIsHovering(false);
-  }, []);
 
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
@@ -91,11 +80,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   return (
     <li className="mb-2">
-      <div 
-        className="flex items-center"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
+      <div className="flex items-center">
         <div style={{ width: `${level * TOTAL_WIDTH}rem`, flexShrink: 0 }}></div>
         <div className="flex items-center">
           <div style={{ width: `${CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING}rem`, flexShrink: 0 }}>
@@ -132,7 +117,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               task.status === "done" ? "text-gray-400 line-through" : "text-gray-700"
             }`}
           />
-          <div className={`flex space-x-1 transition-opacity duration-200 ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="flex space-x-1">
             <Button
               variant="ghost"
               onClick={() => setShowAddSubtask(!showAddSubtask)}
