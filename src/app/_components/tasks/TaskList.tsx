@@ -17,8 +17,8 @@ export default function TaskList({ filter }: TaskListProps) {
   }, [tasks, filter]);
 
   return (
-    <div>
-      <ul>
+    <div className="task-list">
+      <ul className="space-y-2">
         {filteredTasks.map((task) => (
           <TaskItem
             key={task.id}

@@ -5,7 +5,6 @@ import { Button } from "~/components/ui/button";
 import { ChevronDown, ChevronRight, Plus, Zap, Loader2, X } from "lucide-react";
 import type { Task } from "~/server/db/schema";
 import AddTaskForm from "./AddTaskForm";
-import { Input } from "~/components/ui/input";
 
 interface TaskItemProps {
   task: Task;
@@ -29,14 +28,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const subtasks = tasks.filter((t) => task.children.includes(t.id));
   const hasChildren = task.children.length > 0;
 
-  useEffect(() => {
-    if (isExpanded && hasChildren && subtasks.length === 0) {
-      loadSubtasks(task.id).catch((error) => {
-        console.error("Failed to load subtasks:", error);
-        setError("Failed to load subtasks");
-      });
-    }
-  }, [isExpanded, hasChildren, subtasks.length, loadSubtasks, task.id]);
+  const INDENTATION_WIDTH = 25; // Fixed indentation width in pixels
 
   const handleStatusChange = async () => {
     const newStatus = task.status === "done" ? "todo" : "done";
@@ -60,105 +52,98 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     }
   };
 
+  useEffect(() => {
+    if (isExpanded && hasChildren && subtasks.length === 0) {
+      loadSubtasks(task.id).catch((error) => {
+        console.error("Failed to load subtasks:", error);
+        setError("Failed to load subtasks");
+      });
+    }
+  }, [isExpanded, hasChildren, subtasks.length, loadSubtasks, task.id]);
+
   return (
-    <li className="relative mb-2">
-      <div
-        className="group flex items-center"
-        style={{ marginLeft: `${level * 20}px` }}
+    <li className="mb-2">
+      <div 
+        className="flex items-center"
+        style={{ marginLeft: `${level * INDENTATION_WIDTH}px` }}
       >
-        <div className="relative">
+        <div className="group flex items-center space-x-1 rounded-full border border-amber-200 bg-white p-2 shadow-sm transition-all hover:border-amber-300 hover:shadow-md">
           <Checkbox
             checked={task.status === "done"}
             onCheckedChange={() => void handleStatusChange()}
-            className={`flex h-5 w-5 items-center justify-center rounded-full transition-colors duration-200 ease-in-out ${task.status === "done" ? "bg-amber-500 text-white" : "border-2 border-amber-300 hover:border-amber-500"}`}
+            className={`h-5 w-5 rounded-full transition-colors duration-200 ease-in-out ${
+              task.status === "done"
+                ? "bg-amber-500 text-white"
+                : "border-2 border-amber-300 hover:border-amber-500"
+            }`}
           />
-          {isExpanded && hasChildren && (
-            <div
-              className="absolute left-1/2 top-1/2 w-px bg-amber-200"
-              style={{
-                height: `calc(100% - 10px)`,
-                transform: "translate(-50%, 10px)",
-              }}
-            ></div>
+          {hasChildren && (
+            <Button
+              variant="ghost"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-5 w-5 p-0 text-amber-400 hover:bg-amber-100 hover:text-amber-600"
+            >
+              {isExpanded ? (
+                <ChevronDown size={14} />
+              ) : (
+                <ChevronRight size={14} />
+              )}
+            </Button>
           )}
-        </div>
-        {hasChildren && (
+          <input
+            value={task.description}
+            onChange={(e) =>
+              void updateTask(task.id, { description: e.target.value })
+            }
+            className={`flex-grow bg-transparent px-2 py-1 text-sm focus:outline-none ${
+              task.status === "done" ? "text-gray-400 line-through" : "text-gray-700"
+            }`}
+          />
           <Button
             variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="ml-2 text-amber-400 transition-colors duration-200 ease-in-out hover:text-amber-600"
+            onClick={() => setShowAddSubtask(!showAddSubtask)}
+            className="h-6 w-6 p-0 text-amber-400 hover:bg-amber-100 hover:text-amber-600"
           >
-            {isExpanded ? (
-              <ChevronDown size={16} />
+            <Plus size={16} />
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => void handleGenerateSubtasks()}
+            disabled={isGeneratingSubtasks}
+            className="h-6 w-6 p-0 text-amber-400 hover:bg-amber-100 hover:text-amber-600"
+          >
+            {isGeneratingSubtasks ? (
+              <Loader2 className="animate-spin" size={16} />
             ) : (
-              <ChevronRight size={16} />
+              <Zap size={16} />
             )}
           </Button>
-        )}
-        <Input
-          value={task.description}
-          onChange={(e) =>
-            void updateTask(task.id, { description: e.target.value })
-          }
-          className={`ml-2 flex-grow rounded-lg bg-transparent py-1 focus:border-b-2 focus:border-amber-300 focus:outline-none ${task.status === "done" ? "text-gray-400 line-through" : "text-gray-700"} ${!hasChildren ? "ml-7" : ""}`}
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowAddSubtask(!showAddSubtask)}
-          className="ml-2 text-amber-400 transition-colors duration-200 ease-in-out hover:text-amber-600"
-        >
-          <Plus size={16} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => void handleGenerateSubtasks()}
-          disabled={isGeneratingSubtasks}
-          className="ml-2 text-amber-400 transition-colors duration-200 ease-in-out hover:bg-amber-100 hover:text-amber-600"
-        >
-          {isGeneratingSubtasks ? (
-            <Loader2 className="animate-spin" size={16} />
-          ) : (
-            <Zap size={16} />
-          )}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => void handleDelete()}
-          className="ml-2 text-gray-300 opacity-0 transition-opacity duration-200 ease-in-out hover:text-red-500 group-hover:opacity-100"
-        >
-          <X size={16} />
-        </Button>
+          <Button
+            variant="ghost"
+            onClick={() => void handleDelete()}
+            className="h-6 w-6 p-0 text-gray-300 opacity-0 transition-opacity duration-200 ease-in-out hover:bg-red-100 hover:text-red-500 group-hover:opacity-100"
+          >
+            <X size={16} />
+          </Button>
+        </div>
       </div>
       {showAddSubtask && userId && (
-        <AddTaskForm
-          userId={userId}
-          parentId={task.id}
-          onComplete={() => setShowAddSubtask(false)}
-        />
+        <div className="mt-2" style={{ marginLeft: `${(level + 1) * INDENTATION_WIDTH}px` }}>
+          <AddTaskForm
+            userId={userId}
+            parentId={task.id}
+            onComplete={() => setShowAddSubtask(false)}
+          />
+        </div>
       )}
       {isExpanded && subtasks.length > 0 && (
-        <ul
-          className="relative mt-0"
-          style={{ marginLeft: `${(level + 1) * 20}px` }}
-        >
-          <div
-            className="absolute bottom-4 left-0 top-0 w-px bg-amber-200"
-            style={{ left: "-10px" }}
-          ></div>
-          <div
-            className="absolute bottom-4 left-0 h-2 w-2 rounded-full bg-amber-200"
-            style={{ left: "-11px", transform: "translateX(-50%)" }}
-          ></div>
+        <ul className="mt-2 space-y-2">
           {subtasks.map((subtask) => (
             <TaskItem key={subtask.id} task={subtask} level={level + 1} />
           ))}
         </ul>
       )}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="mt-2 text-red-500" style={{ marginLeft: `${(level + 1) * INDENTATION_WIDTH}px` }}>{error}</p>}
     </li>
   );
 }
