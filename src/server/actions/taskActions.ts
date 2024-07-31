@@ -3,7 +3,7 @@
 import { db } from '~/server/db';
 import type { Task, NewTask, TaskUpdate, TaskSearchParams, TaskSelect } from '~/server/db/schema';
 import { tasks, taskRelationships } from '~/server/db/schema';
-import { eq, and, inArray, or, ilike } from 'drizzle-orm';
+import { eq, and, inArray, or, ilike, desc } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
 
@@ -19,6 +19,7 @@ export async function getTopLevelTasks(): Promise<Task[]> {
     .select()
     .from(tasks)
     .where(eq(tasks.userId, userId))
+    .orderBy(desc(tasks.updatedAt)) // Add this line to sort by updatedAt in descending order
     .execute();
 
   const relationships = await db
@@ -40,7 +41,7 @@ export async function getTopLevelTasks(): Promise<Task[]> {
 
   // Establish parent-child relationships
   relationships.forEach(rel => {
-    if (rel.parentTaskId !== null) {  // Add this check
+    if (rel.parentTaskId !== null) {
       const childTask = taskMap.get(rel.childTaskId);
       const parentTask = taskMap.get(rel.parentTaskId);
       if (childTask && parentTask) {
@@ -278,7 +279,7 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
   if (!parentTask) throw new Error('Task not found');
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",  // Ensure this is a valid model name
+    model: "gpt-4o",  // Ensure this is a valid model name
     response_format: { type: "json_object" },
     messages: [
       {
