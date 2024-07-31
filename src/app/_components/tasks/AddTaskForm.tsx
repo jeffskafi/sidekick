@@ -1,4 +1,5 @@
 "use client";
+import { Plus } from "lucide-react";
 import React, { useState } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Button } from "~/components/ui/button";
@@ -24,17 +25,21 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4">
-      <div className="flex space-x-2">
-        <Input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Add a new task"
-          className="flex-grow"
-        />
-        <Button type="submit" disabled={!userId}>Add Task</Button>
-      </div>
+    <form onSubmit={handleSubmit} className="mb-8 relative">
+      <Input
+        type="text"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Add a new task"
+        className="w-full p-3 pr-12 bg-white bg-opacity-80 rounded-full focus:outline-none focus:border-amber-300 text-gray-700 placeholder-gray-400 shadow-sm"
+      />
+      <Button 
+        type="submit" 
+        disabled={!userId}
+        className="absolute right-1 top-1 bottom-1 bg-gradient-to-b from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white p-2 rounded-full transition-all duration-200 ease-in-out flex items-center justify-center shadow-sm"
+      >
+        <Plus size={24} />
+      </Button>
     </form>
   );
 }

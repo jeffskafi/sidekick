@@ -14,16 +14,16 @@ interface TasksProps {
 export default function Tasks({ initialTasks, userId }: TasksProps) {
   return (
     <TaskProvider initialTasks={initialTasks}>
-      <div className="min-h-screen bg-background-light dark:bg-background-dark p-4">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="text-2xl font-bold mb-4">Tasks</h1>
+      <div className="min-h-screen bg-amber-50 p-8">
+        <div className="mx-auto max-w-2xl">
+          <h1 className="text-3xl font-light mb-8 text-amber-800">Sidekick Tasks</h1>
           <AddTaskForm userId={userId} />
-          <Tabs defaultValue="all" className="mt-4">
-            <TabsList>
-              <TabsTrigger value="all">All Tasks</TabsTrigger>
-              <TabsTrigger value="todo">To Do</TabsTrigger>
-              <TabsTrigger value="in_progress">In Progress</TabsTrigger>
-              <TabsTrigger value="done">Done</TabsTrigger>
+          <Tabs defaultValue="all" className="mt-8">
+            <TabsList className="mb-4">
+              <TabsTrigger value="all" className="text-amber-800 hover:text-amber-600">All Tasks</TabsTrigger>
+              <TabsTrigger value="todo" className="text-amber-800 hover:text-amber-600">To Do</TabsTrigger>
+              <TabsTrigger value="in_progress" className="text-amber-800 hover:text-amber-600">In Progress</TabsTrigger>
+              <TabsTrigger value="done" className="text-amber-800 hover:text-amber-600">Done</TabsTrigger>
             </TabsList>
             <TabsContent value="all">
               <TaskList filter="all" />
