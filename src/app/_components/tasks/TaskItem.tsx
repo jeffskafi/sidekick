@@ -119,7 +119,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             value={task.description}
             onChange={(e) => void updateTask(task.id, { description: e.target.value })}
             className={`flex-grow bg-transparent py-1 text-sm focus:outline-none overflow-ellipsis ${
-              task.status === "done" ? "text-gray-400 line-through" : "text-gray-700"
+              task.status === "done" 
+                ? "text-gray-400 dark:text-gray-500 line-through" 
+                : "text-gray-700 dark:text-gray-200"
             }`}
           />
           <div className="flex items-center">
@@ -127,7 +129,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               variant="ghost"
               onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
               disabled={isGeneratingSubtasks}
-              className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+              className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
             >
               {isGeneratingSubtasks ? (
                 <Loader2 className="animate-spin" size={16} />
@@ -142,14 +144,14 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 <Button
                   variant="ghost"
                   onClick={() => setShowAddSubtask(!showAddSubtask)}
-                  className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+                  className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
                 >
                   <Plus size={16} />
                 </Button>
                 <Button
                   variant="ghost"
                   onClick={() => void handleDelete()}
-                  className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                  className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
                 >
                   <X size={16} />
                 </Button>
@@ -158,7 +160,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             <Button
               variant="ghost"
               onClick={toggleIconsVisibility}
-              className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+              className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
             >
               {showIcons ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </Button>
