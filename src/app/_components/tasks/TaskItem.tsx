@@ -123,45 +123,47 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               task.status === "done" ? "text-gray-400 line-through" : "text-gray-700"
             }`}
           />
-          <Button
-            variant="ghost"
-            onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-            disabled={isGeneratingSubtasks}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
-          >
-            {isGeneratingSubtasks ? (
-              <Loader2 className="animate-spin" size={16} />
-            ) : hasChildren ? (
-              <RefreshCw size={16} />
-            ) : (
-              <Zap size={16} />
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
+              disabled={isGeneratingSubtasks}
+              className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+            >
+              {isGeneratingSubtasks ? (
+                <Loader2 className="animate-spin" size={16} />
+              ) : hasChildren ? (
+                <RefreshCw size={16} />
+              ) : (
+                <Zap size={16} />
+              )}
+            </Button>
+            {showIcons && (
+              <>
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowAddSubtask(!showAddSubtask)}
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+                >
+                  <Plus size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => void handleDelete()}
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                >
+                  <X size={16} />
+                </Button>
+              </>
             )}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={toggleIconsVisibility}
-            className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500 mr-1"
-          >
-            {showIcons ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </Button>
-          {showIcons && (
-            <div className="flex space-x-1">
-              <Button
-                variant="ghost"
-                onClick={() => setShowAddSubtask(!showAddSubtask)}
-                className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
-              >
-                <Plus size={16} />
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => void handleDelete()}
-                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-              >
-                <X size={16} />
-              </Button>
-            </div>
-          )}
+            <Button
+              variant="ghost"
+              onClick={toggleIconsVisibility}
+              className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+            >
+              {showIcons ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            </Button>
+          </div>
         </div>
       </div>
       {isExpanded && (
