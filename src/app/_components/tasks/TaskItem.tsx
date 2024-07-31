@@ -30,11 +30,10 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
 
-  const ZAP_BUTTON_WIDTH = 1.5; // rem units
   const CHEVRON_WIDTH = 1.5; // rem units
   const CHECKBOX_SIZE = 1; // rem units
   const CHEVRON_RIGHT_PADDING = 0.25; // rem units
-  const TOTAL_WIDTH = ZAP_BUTTON_WIDTH + CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING + CHECKBOX_SIZE; // rem units
+  const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING; // rem units
 
   useEffect(() => {
     if (isExpanded && hasChildren && subtasks.length === 0) {
@@ -87,7 +86,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   return (
     <li className="mb-2">
       <div className="flex items-center">
-        <div style={{ width: `${level * TOTAL_WIDTH}rem`, flexShrink: 0 }}></div>
+        <div style={{ width: `${level * INDENTATION_WIDTH}rem`, flexShrink: 0 }}></div>
         <div className="flex items-center">
           <div style={{ width: `${CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING}rem`, flexShrink: 0 }}>
             {hasChildren && (
@@ -103,11 +102,11 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               </Button>
             )}
           </div>
-          <div style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem`, flexShrink: 0 }} className="flex items-center justify-center">
+          <div className="relative" style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem` }}>
             <Checkbox
               checked={task.status === "done"}
               onCheckedChange={() => void handleStatusChange()}
-              className={`h-full w-full rounded-full transition-colors duration-200 ease-in-out ${
+              className={`absolute left-0 top-0 h-full w-full rounded-full transition-colors duration-200 ease-in-out ${
                 task.status === "done"
                   ? "bg-amber-500 text-white"
                   : "border-2 border-amber-300 hover:border-amber-500"
@@ -183,7 +182,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         </ul>
       )}
       {error && (
-        <p className="mt-1 text-xs text-red-500" style={{ marginLeft: `${level * TOTAL_WIDTH}rem` }}>
+        <p className="mt-1 text-xs text-red-500" style={{ marginLeft: `${level * INDENTATION_WIDTH}rem` }}>
           {error}
         </p>
       )}
