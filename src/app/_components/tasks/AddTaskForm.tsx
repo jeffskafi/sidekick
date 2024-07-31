@@ -36,9 +36,9 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
       <Button 
         type="submit" 
         disabled={!userId}
-        className="absolute right-1 top-1 bottom-1 bg-gradient-to-b from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white p-2 rounded-full transition-all duration-200 ease-in-out flex items-center justify-center shadow-sm"
+        className="absolute right-1 top-1 bottom-1 bg-gradient-to-b from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white w-8 h-8 rounded-full transition-all duration-200 ease-in-out flex items-center justify-center shadow-sm p-0 overflow-hidden focus:ring-0 focus:ring-offset-0 focus-visible:outline-none"
       >
-        <Plus size={24} />
+        <Plus size={16} />
       </Button>
     </form>
   );
