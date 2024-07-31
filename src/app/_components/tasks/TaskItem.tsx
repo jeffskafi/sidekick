@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "~/components/ui/button";
-import { ChevronRight, Plus, Zap, Loader2, X, RefreshCw } from "lucide-react";
+import { ChevronRight, Plus, Zap, Loader2, X, RefreshCw, ChevronLeft } from "lucide-react";
 import type { Task } from "~/server/db/schema";
 import AddTaskForm from "./AddTaskForm";
 
@@ -25,6 +25,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [showAddSubtask, setShowAddSubtask] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
+  const [showIcons, setShowIcons] = useState(false);
 
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
@@ -78,6 +79,10 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     }
   };
 
+  const toggleIconsVisibility = () => {
+    setShowIcons(!showIcons);
+  };
+
   return (
     <li className="mb-2">
       <div className="flex items-center">
@@ -117,36 +122,45 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               task.status === "done" ? "text-gray-400 line-through" : "text-gray-700"
             }`}
           />
-          <div className="flex space-x-1">
-            <Button
-              variant="ghost"
-              onClick={() => setShowAddSubtask(!showAddSubtask)}
-              className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
-            >
-              <Plus size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-              disabled={isGeneratingSubtasks}
-              className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
-            >
-              {isGeneratingSubtasks ? (
-                <Loader2 className="animate-spin" size={16} />
-              ) : hasChildren ? (
-                <RefreshCw size={16} />
-              ) : (
-                <Zap size={16} />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => void handleDelete()}
-              className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-            >
-              <X size={16} />
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            onClick={toggleIconsVisibility}
+            className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500 mr-1"
+          >
+            {showIcons ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </Button>
+          {showIcons && (
+            <div className="flex space-x-1">
+              <Button
+                variant="ghost"
+                onClick={() => setShowAddSubtask(!showAddSubtask)}
+                className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+              >
+                <Plus size={16} />
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
+                disabled={isGeneratingSubtasks}
+                className="h-6 w-6 p-0 text-gray-400 hover:text-amber-500"
+              >
+                {isGeneratingSubtasks ? (
+                  <Loader2 className="animate-spin" size={16} />
+                ) : hasChildren ? (
+                  <RefreshCw size={16} />
+                ) : (
+                  <Zap size={16} />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => void handleDelete()}
+                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+              >
+                <X size={16} />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
       {isExpanded && (
