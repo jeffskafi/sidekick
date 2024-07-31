@@ -54,7 +54,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   };
 
   return (
-    <li className="mb-2">
+    <li className="mb-2 relative">
       <div className="flex items-center group" style={{ marginLeft: `${level * 20}px` }}>
         <div className="relative">
           <Checkbox
@@ -64,7 +64,12 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               ${task.status === "done" ? 'bg-amber-500 text-white' : 'border-2 border-amber-300 hover:border-amber-500'}`}
           />
           {isExpanded && hasChildren && (
-            <div className="absolute top-full left-1/2 w-px h-2 bg-amber-200" style={{ transform: 'translateX(-50%)' }}></div>
+            <div className="absolute top-1/2 left-1/2 w-px bg-amber-200" 
+                 style={{ 
+                   height: `calc(100% - 10px)`, 
+                   transform: 'translate(-50%, 10px)' 
+                 }}
+            ></div>
           )}
         </div>
         {hasChildren && (
@@ -117,9 +122,11 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         />
       )}
       {isExpanded && subtasks.length > 0 && (
-        <ul className="mt-2 ml-2.5 pl-4 relative">
-          <div className="absolute top-0 left-0 bottom-3 w-px bg-amber-200"></div>
-          <div className="absolute bottom-3 left-0 w-2 h-2 rounded-full bg-amber-200" style={{ transform: 'translateX(-50%)' }}></div>
+        <ul className="mt-0 relative" style={{ marginLeft: `${(level + 1) * 20}px` }}>
+          <div className="absolute top-0 left-0 bottom-4 w-px bg-amber-200"
+               style={{ left: '-10px' }}></div>
+          <div className="absolute bottom-4 left-0 w-2 h-2 rounded-full bg-amber-200" 
+               style={{ left: '-11px', transform: 'translateX(-50%)' }}></div>
           {subtasks.map((subtask) => (
             <TaskItem key={subtask.id} task={subtask} level={level + 1} />
           ))}
