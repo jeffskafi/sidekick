@@ -31,7 +31,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   const CHEVRON_WIDTH = 1.5; // rem units
   const CHECKBOX_SIZE = 1; // rem units
-  const TOTAL_WIDTH = CHEVRON_WIDTH + CHECKBOX_SIZE; // rem units
+  const CHEVRON_RIGHT_PADDING = 0.25; // rem units
+  const TOTAL_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING + CHECKBOX_SIZE; // rem units
 
   useEffect(() => {
     if (isExpanded && hasChildren && subtasks.length === 0) {
@@ -82,7 +83,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
       <div className="flex items-center">
         <div style={{ width: `${level * TOTAL_WIDTH}rem`, flexShrink: 0 }}></div>
         <div className="flex items-center">
-          <div style={{ width: `${CHEVRON_WIDTH}rem`, flexShrink: 0 }}>
+          <div style={{ width: `${CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING}rem`, flexShrink: 0 }}>
             {hasChildren && (
               <Button
                 variant="ghost"
@@ -90,6 +91,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 className={`h-6 w-6 p-0 transition-transform duration-200 ease-in-out ${
                   isExpanded ? "rotate-90" : ""
                 }`}
+                style={{ marginRight: `${CHEVRON_RIGHT_PADDING}rem` }}
               >
                 <ChevronRight size={16} className="text-amber-500" />
               </Button>
