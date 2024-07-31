@@ -23,14 +23,14 @@ const DarkModeToggle: React.FC = () => {
     setIsTransitioning(true);
     const newDarkMode = !isDarkMode;
     
-    setIsDarkMode(newDarkMode);
-
+    
     try {
       await user.update({
         unsafeMetadata: {
           darkMode: newDarkMode
         }
       });
+      setIsDarkMode(newDarkMode);
     } catch (error) {
       console.error('Failed to update dark mode preference:', error);
       setIsDarkMode(!newDarkMode);
