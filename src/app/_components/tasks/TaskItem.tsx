@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "~/components/ui/button";
-import { ChevronDown, ChevronRight, Plus, Zap, Loader2, X } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Zap, Loader2, X, RefreshCw } from "lucide-react";
 import type { Task } from "~/server/db/schema";
 import AddTaskForm from "./AddTaskForm";
 
@@ -18,6 +18,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     deleteTask,
     loadSubtasks,
     generateAISubtasks,
+    refreshSubtasks,
     userId,
   } = useTaskContext();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -25,10 +26,10 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
 
-  const subtasks = tasks.filter((t) => task.children.includes(t.id));
+  const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = task.children.length > 0;
 
-  const INDENTATION_WIDTH = 25; // Fixed indentation width in pixels
+  const INDENTATION_WIDTH = 20; // Fixed indentation width in pixels
 
   const handleStatusChange = async () => {
     const newStatus = task.status === "done" ? "todo" : "done";
@@ -47,6 +48,19 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     } catch (error) {
       console.error("Failed to generate subtasks:", error);
       setError("Failed to generate subtasks");
+    } finally {
+      setIsGeneratingSubtasks(false);
+    }
+  };
+
+  const handleRefreshSubtasks = async () => {
+    setIsGeneratingSubtasks(true);
+    try {
+      await refreshSubtasks(task.id);
+      setIsExpanded(true);
+    } catch (error) {
+      console.error("Failed to refresh subtasks:", error);
+      setError("Failed to refresh subtasks");
     } finally {
       setIsGeneratingSubtasks(false);
     }
@@ -106,18 +120,33 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           >
             <Plus size={16} />
           </Button>
-          <Button
-            variant="ghost"
-            onClick={() => void handleGenerateSubtasks()}
-            disabled={isGeneratingSubtasks}
-            className="h-6 w-6 p-0 text-amber-400 hover:bg-amber-100 hover:text-amber-600"
-          >
-            {isGeneratingSubtasks ? (
-              <Loader2 className="animate-spin" size={16} />
-            ) : (
-              <Zap size={16} />
-            )}
-          </Button>
+          {hasChildren ? (
+            <Button
+              variant="ghost"
+              onClick={() => void handleRefreshSubtasks()}
+              disabled={isGeneratingSubtasks}
+              className="h-6 w-6 p-0 text-amber-400 hover:bg-amber-100 hover:text-amber-600"
+            >
+              {isGeneratingSubtasks ? (
+                <Loader2 className="animate-spin" size={16} />
+              ) : (
+                <RefreshCw size={16} />
+              )}
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              onClick={() => void handleGenerateSubtasks()}
+              disabled={isGeneratingSubtasks}
+              className="h-6 w-6 p-0 text-amber-400 hover:bg-amber-100 hover:text-amber-600"
+            >
+              {isGeneratingSubtasks ? (
+                <Loader2 className="animate-spin" size={16} />
+              ) : (
+                <Zap size={16} />
+              )}
+            </Button>
+          )}
           <Button
             variant="ghost"
             onClick={() => void handleDelete()}

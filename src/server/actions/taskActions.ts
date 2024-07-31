@@ -247,7 +247,8 @@ export async function searchTasks(params: TaskSearchParams): Promise<Task[]> {
 
   // Fetch relationships for the found tasks
   const taskIds = searchResults.map(task => task.id);
-  const relationships = await db.select()
+  const relationships = await db
+    .select()
     .from(taskRelationships)
     .where(or(
       inArray(taskRelationships.parentTaskId, taskIds),
@@ -390,6 +391,43 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
     console.error('Failed to parse OpenAI response:', error);
     throw new Error('Invalid response format from OpenAI');
   }
+}
+
+export async function refreshSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
+  const { userId } = auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  return await db.transaction(async (tx) => {
+    // Get the task
+    const [task] = await tx
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
+
+    if (!task) throw new Error('Task not found');
+
+    // Recursively delete all subtasks
+    async function deleteSubtasksRecursive(parentId: string) {
+      const childTaskIds = await tx
+        .select({ id: tasks.id })
+        .from(tasks)
+        .innerJoin(taskRelationships, eq(taskRelationships.childTaskId, tasks.id))
+        .where(eq(taskRelationships.parentTaskId, parentId));
+
+      for (const { id } of childTaskIds) {
+        await deleteSubtasksRecursive(id);
+        await tx.delete(taskRelationships).where(eq(taskRelationships.childTaskId, id));
+        await tx.delete(tasks).where(eq(tasks.id, id));
+      }
+    }
+
+    await deleteSubtasksRecursive(taskId);
+
+    // Generate new subtasks
+    const newSubtasks = await generateSubtasks(taskId);
+
+    return newSubtasks;
+  });
 }
 
 export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {

@@ -6,6 +6,7 @@ import {
   deleteTask as deleteTaskAction,
   getSubtasks as getSubtasksAction,
   generateSubtasks as generateSubtasksAction,
+  refreshSubtasks as refreshSubtasksAction,
 } from "~/server/actions/taskActions";
 import { useAuth } from "@clerk/nextjs";
 
@@ -16,6 +17,7 @@ type TaskContextType = {
   deleteTask: (id: TaskSelect["id"]) => Promise<void>;
   loadSubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
   generateAISubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
+  refreshSubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
   userId: string | null;
 };
 
@@ -79,6 +81,25 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     return generatedSubtasks;
   }, []);
 
+  const refreshSubtasks = useCallback(async (taskId: TaskSelect["id"]) => {
+    const refreshedSubtasks = await refreshSubtasksAction(taskId);
+    setTasks(prevTasks => {
+      // Remove the old task and its subtasks
+      const updatedTasks = prevTasks.filter(task => task.id !== taskId && task.parentId !== taskId);
+      // Add the parent task back (it might have updated properties)
+      const parentTask = prevTasks.find(task => task.id === taskId);
+      if (parentTask) {
+        updatedTasks.push({
+          ...parentTask,
+          children: refreshedSubtasks.map(subtask => subtask.id)
+        });
+      }
+      // Add the new subtasks
+      return [...updatedTasks, ...refreshedSubtasks];
+    });
+    return refreshedSubtasks;
+  }, []);
+
   const value = {
     tasks,
     addTask,
@@ -86,6 +107,7 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     deleteTask,
     loadSubtasks,
     generateAISubtasks,
+    refreshSubtasks,
     userId: userId ?? null,
   };
 
