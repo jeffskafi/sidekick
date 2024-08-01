@@ -15,21 +15,23 @@ const Header = () => {
           Sidekick
         </Link>
         <div className="flex items-center space-x-6">
-          <Link
-            href="/settings"
-            className="text-foreground hover:text-foreground/80 transition-colors"
-          >
-            Settings
-          </Link>
           {isSignedIn ? (
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8",
-                },
-              }}
-            />
+            <>
+              <Link
+                href="/settings"
+                className="text-foreground hover:text-foreground/80 transition-colors"
+              >
+                Settings
+              </Link>
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8",
+                  },
+                }}
+              />
+            </>
           ) : (
             <AuthButtons />
           )}
