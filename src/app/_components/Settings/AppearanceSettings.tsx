@@ -10,12 +10,12 @@ export default function AppearanceSettings() {
       <div className="space-y-4">
         <Label
           htmlFor="theme"
-          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+          className="block text-sm font-medium text-text-light dark:text-text-dark"
         >
           Theme
         </Label>
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600 dark:text-gray-400">Dark Mode</span>
+          <span className="text-sm text-text-light-light dark:text-text-light-dark">Dark Mode</span>
           <DarkModeToggle />
         </div>
       </div>

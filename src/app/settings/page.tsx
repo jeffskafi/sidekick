@@ -16,11 +16,11 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 export default function SettingsPage() {
   return (
     <Elements stripe={stripePromise}>
-      <div className={`min-h-screen py-8 sm:py-12 bg-background-light`}>
+      <div className={`min-h-screen py-8 sm:py-12 bg-background-light dark:bg-background-dark`}>
         <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <h1 className={`text-3xl sm:text-4xl font-bold mb-8 text-center text-text-light`}>Sidekick Settings</h1>
+          <h1 className={`text-3xl sm:text-4xl font-bold mb-8 text-center text-text-light dark:text-text-dark`}>Sidekick Settings</h1>
           
-          <div className={`space-y-8 bg-surface-light shadow-lg rounded-lg p-6 md:p-8`}>
+          <div className={`space-y-8 bg-surface-light dark:bg-surface-dark shadow-lg rounded-lg p-6 md:p-8`}>
             <div className="grid gap-8 md:grid-cols-2">
               <div>
                 <Suspense fallback={<div>Loading appearance settings...</div>}>

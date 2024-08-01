@@ -1,43 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
+import React, { useEffect, useState } from 'react';
 import { cn } from '~/lib/utils';
 import styles from '~/styles/darkModeToggle.module.css';
+import { useDarkMode } from '~/app/_contexts/DarkModeContext';
 
 const DarkModeToggle: React.FC = () => {
-  const { user } = useUser();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      const darkModePreference = user.unsafeMetadata.darkMode as boolean | undefined;
-      setIsDarkMode(darkModePreference ?? false);
-    }
-  }, [user]);
-
-  const handleToggle = async () => {
-    if (isTransitioning || !user) return;
-    
-    setIsTransitioning(true);
-    const newDarkMode = !isDarkMode;
-    
-    
-    try {
-      await user.update({
-        unsafeMetadata: {
-          darkMode: newDarkMode
-        }
-      });
-      setIsDarkMode(newDarkMode);
-    } catch (error) {
-      console.error('Failed to update dark mode preference:', error);
-      setIsDarkMode(!newDarkMode);
-    }
-
-    setTimeout(() => setIsTransitioning(false), 500);
-  };
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
 
   const [stars, setStars] = useState<JSX.Element[]>([]);
 
@@ -62,9 +31,8 @@ const DarkModeToggle: React.FC = () => {
       className={cn(
         styles.toggleSwitch,
         !isDarkMode && styles.lightMode,
-        isTransitioning && styles.transitioning
       )}
-      onClick={handleToggle}
+      onClick={toggleDarkMode}
     >
       <div className={styles.clouds}>
         <div className={styles.cloud}></div>
