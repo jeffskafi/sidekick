@@ -8,9 +8,7 @@ interface DarkModeContextType {
   toggleDarkMode: () => Promise<void>;
 }
 
-const DarkModeContext = createContext<DarkModeContextType | undefined>(
-  undefined,
-);
+const DarkModeContext = createContext<DarkModeContextType | undefined>(undefined);
 
 export const useDarkMode = () => {
   const context = useContext(DarkModeContext);
@@ -28,14 +26,9 @@ export const DarkModeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     if (isLoaded && user) {
-      const darkModePreference = user.unsafeMetadata.darkMode as
-        | boolean
-        | undefined;
+      const darkModePreference = user.unsafeMetadata.darkMode as boolean | undefined;
       setIsDarkMode(darkModePreference ?? false);
-      document.documentElement.classList.toggle(
-        "dark",
-        darkModePreference ?? false,
-      );
+      document.documentElement.classList.toggle("dark", darkModePreference ?? false);
     }
   }, [isLoaded, user]);
 

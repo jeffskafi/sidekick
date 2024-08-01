@@ -4,7 +4,7 @@ import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import Header from "~/app/_components/Header";
 import { CSPostHogProvider } from "~/app/_analytics/provider";
-import { DarkModeProvider } from "~/app/_contexts/DarkModeContext"; // Create this context
+import { DarkModeProvider } from "~/app/_contexts/DarkModeContext";
 
 export const metadata: Metadata = {
   title: "Sidekick",
@@ -26,11 +26,8 @@ export default function RootLayout({
     <ClerkProvider>
       <CSPostHogProvider>
         <DarkModeProvider>
-          <html
-            lang="en"
-            className={`${GeistSans.variable}`}
-          >
-            <body className="flex min-h-screen flex-col bg-gray-50 dark:bg-dark-bg">
+          <html lang="en" className={`${GeistSans.variable}`}>
+            <body className="flex min-h-screen flex-col bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
               <Header />
               <main className="flex-grow">{children}</main>
             </body>

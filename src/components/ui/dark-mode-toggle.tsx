@@ -7,7 +7,6 @@ import { useDarkMode } from '~/app/_contexts/DarkModeContext';
 
 const DarkModeToggle: React.FC = () => {
   const { isDarkMode, toggleDarkMode } = useDarkMode();
-
   const [stars, setStars] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
@@ -19,7 +18,7 @@ const DarkModeToggle: React.FC = () => {
         style={{
           left: `${Math.random() * 100}%`,
           top: `${Math.random() * 100}%`,
-          animationDelay: `${Math.random() * 1}s`,
+          animationDelay: `${Math.random() * 5}s`,
         }}
       />
     ));
