@@ -9,7 +9,7 @@ const Header = () => {
   const { isSignedIn } = useAuth();
 
   return (
-    <header className="border-b">
+    <header className="border-b pb-0 mb-0">
       <nav className="container mx-auto flex items-center justify-between px-4 py-4">
         <Link href="/" className="text-xl font-semibold">
           Sidekick

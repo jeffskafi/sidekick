@@ -16,6 +16,8 @@ export default async function HomePage() {
   const tasks = await getTopLevelTasks();
 
   return (
-    <Tasks initialTasks={tasks} userId={userId} />
+    <div className="pt-0 mt-0">
+      <Tasks initialTasks={tasks} userId={userId} />
+    </div>
   );
 }

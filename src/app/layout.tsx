@@ -29,7 +29,7 @@ export default function RootLayout({
           <html lang="en" className={`${GeistSans.variable}`}>
             <body className="flex min-h-screen flex-col bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
               <Header />
-              <main className="flex-grow">{children}</main>
+              <main className="flex-grow -mt-px">{children}</main>
             </body>
           </html>
         </DarkModeProvider>
