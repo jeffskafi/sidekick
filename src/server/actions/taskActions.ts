@@ -19,7 +19,7 @@ export async function getTopLevelTasks(): Promise<Task[]> {
     .select()
     .from(tasks)
     .where(eq(tasks.userId, userId))
-    .orderBy(desc(tasks.updatedAt)) // Add this line to sort by updatedAt in descending order
+    .orderBy(desc(tasks.createdAt)) // Sort by creation date, newest first
     .execute();
 
   const relationships = await db

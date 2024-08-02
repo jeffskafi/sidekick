@@ -29,7 +29,7 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
 
   const addTask = useCallback(async (newTask: NewTask) => {
     const createdTask = await createTaskAction(newTask);
-    setTasks(prevTasks => [...prevTasks, createdTask]);
+    setTasks(prevTasks => [createdTask, ...prevTasks]); // Add new task to the beginning of the list
   }, []);
 
   const updateTask = useCallback(async (id: TaskSelect["id"], updates: TaskUpdate) => {
