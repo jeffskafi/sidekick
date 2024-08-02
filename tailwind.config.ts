@@ -60,12 +60,12 @@ const config = {
         'dark-bg': '#1a1a1a', // or any other color code you prefer
       },
       fontSize: {
-        'base': '1.0625rem', // Slightly increased from 1rem (17px)
+        'base': '1.0875rem', // Increased from 1.0625rem (now 17.4px)
       },
       spacing: {
         // Add some slightly larger spacing options
-        '17': '4.25rem',
-        '21': '5.25rem',
+        '18': '4.5rem',
+        '22': '5.5rem',
       },
     },
   },

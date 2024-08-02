@@ -33,10 +33,10 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
 
-  const CHEVRON_WIDTH = 1.75; // rem units
-  const CHECKBOX_SIZE = 1.125; // rem units
-  const CHEVRON_RIGHT_PADDING = 0.375; // rem units
-  const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING; // rem units
+  const CHEVRON_WIDTH = 1.875;
+  const CHECKBOX_SIZE = 1.25;
+  const CHEVRON_RIGHT_PADDING = 0.5;
+  const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING;
 
   useEffect(() => {
     if (isExpanded && hasChildren && subtasks.length === 0) {
@@ -111,7 +111,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   };
 
   return (
-    <li className="mb-2.5">
+    <li className="mb-3">
       <div className="flex items-center">
         <div style={{ width: `${level * INDENTATION_WIDTH}rem`, flexShrink: 0 }}></div>
         <div className="flex items-center">
@@ -141,18 +141,18 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             />
           </div>
         </div>
-        <div className="flex flex-grow items-center group overflow-hidden ml-2.5">
+        <div className="flex flex-grow items-center group overflow-hidden ml-3">
           {isEditing ? (
             <Input
               value={editedDescription}
               onChange={(e) => setEditedDescription(e.target.value)}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="text-sm"
+              className="text-base"
             />
           ) : (
             <div
-              className={`flex-grow bg-transparent py-1.5 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
+              className={`flex-grow bg-transparent py-2 text-base focus:outline-none overflow-hidden line-clamp-3 ${
                 task.status === "done" 
                   ? "text-gray-400 dark:text-gray-500 line-through" 
                   : "text-gray-700 dark:text-gray-200"
@@ -168,14 +168,14 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 variant="ghost"
                 onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
                 disabled={isGeneratingSubtasks}
-                className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
               >
                 {isGeneratingSubtasks ? (
-                  <Loader2 className="animate-spin" size={18} />
+                  <Loader2 className="animate-spin" size={20} />
                 ) : hasChildren ? (
-                  <RefreshCw size={18} />
+                  <RefreshCw size={20} />
                 ) : (
-                  <Zap size={18} />
+                  <Zap size={20} />
                 )}
               </Button>
             )}
@@ -186,16 +186,16 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     <Button
                       variant="ghost"
                       onClick={handleSave}
-                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400"
+                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400"
                     >
-                      <Check size={18} />
+                      <Check size={20} />
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={handleDiscard}
-                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
                     >
-                      <X size={18} />
+                      <X size={20} />
                     </Button>
                   </>
                 ) : (
@@ -203,23 +203,23 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     <Button
                       variant="ghost"
                       onClick={handleEdit}
-                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
                     >
-                      <Pen size={18} />
+                      <Pen size={20} />
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={() => setShowAddSubtask(!showAddSubtask)}
-                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
                     >
-                      <Plus size={18} />
+                      <Plus size={20} />
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={() => void handleDelete()}
-                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={20} />
                     </Button>
                   </>
                 )}
@@ -228,9 +228,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             <Button
               variant="ghost"
               onClick={toggleIconsVisibility}
-              className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+              className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
             >
-              {showIcons ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+              {showIcons ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
             </Button>
           </div>
         </div>
