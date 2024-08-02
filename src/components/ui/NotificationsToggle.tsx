@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { cn } from '~/lib/utils';
-import styles from '~/styles/emailNotificationsToggle.module.css';
+import styles from '~/styles/notificationsToggle.module.css';
 
-const EmailNotificationsToggle: React.FC = () => {
+interface NotificationToggleProps {
+  label: string;
+}
+
+const NotificationToggle: React.FC<NotificationToggleProps> = ({ label }) => {
   const [isEnabled, setIsEnabled] = useState(false);
 
   const handleToggle = () => {
@@ -11,7 +15,7 @@ const EmailNotificationsToggle: React.FC = () => {
 
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm font-medium text-black dark:text-white">Email Notifications</span>
+      <span className="text-sm font-medium text-black dark:text-white">{label}</span>
       <label className={styles.toggle}>
         <input 
           type="checkbox" 
@@ -30,4 +34,4 @@ const EmailNotificationsToggle: React.FC = () => {
   );
 };
 
-export default EmailNotificationsToggle;
+export default NotificationToggle;
