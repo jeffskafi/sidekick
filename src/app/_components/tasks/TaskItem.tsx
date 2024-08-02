@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "~/components/ui/button";
-import { ChevronRight, ChevronLeft, Plus, Zap, Loader2, X, RefreshCw } from "lucide-react";
+import { ChevronRight, ChevronLeft, Plus, Zap, Loader2, Trash2, RefreshCw, Pen, Check, X } from "lucide-react";
+import { Input } from "~/components/ui/input";
 import type { Task } from "~/server/db/schema";
 import AddTaskForm from "./AddTaskForm";
 
@@ -26,6 +27,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedDescription, setEditedDescription] = useState(task.description);
 
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
@@ -83,6 +86,30 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     setShowIcons(!showIcons);
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+    setEditedDescription(task.description);
+  };
+
+  const handleSave = async () => {
+    await updateTask(task.id, { description: editedDescription });
+    setIsEditing(false);
+  };
+
+  const handleDiscard = () => {
+    setIsEditing(false);
+    setEditedDescription(task.description);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      void handleSave();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setEditedDescription(task.description);
+    }
+  };
+
   return (
     <li className="mb-2">
       <div className="flex items-center">
@@ -115,47 +142,87 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           </div>
         </div>
         <div className="flex flex-grow items-center group overflow-hidden ml-2">
-          <div
-            className={`flex-grow bg-transparent py-1 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
-              task.status === "done" 
-                ? "text-gray-400 dark:text-gray-500 line-through" 
-                : "text-gray-700 dark:text-gray-200"
-            }`}
-            style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}
-          >
-            {task.description}
-          </div>
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-              disabled={isGeneratingSubtasks}
-              className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+          {isEditing ? (
+            <Input
+              value={editedDescription}
+              onChange={(e) => setEditedDescription(e.target.value)}
+              onKeyDown={handleKeyDown}
+              autoFocus
+              className="flex-grow"
+            />
+          ) : (
+            <div
+              className={`flex-grow bg-transparent py-1 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
+                task.status === "done" 
+                  ? "text-gray-400 dark:text-gray-500 line-through" 
+                  : "text-gray-700 dark:text-gray-200"
+              }`}
+              style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}
             >
-              {isGeneratingSubtasks ? (
-                <Loader2 className="animate-spin" size={16} />
-              ) : hasChildren ? (
-                <RefreshCw size={16} />
-              ) : (
-                <Zap size={16} />
-              )}
-            </Button>
+              {task.description}
+            </div>
+          )}
+          <div className="flex items-center">
+            {!isEditing && (
+              <Button
+                variant="ghost"
+                onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
+                disabled={isGeneratingSubtasks}
+                className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+              >
+                {isGeneratingSubtasks ? (
+                  <Loader2 className="animate-spin" size={16} />
+                ) : hasChildren ? (
+                  <RefreshCw size={16} />
+                ) : (
+                  <Zap size={16} />
+                )}
+              </Button>
+            )}
             {showIcons && (
               <>
-                <Button
-                  variant="ghost"
-                  onClick={() => setShowAddSubtask(!showAddSubtask)}
-                  className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
-                >
-                  <Plus size={16} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => void handleDelete()}
-                  className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
-                >
-                  <X size={16} />
-                </Button>
+                {isEditing ? (
+                  <>
+                    <Button
+                      variant="ghost"
+                      onClick={handleSave}
+                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400"
+                    >
+                      <Check size={16} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={handleDiscard}
+                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+                    >
+                      <X size={16} />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="ghost"
+                      onClick={handleEdit}
+                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                    >
+                      <Pen size={16} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowAddSubtask(!showAddSubtask)}
+                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                    >
+                      <Plus size={16} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => void handleDelete()}
+                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </>
+                )}
               </>
             )}
             <Button
