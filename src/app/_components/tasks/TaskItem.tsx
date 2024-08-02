@@ -148,7 +148,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               onChange={(e) => setEditedDescription(e.target.value)}
               onKeyDown={handleKeyDown}
               autoFocus
-              className="flex-grow"
+              className="flex-grow bg-amber-50 dark:bg-dark-bg text-gray-700 dark:text-gray-200 border-amber-300 dark:border-amber-700 focus:border-amber-500 dark:focus:border-amber-400 focus:ring-amber-500 dark:focus:ring-amber-400 rounded-md shadow-sm transition-colors duration-200"
             />
           ) : (
             <div
