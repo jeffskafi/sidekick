@@ -17,7 +17,7 @@ export default function Tasks({ initialTasks, userId }: TasksProps) {
         <div className="w-full max-w-3xl mx-auto">
           <AddTaskForm userId={userId} />
           <div className="mt-6 sm:mt-9">
-            <TaskList filter="all" />
+            <TaskList />
           </div>
         </div>
       </div>
