@@ -15,7 +15,7 @@ export default function Tasks({ initialTasks, userId }: TasksProps) {
   return (
     <TaskProvider initialTasks={initialTasks}>
       <div className="min-h-screen bg-amber-50 dark:bg-dark-bg p-8">
-        <div className="mx-auto max-w-2xl">
+        <div className="w-full sm:mx-auto sm:max-w-3xl">
           <AddTaskForm userId={userId} />
           <Tabs defaultValue="all" className="mt-8">
             <TabsList className="mb-4">

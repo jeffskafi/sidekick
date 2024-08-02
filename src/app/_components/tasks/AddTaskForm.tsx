@@ -25,8 +25,8 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-8 relative">
-      <div className="relative">
+    <form onSubmit={handleSubmit} className="mb-8 w-full">
+      <div className="relative w-full">
         <Input
           type="text"
           value={description}

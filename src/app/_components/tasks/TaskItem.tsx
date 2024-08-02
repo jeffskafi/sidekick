@@ -115,15 +115,16 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           </div>
         </div>
         <div className="flex flex-grow items-center group overflow-hidden ml-2">
-          <input
-            value={task.description}
-            onChange={(e) => void updateTask(task.id, { description: e.target.value })}
-            className={`flex-grow bg-transparent py-1 text-sm focus:outline-none overflow-ellipsis ${
+          <div
+            className={`flex-grow bg-transparent py-1 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
               task.status === "done" 
                 ? "text-gray-400 dark:text-gray-500 line-through" 
                 : "text-gray-700 dark:text-gray-200"
             }`}
-          />
+            style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}
+          >
+            {task.description}
+          </div>
           <div className="flex items-center">
             <Button
               variant="ghost"
