@@ -1,25 +1,18 @@
 import React, { useMemo } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import TaskItem from "./TaskItem";
-import type { TaskStatus } from "~/server/db/schema";
 
-interface TaskListProps {
-  filter: 'all' | TaskStatus;
-}
-
-export default function TaskList({ filter }: TaskListProps) {
+export default function TaskList() {
   const { tasks } = useTaskContext();
 
-  const filteredTasks = useMemo(() => {
-    const topLevelTasks = tasks.filter(task => task.parentId === null);
-    if (filter === 'all') return topLevelTasks;
-    return topLevelTasks.filter(task => task.status === filter);
-  }, [tasks, filter]);
+  const topLevelTasks = useMemo(() => {
+    return tasks.filter(task => task.parentId === null);
+  }, [tasks]);
 
   return (
     <div className="task-list w-full">
       <ul className="space-y-2 w-full">
-        {filteredTasks.map((task) => (
+        {topLevelTasks.map((task) => (
           <TaskItem
             key={task.id}
             task={task}
