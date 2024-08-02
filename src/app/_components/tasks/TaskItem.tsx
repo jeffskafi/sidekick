@@ -33,9 +33,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
 
-  const CHEVRON_WIDTH = 1.5; // rem units
-  const CHECKBOX_SIZE = 1; // rem units
-  const CHEVRON_RIGHT_PADDING = 0.25; // rem units
+  const CHEVRON_WIDTH = 1.75; // rem units
+  const CHECKBOX_SIZE = 1.125; // rem units
+  const CHEVRON_RIGHT_PADDING = 0.375; // rem units
   const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING; // rem units
 
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   };
 
   return (
-    <li className="mb-2">
+    <li className="mb-2.5">
       <div className="flex items-center">
         <div style={{ width: `${level * INDENTATION_WIDTH}rem`, flexShrink: 0 }}></div>
         <div className="flex items-center">
@@ -120,12 +120,12 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               <Button
                 variant="ghost"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className={`h-6 w-6 p-0 transition-transform duration-200 ease-in-out ${
+                className={`h-8 w-8 p-0 transition-transform duration-200 ease-in-out ${
                   isExpanded ? "rotate-90" : ""
                 }`}
                 style={{ marginRight: `${CHEVRON_RIGHT_PADDING}rem` }}
               >
-                <ChevronRight size={16} className="text-amber-500" />
+                <ChevronRight size={20} className="text-amber-500" />
               </Button>
             )}
           </div>
@@ -141,17 +141,18 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             />
           </div>
         </div>
-        <div className="flex flex-grow items-center group overflow-hidden ml-2">
+        <div className="flex flex-grow items-center group overflow-hidden ml-2.5">
           {isEditing ? (
             <Input
               value={editedDescription}
               onChange={(e) => setEditedDescription(e.target.value)}
               onKeyDown={handleKeyDown}
               autoFocus
+              className="text-sm"
             />
           ) : (
             <div
-              className={`flex-grow bg-transparent py-1 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
+              className={`flex-grow bg-transparent py-1.5 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
                 task.status === "done" 
                   ? "text-gray-400 dark:text-gray-500 line-through" 
                   : "text-gray-700 dark:text-gray-200"
@@ -167,14 +168,14 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 variant="ghost"
                 onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
                 disabled={isGeneratingSubtasks}
-                className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
               >
                 {isGeneratingSubtasks ? (
-                  <Loader2 className="animate-spin" size={16} />
+                  <Loader2 className="animate-spin" size={18} />
                 ) : hasChildren ? (
-                  <RefreshCw size={16} />
+                  <RefreshCw size={18} />
                 ) : (
-                  <Zap size={16} />
+                  <Zap size={18} />
                 )}
               </Button>
             )}
@@ -185,16 +186,16 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     <Button
                       variant="ghost"
                       onClick={handleSave}
-                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400"
+                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400"
                     >
-                      <Check size={16} />
+                      <Check size={18} />
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={handleDiscard}
-                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
                     >
-                      <X size={16} />
+                      <X size={18} />
                     </Button>
                   </>
                 ) : (
@@ -202,23 +203,23 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     <Button
                       variant="ghost"
                       onClick={handleEdit}
-                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
                     >
-                      <Pen size={16} />
+                      <Pen size={18} />
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={() => setShowAddSubtask(!showAddSubtask)}
-                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
                     >
-                      <Plus size={16} />
+                      <Plus size={18} />
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={() => void handleDelete()}
-                      className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+                      className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={18} />
                     </Button>
                   </>
                 )}
@@ -227,9 +228,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             <Button
               variant="ghost"
               onClick={toggleIconsVisibility}
-              className="h-6 w-6 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+              className="h-7 w-7 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
             >
-              {showIcons ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+              {showIcons ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             </Button>
           </div>
         </div>

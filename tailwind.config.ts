@@ -58,7 +58,15 @@ const config = {
       },
       backgroundColor: {
         'dark-bg': '#1a1a1a', // or any other color code you prefer
-      }
+      },
+      fontSize: {
+        'base': '1.0625rem', // Slightly increased from 1rem (17px)
+      },
+      spacing: {
+        // Add some slightly larger spacing options
+        '17': '4.25rem',
+        '21': '5.25rem',
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

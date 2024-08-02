@@ -9,6 +9,7 @@ html {
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  font-size: 16px; /* Base size for rem units */
 }
 
 @supports (font-variation-settings: normal) {
@@ -18,7 +19,7 @@ html {
 }
 
 body {
-  @apply bg-background-light text-text-light dark:bg-background-dark dark:text-text-dark;
+  @apply bg-background-light text-text-light dark:bg-background-dark dark:text-text-dark text-base;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -28,7 +29,7 @@ body {
 }
 
 .btn {
-  @apply inline-block font-semibold py-2 sm:py-3 px-4 sm:px-6 rounded-lg transition duration-300 text-center;
+  @apply inline-block font-semibold py-3 sm:py-4 px-5 sm:px-7 rounded-lg transition duration-300 text-center text-base;
 }
 
 .btn-primary {
