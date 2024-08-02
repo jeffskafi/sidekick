@@ -18,7 +18,6 @@ export default function SettingsPage() {
     <Elements stripe={stripePromise}>
       <div className={`min-h-screen py-8 sm:py-12 bg-transparent`}>
         <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <h1 className={`text-3xl sm:text-4xl font-bold mb-8 text-center text-text-light dark:text-text-dark`}>Sidekick Settings</h1>
           
           <div className={`space-y-8 bg-transparent shadow-lg rounded-lg p-6 md:p-8`}>
             <div className="grid gap-8 md:grid-cols-2">
