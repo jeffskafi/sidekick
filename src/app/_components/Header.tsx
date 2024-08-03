@@ -3,6 +3,9 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
+import AppearanceSettings from "~/app/_components/Settings/AppearanceSettings";
+import NotificationSettings from "~/app/_components/Settings/NotificationSettings";
+import SubscriptionSettings from "~/app/_components/Settings/SubscriptionSettings";
 
 const AppearanceIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
@@ -24,33 +27,15 @@ const SubscriptionIcon = () => (
 );
 
 const AppearancePage = () => {
-  return (
-    <div>
-      <h1>Appearance</h1>
-      <p>Customize the look and feel of your app.</p>
-      {/* Add appearance settings controls here */}
-    </div>
-  );
+  return <AppearanceSettings />;
 };
 
 const NotificationsPage = () => {
-  return (
-    <div>
-      <h1>Notifications</h1>
-      <p>Manage your notification preferences.</p>
-      {/* Add notification settings controls here */}
-    </div>
-  );
+  return <NotificationSettings />;
 };
 
 const SubscriptionPage = () => {
-  return (
-    <div>
-      <h1>Subscription and Billing</h1>
-      <p>Manage your subscription and billing information.</p>
-      {/* Add subscription and billing controls here */}
-    </div>
-  );
+  return <SubscriptionSettings />;
 };
 
 const Header = () => {
