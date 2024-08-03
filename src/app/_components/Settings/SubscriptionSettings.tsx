@@ -72,18 +72,18 @@ export default function SubscriptionSettings() {
 
   return (
     <SettingsSection title="Subscription & Billing">
-      <div className="space-y-6 rounded-lg bg-surface-light dark:bg-surface-dark p-6 shadow-lg">
+      <div className="space-y-6 rounded-lg bg-surface-light p-6">
         <div className="space-y-4">
           <div>
-            <Label className="block text-sm font-medium text-text-light dark:text-text-dark">
+            <Label className="block text-sm font-medium text-text-light">
               Current Plan
             </Label>
-            <p className="mt-1 text-sm text-text-light-light dark:text-text-light-dark">
+            <p className="mt-1 text-sm text-text-light-light">
               Free Tier
             </p>
           </div>
           <div>
-            <Label className="block text-sm font-medium mb-2 text-text-light dark:text-text-dark">
+            <Label className="block text-sm font-medium mb-2 text-text-light">
               Billing Cycle
             </Label>
             <div className="flex space-x-2">
@@ -91,7 +91,7 @@ export default function SubscriptionSettings() {
                 className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                   billingCycle === "monthly" 
                     ? "bg-primary text-white" 
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
                 onClick={() => setBillingCycle("monthly")}
               >
@@ -101,7 +101,7 @@ export default function SubscriptionSettings() {
                 className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                   billingCycle === "annually" 
                     ? "bg-primary text-white" 
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
                 onClick={() => setBillingCycle("annually")}
               >
@@ -110,13 +110,13 @@ export default function SubscriptionSettings() {
             </div>
           </div>
           <div>
-            <Label className="block text-sm font-medium text-text-light dark:text-text-dark">
+            <Label className="block text-sm font-medium text-text-light">
               Payment Method
             </Label>
-            <p className="mt-1 text-sm text-text-light-light dark:text-text-light-dark">
+            <p className="mt-1 text-sm text-text-light-light">
               Visa ending in 1234
             </p>
-            <Button variant="outline" className="mt-2 w-full border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+            <Button variant="outline" className="mt-2 w-full border-gray-300 text-gray-700 hover:bg-gray-100">
               Update Payment Method
             </Button>
           </div>
@@ -139,7 +139,7 @@ export default function SubscriptionSettings() {
             ))}
           </div>
         </button>
-        {error && <p className="mt-4 text-sm text-red-500 dark:text-red-400">{error}</p>}
+        {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
       </div>
     </SettingsSection>
   );

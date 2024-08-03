@@ -15,7 +15,7 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({ label }) => {
 
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm font-medium text-black dark:text-white">{label}</span>
+      <span className="text-sm font-medium text-text-light">{label}</span>
       <label className={styles.toggle}>
         <input 
           type="checkbox" 
