@@ -1,6 +1,6 @@
 "use client";
 import { Plus } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -15,14 +15,16 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
   const [description, setDescription] = useState("");
   const { addTask } = useTaskContext();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (description.trim() && userId) {
       await addTask({ description, userId, status: "todo", parentId });
       setDescription("");
       onComplete?.();
     }
-  };
+  }, [description, userId, addTask, parentId, onComplete]);
+
+  const isButtonDisabled = !userId || description.trim() === "";
 
   return (
     <form onSubmit={handleSubmit} className="flex items-center w-full">
@@ -37,7 +39,7 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
         <Button
           type="submit"
           className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 p-0 rounded-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center"
-          disabled={!userId}
+          disabled={isButtonDisabled}
         >
           <Plus className="w-5 h-5" />
         </Button>
