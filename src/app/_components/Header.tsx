@@ -6,7 +6,8 @@ import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
 import AppearanceSettings from "~/app/_components/Settings/AppearanceSettings";
 import NotificationSettings from "~/app/_components/Settings/NotificationSettings";
 import SubscriptionSettings from "~/app/_components/Settings/SubscriptionSettings";
-import { Palette, Bell, CreditCard } from "lucide-react";
+import { Palette, Bell, CreditCard, FileArchive } from "lucide-react";
+import DataExportSettings from "~/app/_components/Settings/DataExportSettings";
 
 const AppearancePage = () => {
   return <AppearanceSettings />;
@@ -18,6 +19,10 @@ const NotificationsPage = () => {
 
 const SubscriptionPage = () => {
   return <SubscriptionSettings />;
+};
+
+const DataExportPage = () => {
+  return <DataExportSettings />;
 };
 
 const Header = () => {
@@ -52,6 +57,13 @@ const Header = () => {
                 labelIcon={<CreditCard size={16} />}
               >
                 <SubscriptionPage />
+              </UserButton.UserProfilePage>
+              <UserButton.UserProfilePage
+                label="Data Export"
+                url="data-export"
+                labelIcon={<FileArchive size={16} />}
+              >
+                <DataExportPage />
               </UserButton.UserProfilePage>
             </UserButton>
           ) : (
