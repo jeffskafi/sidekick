@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from "@clerk/nextjs/server";
 import { generateSubtasks } from '~/server/actions/taskActions';
+import { rateLimit } from '~/server/ratelimit';
 
 export async function POST(
   request: Request,
@@ -15,6 +16,12 @@ export async function POST(
     const taskId = params.id;
     if (!taskId) {
       return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
+    }
+
+    const { success } = await rateLimit.limit(userId);
+
+    if (!success) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
     const generatedSubtasks = await generateSubtasks(taskId);

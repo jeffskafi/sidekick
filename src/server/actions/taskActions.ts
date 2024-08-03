@@ -6,6 +6,8 @@ import { tasks, taskRelationships } from '~/server/db/schema';
 import { eq, and, inArray, or, ilike, desc } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
+import { rateLimit } from '~/server/ratelimit';
+
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -270,6 +272,12 @@ export async function searchTasks(params: TaskSearchParams): Promise<Task[]> {
 export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
+
+  const { success } = await rateLimit.limit(userId);
+
+  if (!success) {
+    throw new Error('Rate limit exceeded');
+  }
 
   const [parentTask] = await db
     .select()
