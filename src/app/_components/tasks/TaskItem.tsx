@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
-import { Checkbox } from "~/components/ui/checkbox";
 import { Button } from "~/components/ui/button";
 import { ChevronRight, ChevronLeft, Plus, Zap, Loader2, Trash2, RefreshCw, Pen, Check, X } from "lucide-react";
 import { Input } from "~/components/ui/input";
@@ -129,16 +128,36 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               </Button>
             )}
           </div>
-          <div className="relative" style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem` }}>
-            <Checkbox
-              checked={task.status === "done"}
-              onCheckedChange={() => void handleStatusChange()}
-              className={`absolute left-0 top-0 h-full w-full rounded-full transition-colors duration-200 ease-in-out ${
+          <div 
+            className="relative cursor-pointer"
+            style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem` }}
+            onClick={() => void handleStatusChange()}
+          >
+            <div
+              className={`absolute left-0 top-0 h-full w-full rounded-full transition-all duration-200 ease-in-out ${
                 task.status === "done"
-                  ? "bg-amber-500 text-white"
-                  : "border-2 border-amber-400 hover:border-amber-500 dark:border-amber-600 dark:hover:border-amber-500"
+                  ? "bg-amber-500 border-2 border-amber-500"
+                  : "bg-white dark:bg-gray-800 border-2 border-amber-400 hover:border-amber-500 dark:border-amber-600 dark:hover:border-amber-500"
               }`}
+              style={{
+                boxShadow: task.status === "done"
+                  ? "none"
+                  : "inset 1px 1px 2px rgba(255, 255, 255, 0.1), inset -1px -1px 2px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)"
+              }}
             />
+            {task.status === "done" && (
+              <svg
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 h-2/3 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
           </div>
         </div>
         <div className="flex flex-grow items-center group overflow-hidden ml-3">
