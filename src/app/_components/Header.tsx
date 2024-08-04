@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { useAuth, UserButton, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
 import { Palette, CreditCard } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
