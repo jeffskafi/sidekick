@@ -13,7 +13,7 @@ interface TasksProps {
 export default function Tasks({ initialTasks, userId }: TasksProps) {
   return (
     <TaskProvider initialTasks={initialTasks}>
-      <div className="min-h-screen bg-amber-50 dark:bg-dark-bg p-4 sm:p-6 md:p-9">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-bg p-4 sm:p-6 md:p-9">
         <div className="w-full max-w-3xl mx-auto">
           <AddTaskForm userId={userId} />
           <div className="mt-6 sm:mt-9">

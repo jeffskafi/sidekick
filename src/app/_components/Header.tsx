@@ -24,7 +24,7 @@ const Header = () => {
       <nav className="container mx-auto flex items-center justify-between px-4 py-4">
         <Link href="/" className="flex items-center text-xl font-semibold">
           <Image
-            src="/images/logo_main.svg"
+            src="/images/logo_main.png"
             alt="Sidekick Logo"
             width={160}
             height={72}
