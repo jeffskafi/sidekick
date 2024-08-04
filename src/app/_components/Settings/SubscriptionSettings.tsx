@@ -57,22 +57,9 @@ export default function SubscriptionSettings() {
     }
   };
 
-  const glitterParticles = Array.from({ length: 20 }).map((_, index) => ({
-    id: index,
-    style: {
-      "--x": `${Math.random() * 100}%`,
-      "--y": `${Math.random() * 100}%`,
-      "--size": `${Math.random() * 3 + 1}px`,
-      "--duration": `${Math.random() * 2 + 1}s`,
-      "--delay": `${Math.random()}s`,
-      "--tx": `${(Math.random() - 0.5) * 20}px`,
-      "--ty": `${(Math.random() - 0.5) * 20}px`,
-    },
-  }));
-
   return (
     <SettingsSection title="Subscription & Billing">
-      <div className="space-y-6 rounded-lg bg-surface-light p-6">
+      <div className="space-y-6 rounded-lg bg-white p-6">
         <div className="space-y-4">
           <div>
             <Label className="block text-sm font-medium text-text-light">
@@ -90,8 +77,8 @@ export default function SubscriptionSettings() {
               <button
                 className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                   billingCycle === "monthly" 
-                    ? "bg-primary-light dark:bg-primary-dark text-white" 
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    ? "bg-amber-500 text-white hover:bg-amber-400 shadow-inner" 
+                    : "bg-amber-100 text-amber-800 hover:bg-amber-200 shadow-sm"
                 }`}
                 onClick={() => setBillingCycle("monthly")}
               >
@@ -100,8 +87,8 @@ export default function SubscriptionSettings() {
               <button
                 className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                   billingCycle === "annually" 
-                    ? "bg-primary-light dark:bg-primary-dark text-white" 
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    ? "bg-amber-500 text-white hover:bg-amber-400 shadow-inner" 
+                    : "bg-amber-100 text-amber-800 hover:bg-amber-200 shadow-sm"
                 }`}
                 onClick={() => setBillingCycle("annually")}
               >
@@ -116,28 +103,19 @@ export default function SubscriptionSettings() {
             <p className="mt-1 text-sm text-text-light-light">
               Visa ending in 1234
             </p>
-            <Button variant="outline" className="mt-2 w-full border-gray-300 text-gray-700 hover:bg-gray-100">
+            <Button variant="outline" className="mt-2 w-full border-amber-500 text-amber-700 hover:bg-amber-50 shadow-sm">
               Update Payment Method
             </Button>
           </div>
         </div>
         <button
-          className={`${styles.upgradeButton} relative w-full overflow-hidden rounded-md bg-primary-light dark:bg-primary-dark px-4 py-3 text-lg font-semibold text-white transition-colors duration-200 ease-in-out hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`${styles.upgradeButton} relative w-full overflow-hidden rounded-md px-4 py-3 text-lg font-semibold text-white bg-amber-500 transition-colors duration-200 ease-in-out hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50 shadow-md hover:shadow-lg`}
           onClick={handleUpgrade}
           disabled={loading}
         >
-          <span className="relative z-10 text-shadow">
+          <span className="relative z-10">
             {loading ? "Processing..." : "Upgrade to Pro"}
           </span>
-          <div className={styles.glitterContainer} aria-hidden="true">
-            {glitterParticles.map((particle) => (
-              <div
-                key={particle.id}
-                className={styles.glitterParticle}
-                style={particle.style as React.CSSProperties}
-              />
-            ))}
-          </div>
         </button>
         {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
       </div>
