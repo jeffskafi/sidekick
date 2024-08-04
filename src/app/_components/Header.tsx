@@ -3,33 +3,18 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
-import {
-  Palette,
-  // Bell,
-  CreditCard,
-  // FileArchive
-} from "lucide-react";
+import { Palette, CreditCard } from "lucide-react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 
 const AppearancePage = dynamic(
   () => import("~/app/_components/Settings/AppearanceSettings"),
   { ssr: true },
 );
-
-// const NotificationsPage = dynamic(
-//   () => import("~/app/_components/Settings/NotificationSettings"),
-//   { ssr: true },
-// );
-
 const SubscriptionPage = dynamic(
   () => import("~/app/_components/Settings/SubscriptionSettings"),
   { ssr: true },
 );
-
-// const DataExportPage = dynamic(
-//   () => import("~/app/_components/Settings/DataExportSettings"),
-//   { ssr: true },
-// );
 
 const Header = () => {
   const { isSignedIn } = useAuth();
@@ -37,8 +22,14 @@ const Header = () => {
   return (
     <header className="mb-0 border-b pb-0">
       <nav className="container mx-auto flex items-center justify-between px-4 py-4">
-        <Link href="/" className="text-xl font-semibold">
-          Sidekick
+        <Link href="/" className="flex items-center text-xl font-semibold">
+          <Image
+            src="/images/logo_main.svg"
+            alt="Sidekick Logo"
+            width={160}
+            height={72}
+            priority
+          />
         </Link>
         <div className="flex items-center space-x-6">
           {isSignedIn ? (
@@ -50,13 +41,6 @@ const Header = () => {
               >
                 <AppearancePage />
               </UserButton.UserProfilePage>
-              {/* <UserButton.UserProfilePage
-                label="Notifications"
-                url="notifications"
-                labelIcon={<Bell size={16} />}
-              >
-                <NotificationsPage />
-              </UserButton.UserProfilePage> */}
               <UserButton.UserProfilePage
                 label="Subscription"
                 url="subscription"
@@ -64,13 +48,6 @@ const Header = () => {
               >
                 <SubscriptionPage />
               </UserButton.UserProfilePage>
-              {/* <UserButton.UserProfilePage
-                label="Data Export"
-                url="data-export"
-                labelIcon={<FileArchive size={16} />}
-              >
-                <DataExportPage />
-              </UserButton.UserProfilePage> */}
             </UserButton>
           ) : (
             <SignInButton mode="modal">

@@ -9,7 +9,7 @@ import { DarkModeProvider } from "~/app/_contexts/DarkModeContext";
 export const metadata: Metadata = {
   title: "Sidekick",
   description: "Your AI-powered productivity assistant",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/images/logo.svg" }],
 };
 
 export const viewport = {
