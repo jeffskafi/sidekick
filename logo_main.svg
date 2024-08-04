@@ -1,0 +1,25 @@
+<svg width="480" height="120" viewBox="0 0 480 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ff7247" />
+            <stop offset="100%" stop-color="#e63b00" />
+        </linearGradient>
+        <filter id="innerShadow">
+            <feOffset dx="0" dy="1" />
+            <feGaussianBlur stdDeviation="1" result="offset-blur" />
+            <feComposite operator="out" in="SourceGraphic" in2="offset-blur" result="inverse" />
+            <feFlood flood-color="black" flood-opacity="0.2" result="color" />
+            <feComposite operator="in" in="color" in2="inverse" result="shadow" />
+            <feComposite operator="over" in="shadow" in2="SourceGraphic" />
+        </filter>
+        <filter id="outerShadow">
+            <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.3" />
+        </filter>
+    </defs>
+    <text x="10" y="90" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="url(#textGradient)" filter="url(#innerShadow)">
+        Sidekick
+    </text>
+    <text x="10" y="90" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="url(#textGradient)" filter="url(#outerShadow)">
+        Sidekick
+    </text>
+</svg>
