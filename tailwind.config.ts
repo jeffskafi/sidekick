@@ -18,32 +18,32 @@ const config = {
       },
       colors: {
         'primary': {
-          light: '#F59E0B', // Amber-500
-          dark: '#D97706', // Amber-600
+          light: '#FF7247', // More vibrant amber
+          dark: '#E63B00', // Darker amber
         },
         'secondary': {
-          light: '#B45309', // Amber-700
-          dark: '#92400E', // Amber-800
+          light: '#FFA07A', // Light salmon
+          dark: '#FF4500', // Orange-red
         },
         'background': {
-          light: '#FFFBEB', // Amber-50
-          dark: '#1A1A1A', // Very dark gray, almost black
+          light: '#FFF5EB', // Very light amber
+          dark: '#1A0F00', // Very dark amber
         },
         'surface': {
-          light: '#FEF3C7', // Amber-100
-          dark: '#2A2A2A', // Dark gray
+          light: '#FFE4B5', // Moccasin
+          dark: '#2A1A00', // Dark amber
         },
         'text': {
-          light: '#78350F', // Amber-900
-          dark: '#FDE68A', // Amber-200
+          light: '#4A3000', // Dark amber for text on light background
+          dark: '#FFD700', // Gold for text on dark background
         },
         'text-light': {
-          light: '#92400E', // Amber-800
-          dark: '#FCD34D', // Amber-300
+          light: '#8B4500', // Darker amber for light text on light background
+          dark: '#FFB347', // Light orange for light text on dark background
         },
         'accent': {
-          light: '#059669', // Emerald-600
-          dark: '#10B981', // Emerald-500
+          light: '#FF8C00', // Dark orange
+          dark: '#FFA500', // Orange
         },
       },
       animation: {

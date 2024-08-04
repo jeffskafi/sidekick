@@ -8,21 +8,18 @@ interface PriorityButtonProps {
   size?: number;
 }
 
-const PriorityButton: React.FC<PriorityButtonProps> = ({
-  priority,
-  onToggle,
-  size = 16,
-}) => {
-  const colors: Record<Task['priority'], string> = {
-    none: "text-gray-300",
-    low: "text-green-500",
-    medium: "text-yellow-500",
-    high: "text-red-500",
+const PriorityButton: React.FC<PriorityButtonProps> = ({ priority, onToggle, size = 24 }) => {
+  const priorityColors = {
+    none: "text-gray-400 hover:text-primary-light dark:hover:text-primary-dark",
+    low: "text-primary-light dark:text-primary-dark",
+    medium: "text-secondary-light dark:text-secondary-dark",
+    high: "text-accent-light dark:text-accent-dark",
   };
+
   return (
     <button
       onClick={onToggle}
-      className={`mr-2 transition-colors duration-300 focus:outline-none ${colors[priority]}`}
+      className={`transition-colors duration-200 ${priorityColors[priority]}`}
       title={priority === "none" ? "Set priority" : `Priority: ${priority}`}
     >
       <Flag size={size} />

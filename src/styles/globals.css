@@ -33,7 +33,7 @@ body {
 }
 
 .btn-primary {
-  @apply bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-dark dark:hover:bg-primary-light;
+  @apply bg-primary-light dark:bg-primary-dark text-white hover:bg-secondary-light dark:hover:bg-secondary-dark;
 }
 
 .btn-secondary {
@@ -43,17 +43,17 @@ body {
 /* Add these new styles for the Calendar component */
 .rdp {
   --rdp-cell-size: 40px;
-  --rdp-accent-color: #F59E0B;
-  --rdp-background-color: #FFFBEB;
-  --rdp-accent-color-dark: #D97706;
-  --rdp-background-color-dark: #1A1A1A;
+  --rdp-accent-color: #FF7247;
+  --rdp-background-color: #FFF5EB;
+  --rdp-accent-color-dark: #E63B00;
+  --rdp-background-color-dark: #1A0F00;
   --rdp-outline: 2px solid var(--rdp-accent-color);
   --rdp-outline-selected: 3px solid var(--rdp-accent-color);
 }
 
 .dark .rdp {
-  --rdp-accent-color: #D97706;
-  --rdp-background-color: #1A1A1A;
+  --rdp-accent-color: #E63B00;
+  --rdp-background-color: #1A0F00;
 }
 
 .rdp-day_selected, 
@@ -108,4 +108,14 @@ body {
 
 input, textarea {
   font-size: 16px;
+}
+
+/* Custom checkbox styles */
+.checkbox-amber {
+  @apply h-5 w-5 rounded border-2 border-primary-light dark:border-primary-dark text-primary-light dark:text-primary-dark focus:ring-primary-light dark:focus:ring-primary-dark;
+}
+
+.checkbox-amber:checked {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  @apply bg-primary-light dark:bg-primary-dark border-primary-light dark:border-primary-dark;
 }

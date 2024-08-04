@@ -125,7 +125,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 }`}
                 style={{ marginRight: `${CHEVRON_RIGHT_PADDING}rem` }}
               >
-                <ChevronRight size={20} className="text-amber-500" />
+                <ChevronRight size={20} className="text-amber-500 dark:text-amber-400" />
               </Button>
             )}
           </div>
@@ -136,7 +136,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               className={`absolute left-0 top-0 h-full w-full rounded-full transition-colors duration-200 ease-in-out ${
                 task.status === "done"
                   ? "bg-amber-500 text-white"
-                  : "border-2 border-amber-300 hover:border-amber-500"
+                  : "border-2 border-amber-400 hover:border-amber-500 dark:border-amber-600 dark:hover:border-amber-500"
               }`}
             />
           </div>

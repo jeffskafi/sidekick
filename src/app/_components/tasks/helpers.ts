@@ -4,7 +4,7 @@ export const getStatusColor = (status: Task['status'], theme: 'light' | 'dark') 
     switch (status) {
         case "in_progress": return "bg-orange-500";
         case "done": return "bg-green-500";
-        case "todo": return theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300';
+        case "todo": return theme === 'dark' ? 'bg-amber-700' : 'bg-amber-200';
         default: return theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300';
     }
 };
