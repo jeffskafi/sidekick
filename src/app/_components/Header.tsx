@@ -3,27 +3,33 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
-import AppearanceSettings from "~/app/_components/Settings/AppearanceSettings";
-import NotificationSettings from "~/app/_components/Settings/NotificationSettings";
-import SubscriptionSettings from "~/app/_components/Settings/SubscriptionSettings";
-import { Palette, Bell, CreditCard, FileArchive } from "lucide-react";
-import DataExportSettings from "~/app/_components/Settings/DataExportSettings";
+import {
+  Palette,
+  // Bell,
+  CreditCard,
+  // FileArchive
+} from "lucide-react";
+import dynamic from "next/dynamic";
 
-const AppearancePage = () => {
-  return <AppearanceSettings />;
-};
+const AppearancePage = dynamic(
+  () => import("~/app/_components/Settings/AppearanceSettings"),
+  { ssr: true },
+);
 
-const NotificationsPage = () => {
-  return <NotificationSettings />;
-};
+// const NotificationsPage = dynamic(
+//   () => import("~/app/_components/Settings/NotificationSettings"),
+//   { ssr: true },
+// );
 
-const SubscriptionPage = () => {
-  return <SubscriptionSettings />;
-};
+const SubscriptionPage = dynamic(
+  () => import("~/app/_components/Settings/SubscriptionSettings"),
+  { ssr: true },
+);
 
-const DataExportPage = () => {
-  return <DataExportSettings />;
-};
+// const DataExportPage = dynamic(
+//   () => import("~/app/_components/Settings/DataExportSettings"),
+//   { ssr: true },
+// );
 
 const Header = () => {
   const { isSignedIn } = useAuth();
@@ -44,13 +50,13 @@ const Header = () => {
               >
                 <AppearancePage />
               </UserButton.UserProfilePage>
-              <UserButton.UserProfilePage
+              {/* <UserButton.UserProfilePage
                 label="Notifications"
                 url="notifications"
                 labelIcon={<Bell size={16} />}
               >
                 <NotificationsPage />
-              </UserButton.UserProfilePage>
+              </UserButton.UserProfilePage> */}
               <UserButton.UserProfilePage
                 label="Subscription"
                 url="subscription"
@@ -58,13 +64,13 @@ const Header = () => {
               >
                 <SubscriptionPage />
               </UserButton.UserProfilePage>
-              <UserButton.UserProfilePage
+              {/* <UserButton.UserProfilePage
                 label="Data Export"
                 url="data-export"
                 labelIcon={<FileArchive size={16} />}
               >
                 <DataExportPage />
-              </UserButton.UserProfilePage>
+              </UserButton.UserProfilePage> */}
             </UserButton>
           ) : (
             <SignInButton mode="modal">
