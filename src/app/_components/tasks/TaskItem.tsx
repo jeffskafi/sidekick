@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Button } from "~/components/ui/button";
-import { ChevronRight, ChevronLeft, Plus, Zap, Loader2, Trash2, RefreshCw, Pen, Check, X } from "lucide-react";
+import { ChevronRight, ChevronLeft, Zap, Loader2, Trash2, RefreshCw, Pen, Check, X } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import type { Task } from "~/server/db/schema";
-import AddTaskForm from "./AddTaskForm";
 
 interface TaskItemProps {
   task: Task;
@@ -19,10 +18,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     loadSubtasks,
     generateAISubtasks,
     refreshSubtasks,
-    userId,
   } = useTaskContext();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showAddSubtask, setShowAddSubtask] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
   const [showIcons, setShowIcons] = useState(false);
@@ -224,13 +221,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     </Button>
                     <Button
                       variant="ghost"
-                      onClick={() => setShowAddSubtask(!showAddSubtask)}
-                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
-                    >
-                      <Plus size={20} />
-                    </Button>
-                    <Button
-                      variant="ghost"
                       onClick={() => void handleDelete()}
                       className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
                     >
@@ -252,15 +242,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
       </div>
       {isExpanded && (
         <ul className="mt-1 space-y-1">
-          {showAddSubtask && userId && (
-            <li>
-              <AddTaskForm
-                userId={userId}
-                parentId={task.id}
-                onComplete={() => setShowAddSubtask(false)}
-              />
-            </li>
-          )}
           {subtasks.map((subtask) => (
             <TaskItem key={subtask.id} task={subtask} level={level + 1} />
           ))}
