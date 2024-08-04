@@ -162,62 +162,58 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         </div>
         <div className="flex flex-grow items-center group overflow-hidden ml-3">
           {isEditing ? (
-            <Input
-              value={editedDescription}
-              onChange={(e) => setEditedDescription(e.target.value)}
-              onKeyDown={handleKeyDown}
-              autoFocus
-              className="text-sm"
-            />
-          ) : (
-            <div
-              className={`flex-grow bg-transparent py-1.5 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
-                task.status === "done" 
-                  ? "text-gray-400 dark:text-gray-500 line-through" 
-                  : "text-gray-700 dark:text-gray-200"
-              }`}
-              style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}
-            >
-              {task.description}
-            </div>
-          )}
-          <div className="flex items-center">
-            {!isEditing && (
+            <div className="flex flex-grow items-center">
+              <Input
+                value={editedDescription}
+                onChange={(e) => setEditedDescription(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus
+                className="text-sm flex-grow border-transparent focus:border-transparent focus:ring-0"
+                variant="edit"
+              />
               <Button
                 variant="ghost"
-                onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-                disabled={isGeneratingSubtasks}
-                className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                onClick={handleSave}
+                className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400"
               >
-                {isGeneratingSubtasks ? (
-                  <Loader2 className="animate-spin" size={20} />
-                ) : hasChildren ? (
-                  <RefreshCw size={20} />
-                ) : (
-                  <Zap size={20} />
-                )}
+                <Check size={20} />
               </Button>
-            )}
-            {showIcons && (
-              <>
-                {isEditing ? (
-                  <>
-                    <Button
-                      variant="ghost"
-                      onClick={handleSave}
-                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400"
-                    >
-                      <Check size={20} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={handleDiscard}
-                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
-                    >
-                      <X size={20} />
-                    </Button>
-                  </>
-                ) : (
+              <Button
+                variant="ghost"
+                onClick={handleDiscard}
+                className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+              >
+                <X size={20} />
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div
+                className={`flex-grow bg-transparent py-1.5 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
+                  task.status === "done" 
+                    ? "text-gray-400 dark:text-gray-500 line-through" 
+                    : "text-gray-700 dark:text-gray-200"
+                }`}
+                style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}
+              >
+                {task.description}
+              </div>
+              <div className="flex items-center">
+                <Button
+                  variant="ghost"
+                  onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
+                  disabled={isGeneratingSubtasks}
+                  className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                >
+                  {isGeneratingSubtasks ? (
+                    <Loader2 className="animate-spin" size={20} />
+                  ) : hasChildren ? (
+                    <RefreshCw size={20} />
+                  ) : (
+                    <Zap size={20} />
+                  )}
+                </Button>
+                {showIcons && (
                   <>
                     <Button
                       variant="ghost"
@@ -242,16 +238,16 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     </Button>
                   </>
                 )}
-              </>
-            )}
-            <Button
-              variant="ghost"
-              onClick={toggleIconsVisibility}
-              className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
-            >
-              {showIcons ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-            </Button>
-          </div>
+              </div>
+            </>
+          )}
+          <Button
+            variant="ghost"
+            onClick={toggleIconsVisibility}
+            className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+          >
+            {showIcons ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </Button>
         </div>
       </div>
       {isExpanded && (
