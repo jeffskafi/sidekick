@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
+import { useAuth, UserButton, SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Palette, CreditCard } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -50,11 +50,13 @@ const Header = () => {
               </UserButton.UserProfilePage>
             </UserButton>
           ) : (
-            <SignInButton mode="modal">
-              <button className="text-foreground hover:text-foreground/80 transition-colors">
-                Sign In
-              </button>
-            </SignInButton>
+            <>
+              <SignInButton mode="modal">
+                <button className="px-4 py-2 text-sm font-medium text-white bg-primary-light dark:bg-primary-dark rounded-full hover:bg-secondary-light dark:hover:bg-secondary-dark transition-colors duration-300">
+                  Sign In
+                </button>
+              </SignInButton>
+            </>
           )}
         </div>
       </nav>

@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import dynamic from 'next/dynamic'
 import LandingPage from "~/app/_components/LandingPage";
 import { getTopLevelTasks } from "~/server/actions/taskActions";
+import { SignUp } from "@clerk/nextjs";
 
 const Tasks = dynamic(() => import('~/app/_components/tasks/Tasks'), { ssr: true })
 
@@ -20,4 +21,8 @@ export default async function HomePage() {
       <Tasks initialTasks={tasks} userId={userId} />
     </div>
   );
+}
+
+export function SignUpPage() {
+  return <SignUp />;
 }
