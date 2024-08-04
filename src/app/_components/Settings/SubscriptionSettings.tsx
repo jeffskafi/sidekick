@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
 import SettingsSection from "./SettingsSection";
 import { loadStripe } from "@stripe/stripe-js";
-import styles from "./SubscriptionSettings.module.css";
 import { useUser } from "@clerk/nextjs";
 
 interface CheckoutSession {
@@ -19,8 +17,7 @@ const stripePromise = loadStripe(
 export default function SubscriptionSettings() {
   const { user, isLoaded } = useUser();
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [billingCycle, setBillingCycle] = useState<string>("monthly");
+  const [, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -28,17 +25,23 @@ export default function SubscriptionSettings() {
     }
   }, [isLoaded, user]);
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (tier: 'pro' | 'ultimate' | 'enterprise') => {
     setLoading(true);
     setError(null);
     try {
+      if (tier === 'enterprise') {
+        // Redirect to a contact form or open a modal for enterprise inquiries
+        console.log('Redirecting to enterprise contact form');
+        return;
+      }
+
       const response = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          priceId: billingCycle === "monthly" ? "price_monthly" : "price_yearly",
+          priceId: tier === 'pro' ? "price_pro" : "price_ultimate",
         }),
       });
       const session: CheckoutSession = await response.json() as CheckoutSession;
@@ -66,57 +69,53 @@ export default function SubscriptionSettings() {
               Current Plan
             </Label>
             <p className="mt-1 text-sm text-text-light-light">
+              {/* Replace this with the actual current plan */}
               Free Tier
             </p>
           </div>
           <div>
-            <Label className="block text-sm font-medium mb-2 text-text-light">
-              Billing Cycle
-            </Label>
-            <div className="flex space-x-2">
-              <button
-                className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  billingCycle === "monthly" 
-                    ? "bg-amber-500 text-white hover:bg-amber-400 shadow-inner" 
-                    : "bg-amber-100 text-amber-800 hover:bg-amber-200 shadow-sm"
-                }`}
-                onClick={() => setBillingCycle("monthly")}
-              >
-                Monthly
-              </button>
-              <button
-                className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  billingCycle === "annually" 
-                    ? "bg-amber-500 text-white hover:bg-amber-400 shadow-inner" 
-                    : "bg-amber-100 text-amber-800 hover:bg-amber-200 shadow-sm"
-                }`}
-                onClick={() => setBillingCycle("annually")}
-              >
-                Annually (Save 20%)
-              </button>
-            </div>
-          </div>
-          <div>
             <Label className="block text-sm font-medium text-text-light">
-              Payment Method
+              Usage
             </Label>
             <p className="mt-1 text-sm text-text-light-light">
-              Visa ending in 1234
+              {/* Replace these with actual usage data */}
+              Fast requests: 5/10 this month
+              <br />
+              Slow requests: 50/100 this month
             </p>
-            <Button variant="outline" className="mt-2 w-full border-amber-500 text-amber-700 hover:bg-amber-50 shadow-sm">
-              Update Payment Method
-            </Button>
+          </div>
+          <div>
+            <Label className="block text-sm font-medium mb-2 text-text-light">
+              Subscription Tiers
+            </Label>
+            <div className="space-y-2">
+              <button
+                className={`w-full rounded-md px-4 py-2 text-sm font-medium transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 shadow-sm`}
+                onClick={() => handleUpgrade('pro')}
+              >
+                Upgrade to Pro - 500 fast requests/month
+              </button>
+              <button
+                className={`w-full rounded-md px-4 py-2 text-sm font-medium transition-colors bg-amber-500 text-white hover:bg-amber-400 shadow-inner`}
+                onClick={() => handleUpgrade('ultimate')}
+              >
+                Upgrade to Ultimate - Unlimited fast requests
+              </button>
+              <button
+                className={`w-full rounded-md px-4 py-2 text-sm font-medium transition-colors bg-gray-100 text-gray-800 hover:bg-gray-200 shadow-sm`}
+                onClick={() => handleUpgrade('enterprise')}
+              >
+                Contact Sales - Enterprise Plan (SOC-2 & HIPAA compliant)
+              </button>
+              <a
+                href="/pricing"
+                className={`block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors bg-white text-amber-600 hover:bg-amber-50 shadow-sm border border-amber-300 text-center`}
+              >
+                More Details
+              </a>
+            </div>
           </div>
         </div>
-        <button
-          className={`${styles.upgradeButton} relative w-full overflow-hidden rounded-md px-4 py-3 text-lg font-semibold text-white bg-amber-500 transition-colors duration-200 ease-in-out hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50 shadow-md hover:shadow-lg`}
-          onClick={handleUpgrade}
-          disabled={loading}
-        >
-          <span className="relative z-10">
-            {loading ? "Processing..." : "Upgrade to Pro"}
-          </span>
-        </button>
         {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
       </div>
     </SettingsSection>
