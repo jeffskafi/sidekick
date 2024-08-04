@@ -90,7 +90,7 @@ export default function SubscriptionSettings() {
               <button
                 className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                   billingCycle === "monthly" 
-                    ? "bg-primary text-white" 
+                    ? "bg-primary-light dark:bg-primary-dark text-white" 
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
                 onClick={() => setBillingCycle("monthly")}
@@ -100,7 +100,7 @@ export default function SubscriptionSettings() {
               <button
                 className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                   billingCycle === "annually" 
-                    ? "bg-primary text-white" 
+                    ? "bg-primary-light dark:bg-primary-dark text-white" 
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
                 onClick={() => setBillingCycle("annually")}
@@ -122,7 +122,7 @@ export default function SubscriptionSettings() {
           </div>
         </div>
         <button
-          className={`${styles.upgradeButton} relative w-full overflow-hidden rounded-md bg-primary px-4 py-3 text-lg font-semibold text-white transition-colors duration-200 ease-in-out hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`${styles.upgradeButton} relative w-full overflow-hidden rounded-md bg-primary-light dark:bg-primary-dark px-4 py-3 text-lg font-semibold text-white transition-colors duration-200 ease-in-out hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50`}
           onClick={handleUpgrade}
           disabled={loading}
         >

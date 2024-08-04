@@ -33,26 +33,26 @@ body {
 }
 
 .btn-primary {
-  @apply bg-primary text-white hover:bg-primary-dark dark:bg-primary dark:hover:bg-primary-dark;
+  @apply bg-primary-light dark:bg-primary-dark text-white hover:bg-primary-dark dark:hover:bg-primary-light;
 }
 
 .btn-secondary {
-  @apply bg-surface-light text-primary border-2 border-primary hover:bg-primary hover:text-white dark:bg-surface-dark dark:text-primary dark:border-primary dark:hover:bg-primary dark:hover:text-text-dark;
+  @apply bg-surface-light dark:bg-surface-dark text-primary-light dark:text-primary-dark border-2 border-primary-light dark:border-primary-dark hover:bg-primary-light hover:text-white dark:hover:bg-primary-dark dark:hover:text-white;
 }
 
 /* Add these new styles for the Calendar component */
 .rdp {
   --rdp-cell-size: 40px;
   --rdp-accent-color: #F59E0B;
-  --rdp-background-color: #fff;
-  --rdp-accent-color-dark: #92400E;
+  --rdp-background-color: #FFFBEB;
+  --rdp-accent-color-dark: #D97706;
   --rdp-background-color-dark: #1A1A1A;
   --rdp-outline: 2px solid var(--rdp-accent-color);
   --rdp-outline-selected: 3px solid var(--rdp-accent-color);
 }
 
 .dark .rdp {
-  --rdp-accent-color: #92400E;
+  --rdp-accent-color: #D97706;
   --rdp-background-color: #1A1A1A;
 }
 

@@ -13,40 +13,44 @@ const config = {
   prefix: "",
   theme: {
     extend: {
-      // Extend default theme
       fontFamily: {
         sans: ["Inter var", ...fontFamily.sans],
       },
       colors: {
-        // Custom color palette
-        'primary': '#F59E0B', // Amber-500
-        'primary-dark': '#D97706', // Amber-600
-        'secondary': '#78350F', // Amber-900
+        'primary': {
+          light: '#F59E0B', // Amber-500
+          dark: '#D97706', // Amber-600
+        },
+        'secondary': {
+          light: '#B45309', // Amber-700
+          dark: '#92400E', // Amber-800
+        },
         'background': {
           light: '#FFFBEB', // Amber-50
           dark: '#1A1A1A', // Very dark gray, almost black
         },
         'surface': {
-          light: '#FFFFFF',
+          light: '#FEF3C7', // Amber-100
           dark: '#2A2A2A', // Dark gray
         },
         'text': {
-          light: '#1F2937', // Gray-800
-          dark: '#E5E5E5', // Light gray
+          light: '#78350F', // Amber-900
+          dark: '#FDE68A', // Amber-200
         },
         'text-light': {
-          light: '#4B5563', // Gray-600
-          dark: '#A0A0A0', // Medium gray
+          light: '#92400E', // Amber-800
+          dark: '#FCD34D', // Amber-300
         },
-        'accent': '#10B981', // Emerald-500
+        'accent': {
+          light: '#059669', // Emerald-600
+          dark: '#10B981', // Emerald-500
+        },
       },
       animation: {
-        // Custom animations
         'fade-in': 'fadeIn 0.5s ease-out',
         'slide-up': 'slideUp 0.5s ease-out',
       },
       keyframes: {
-        // Keyframes for custom animations
         fadeIn: {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
@@ -57,10 +61,10 @@ const config = {
         },
       },
       backgroundColor: {
-        'dark-bg': '#1a1a1a', // or any other color code you prefer
+        'dark-bg': '#1a1a1a',
       },
       fontSize: {
-        'base': '1.0625rem', // Decreased from 1.0875rem (now 17px)
+        'base': '1.0625rem',
       },
       spacing: {
         '17': '4.25rem',

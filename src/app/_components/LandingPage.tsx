@@ -119,7 +119,7 @@ export default function LandingPage() {
       <Features />
 
       {/* CTA Section */}
-      <section className="bg-primary dark:bg-primary-dark py-12 sm:py-16 text-white">
+      <section className="bg-primary-light dark:bg-primary-dark py-12 sm:py-16 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.h2 
             className="text-xl sm:text-2xl md:text-3xl font-bold mb-4"
