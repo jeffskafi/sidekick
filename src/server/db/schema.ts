@@ -56,3 +56,8 @@ export type TaskSearchParams = {
   completed?: boolean;
   dueDate?: Date | null;
 };
+
+// New type for hierarchical representation. Used for providing context to LLM
+export type TaskNode = Omit<Task, 'children'> & {
+  children: TaskNode[];
+};

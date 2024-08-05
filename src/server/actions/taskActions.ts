@@ -1,12 +1,13 @@
 'use server'
 
 import { db } from '~/server/db';
-import type { Task, NewTask, TaskUpdate, TaskSearchParams, TaskSelect } from '~/server/db/schema';
+import type { Task, TaskNode, NewTask, TaskUpdate, TaskSearchParams, TaskSelect } from '~/server/db/schema';
 import { tasks, taskRelationships } from '~/server/db/schema';
 import { eq, and, inArray, or, ilike, desc } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
 import { rateLimit } from '~/server/ratelimit';
+import { performance } from 'perf_hooks';
 
 
 const openai = new OpenAI({
@@ -269,34 +270,118 @@ export async function searchTasks(params: TaskSearchParams): Promise<Task[]> {
   }));
 }
 
+async function getAncestralChain(taskId: TaskSelect['id'], userId: string): Promise<TaskNode | null> {
+  const start = performance.now();
+
+  // Fetch all tasks for the user in one query
+  const allTasks = await db
+    .select()
+    .from(tasks)
+    .where(eq(tasks.userId, userId))
+    .execute();
+
+  // Fetch all relationships in one query
+  const allRelationships = await db
+    .select()
+    .from(taskRelationships)
+    .execute();
+
+  // Create a map of tasks and their relationships
+  const taskMap = new Map<string, TaskNode>();
+  allTasks.forEach(task => {
+    taskMap.set(task.id, { ...task, parentId: null, children: [] });
+  });
+
+  // Establish parent-child relationships
+  allRelationships.forEach(rel => {
+    if (rel.parentTaskId !== null) {
+      const child = taskMap.get(rel.childTaskId);
+      const parent = taskMap.get(rel.parentTaskId);
+      if (child && parent) {
+        child.parentId = rel.parentTaskId;
+        parent.children.push(child);
+      }
+    }
+  });
+
+  // Function to recursively build the ancestral chain
+  function buildChain(id: string): TaskNode | null {
+    const task = taskMap.get(id);
+    if (!task) return null;
+
+    if (task.parentId !== null) {
+      const parent = buildChain(task.parentId);
+      if (parent) {
+        parent.children = parent.children.filter(child => child.id !== id);
+        parent.children.push(task);
+        return parent;
+      }
+    }
+
+    return task;
+  }
+
+  const result = buildChain(taskId);
+
+  const end = performance.now();
+  console.log(`getAncestralChain execution time: ${end - start} ms`);
+  return result;
+}
+
 export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
+  const totalStart = performance.now();
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
+  const rateLimitStart = performance.now();
   const { success } = await rateLimit.limit(userId);
+  const rateLimitEnd = performance.now();
+  console.log(`Rate limit check time: ${rateLimitEnd - rateLimitStart} ms`);
 
   if (!success) {
     throw new Error('Rate limit exceeded');
   }
 
+  const parentTaskStart = performance.now();
   const [parentTask] = await db
     .select()
     .from(tasks)
     .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
+  const parentTaskEnd = performance.now();
+  console.log(`Parent task fetch time: ${parentTaskEnd - parentTaskStart} ms`);
 
   if (!parentTask) throw new Error('Task not found');
 
+  const ancestralChainStart = performance.now();
+  const ancestralChain = await getAncestralChain(taskId, userId);
+  const ancestralChainEnd = performance.now();
+  console.log(`Ancestral chain fetch time: ${ancestralChainEnd - ancestralChainStart} ms`);
+
+  if (!ancestralChain) throw new Error('Task not found');
+
+  const openAIStart = performance.now();
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o",  // Ensure this is a valid model name
+    model: "gpt-4o",
     response_format: { type: "json_object" },
     messages: [
       {
         role: "system",
-        content: `You are an AI assistant that helps break down tasks into subtasks. Given a task description, create a list of 3-5 specific, actionable subtasks that directly contribute to completing the main task. Your response should be a valid JSON object with the following structure:
+        content: `You are an AI task decomposition specialist. Your role is to break down tasks into precise, actionable subtasks. Given a task description and its hierarchical position, generate 3 to 5 subtasks that directly contribute to completing the main task. Each subtask must be specific, measurable, and achievable.
+
+        Requirements:
+        1. Generate 3 to 5 subtasks, no more, no less.
+        2. Each subtask description must be between 10 and 150 characters.
+        3. Estimated time for each subtask must be between 5 and 240 minutes.
+        4. Subtasks must be concrete actions, not vague goals.
+        5. Consider the task's context within its hierarchy when generating subtasks.
+        6. Ensure subtasks are mutually exclusive and collectively exhaustive.
+        7. If subtasks already exist, generate entirely new ones without repetition.
+
+        Your response must be a valid JSON object with the following structure:
         {
           "subtasks": [
             {
-              "description": "Subtask 1 description",
+              "description": "Specific, actionable subtask description",
               "estimatedTimeInMinutes": 30
             },
             {
@@ -306,7 +391,7 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
             ...
           ]
         }
-        Ensure each subtask is clear, concise, and directly related to the main task. Provide an estimated time in minutes for each subtask.
+        Ensure each subtask is clear, concise, and directly related to the main task. Provide an estimated time in minutes for each subtask. Consider the task's context within its hierarchy when generating subtasks.
 
         JSON Schema:
         {
@@ -320,13 +405,13 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
                 "properties": {
                   "description": {
                     "type": "string",
-                    "minLength": 1,
-                    "maxLength": 200
+                    "minLength": 10,
+                    "maxLength": 150
                   },
                   "estimatedTimeInMinutes": {
                     "type": "integer",
-                    "minimum": 1,
-                    "maximum": 480
+                    "minimum": 5,
+                    "maximum": 240
                   }
                 },
                 "required": ["description", "estimatedTimeInMinutes"]
@@ -338,32 +423,49 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
           "required": ["subtasks"]
         }
 
-        Adhere strictly to this schema when generating the response.`
+        Adhere strictly to this schema and requirements when generating the response.`
       },
       {
         role: "user",
-        content: `Please break down this task into subtasks: ${parentTask.description}`
+        content: `Generate 3 to 5 new, non-overlapping subtasks for the following task:
+        TASK ID: ${taskId}
+
+        TASK HIERARCHY CONTEXT:
+        ${JSON.stringify(ancestralChain, null, 2)}
+
+        Rules:
+        1. Analyze the task hierarchy to understand the context.
+        2. Ensure each subtask is unique and doesn't repeat any existing tasks in the hierarchy.
+        3. Make subtasks specific to the immediate parent task, not to higher-level ancestors.
+        4. Balance the estimated times so they sum up close to the parent task's total estimated time, if available.
+        5. If the parent task is a leaf node, focus on breaking it down into logical next steps.
+        6. For tasks higher in the hierarchy, create subtasks that represent major components or phases.
+
+        Provide your response as a valid JSON object adhering to the specified schema.`
       }
     ],
   });
+  const openAIEnd = performance.now();
+  console.log(`OpenAI API call time: ${openAIEnd - openAIStart} ms`);
 
   const message = completion.choices[0]?.message.content;
   if (!message) throw new Error('No message found in OpenAI response');
 
-  // Define the expected structure of the parsed content
-  interface ParsedContent {
-    subtasks: Array<{
-      description: string;
-      estimatedTimeInMinutes: number;
+    // Define the expected structure of the parsed content
+    interface ParsedContent {
+      subtasks: Array<{
+        description: string;
+        estimatedTimeInMinutes: number;
     }>;
   }
-
+  const parseStart = performance.now();
   try {
     const parsedContent = JSON.parse(message) as ParsedContent;
     if (!Array.isArray(parsedContent.subtasks)) {
       throw new Error('Invalid subtasks format in OpenAI response');
     }
 
+    const dbTransactionStart = performance.now();
     const subtasks = await db.transaction(async (tx) => {
       const createdSubtasks: Task[] = [];
       for (const subtaskInput of parsedContent.subtasks) {
@@ -394,15 +496,23 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
       }
       return createdSubtasks;
     });
+    const dbTransactionEnd = performance.now();
+    console.log(`Database transaction time: ${dbTransactionEnd - dbTransactionStart} ms`);
+
+    const totalEnd = performance.now();
+    console.log(`Total generateSubtasks execution time: ${totalEnd - totalStart} ms`);
 
     return subtasks;
   } catch (error) {
+    const parseEnd = performance.now();
+    console.log(`Parsing and error handling time: ${parseEnd - parseStart} ms`);
     console.error('Failed to parse OpenAI response:', error);
     throw new Error('Invalid response format from OpenAI');
   }
 }
 
 export async function refreshSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
+  const start = performance.now();
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -430,17 +540,25 @@ export async function refreshSubtasks(taskId: TaskSelect['id']): Promise<Task[]>
       }
     }
 
+    const deleteStart = performance.now();
     await deleteSubtasksRecursive(taskId);
+    const deleteEnd = performance.now();
+    console.log(`Subtasks deletion time: ${deleteEnd - deleteStart} ms`);
 
-    // Generate new subtasks
+    const generateStart = performance.now();
     const newSubtasks = await generateSubtasks(taskId);
+    const generateEnd = performance.now();
+    console.log(`New subtasks generation time: ${generateEnd - generateStart} ms`);
 
-    // Return the parent task along with the new subtasks
+    const end = performance.now();
+    console.log(`Total refreshSubtasks execution time: ${end - start} ms`);
+
     return [{ ...task, children: newSubtasks.map(subtask => subtask.id), parentId: null }, ...newSubtasks];
   });
 }
 
 export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
+  const start = performance.now();
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -469,6 +587,9 @@ export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
     .select()
     .from(taskRelationships)
     .where(inArray(taskRelationships.parentTaskId, subtasks.map(t => t.tasks.id)));
+
+  const end = performance.now();
+  console.log(`getSubtasks execution time: ${end - start} ms`);
 
   // Map subtasks to Task type
   return subtasks.map(subtask => ({
