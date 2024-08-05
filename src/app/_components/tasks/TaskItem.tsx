@@ -186,7 +186,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             )}
           </div>
         </div>
-        <div className="flex flex-grow items-center overflow-hidden ml-3">
+        <div className="flex flex-grow items-center overflow-hidden ml-3 relative">
           {isEditing ? (
             <div className="flex flex-grow items-center">
               <Input
@@ -200,36 +200,45 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               <Button
                 variant="ghost"
                 onClick={handleSave}
-                className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400 hover:bg-green-100 dark:hover:bg-green-900`}
+                className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
               >
                 <Check size={20} />
               </Button>
               <Button
                 variant="ghost"
                 onClick={handleDiscard}
-                className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900`}
+                className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
               >
                 <X size={20} />
               </Button>
             </div>
           ) : (
             <>
-              <div
-                className={`flex-grow bg-transparent py-1.5 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
-                  task.status === "done" 
-                    ? "text-gray-400 dark:text-gray-500 line-through" 
-                    : "text-gray-700 dark:text-gray-200"
-                }`}
-                style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}
-              >
-                {task.description}
+              <div className="flex-grow min-w-0 mr-8">
+                <div
+                  className={`bg-transparent py-1.5 text-sm focus:outline-none overflow-hidden line-clamp-3 ${
+                    task.status === "done" 
+                      ? "text-gray-400 dark:text-gray-500 line-through" 
+                      : "text-gray-700 dark:text-gray-200"
+                  }`}
+                  style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}
+                >
+                  {task.description}
+                </div>
               </div>
-              <div className="flex items-center relative" ref={menuRef}>
+              <div className="flex items-center absolute right-0 top-1/2 transform -translate-y-1/2" ref={menuRef}>
                 <motion.div
                   initial={false}
-                  animate={{ width: showMenu ? "auto" : "32px" }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center overflow-hidden"
+                  animate={{ 
+                    width: showMenu ? "auto" : "32px",
+                    borderRadius: showMenu ? "16px" : "50%",
+                  }}
+                  transition={{ duration: 0.15 }}
+                  className={`flex items-center overflow-hidden ${
+                    showMenu 
+                      ? "bg-amber-100 dark:bg-amber-900" 
+                      : "bg-transparent"
+                  }`}
                 >
                   <AnimatePresence>
                     {showMenu && (
@@ -238,19 +247,19 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.2 }}
-                        className="flex mr-1"
+                        className="flex mr-1 ml-1"
                       >
                         <Button
                           variant="ghost"
                           onClick={handleEdit}
-                          className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900`}
+                          className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
                         >
                           <Pen size={20} />
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={() => void handleDelete()}
-                          className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900`}
+                          className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
                         >
                           <Trash2 size={20} />
                         </Button>
@@ -260,12 +269,12 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                   <Button
                     variant="ghost"
                     onClick={toggleMenu}
-                    className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900`}
+                    className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
                   >
                     <motion.div
                       initial={false}
                       animate={{ rotate: showMenu ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
+                      transition={{ duration: 0.15 }}
                     >
                       {showMenu ? <X size={20} /> : <MoreHorizontal size={20} />}
                     </motion.div>
