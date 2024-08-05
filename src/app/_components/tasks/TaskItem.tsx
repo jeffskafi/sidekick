@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Button } from "~/components/ui/button";
-import { ChevronRight, ChevronLeft, Zap, Loader2, Trash2, RefreshCw, Pen, Check, X } from "lucide-react";
+import { ChevronRight, Zap, Loader2, Trash2, RefreshCw, Pen, X, MoreHorizontal, Check } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import type { Task } from "~/server/db/schema";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface TaskItemProps {
   task: Task;
@@ -22,7 +23,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
-  const [showIcons, setShowIcons] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(task.description);
 
@@ -78,10 +80,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     }
   };
 
-  const toggleIconsVisibility = () => {
-    setShowIcons(!showIcons);
-  };
-
   const handleEdit = () => {
     setIsEditing(true);
     setEditedDescription(task.description);
@@ -106,9 +104,26 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     }
   };
 
+  const iconButtonClass = "h-8 w-8 p-0 rounded-full transition-colors duration-200 ease-in-out";
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const toggleMenu = () => setShowMenu(!showMenu);
+
   return (
     <li className="mb-3">
-      <div className="flex items-center">
+      <div className="flex items-center group">
         <div style={{ width: `${level * INDENTATION_WIDTH}rem`, flexShrink: 0 }}></div>
         <div className="flex items-center">
           <div style={{ width: `${CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING}rem`, flexShrink: 0 }}>
@@ -116,7 +131,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               <Button
                 variant="ghost"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className={`h-8 w-8 p-0 transition-transform duration-200 ease-in-out ${
+                className={`${iconButtonClass} ${
                   isExpanded ? "rotate-90" : ""
                 }`}
                 style={{ marginRight: `${CHEVRON_RIGHT_PADDING}rem` }}
@@ -125,8 +140,22 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               </Button>
             )}
           </div>
+          <Button
+            variant="ghost"
+            onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
+            disabled={isGeneratingSubtasks}
+            className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
+          >
+            {isGeneratingSubtasks ? (
+              <Loader2 className="animate-spin" size={20} />
+            ) : hasChildren ? (
+              <RefreshCw size={20} />
+            ) : (
+              <Zap size={20} />
+            )}
+          </Button>
           <div 
-            className="relative cursor-pointer"
+            className="relative cursor-pointer ml-2"
             style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem` }}
             onClick={() => void handleStatusChange()}
           >
@@ -157,7 +186,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             )}
           </div>
         </div>
-        <div className="flex flex-grow items-center group overflow-hidden ml-3">
+        <div className="flex flex-grow items-center overflow-hidden ml-3">
           {isEditing ? (
             <div className="flex flex-grow items-center">
               <Input
@@ -171,14 +200,14 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               <Button
                 variant="ghost"
                 onClick={handleSave}
-                className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400"
+                className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-green-500 dark:hover:text-green-400 hover:bg-green-100 dark:hover:bg-green-900`}
               >
                 <Check size={20} />
               </Button>
               <Button
                 variant="ghost"
                 onClick={handleDiscard}
-                className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
+                className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900`}
               >
                 <X size={20} />
               </Button>
@@ -195,49 +224,56 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               >
                 {task.description}
               </div>
-              <div className="flex items-center">
-                <Button
-                  variant="ghost"
-                  onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-                  disabled={isGeneratingSubtasks}
-                  className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+              <div className="flex items-center relative" ref={menuRef}>
+                <motion.div
+                  initial={false}
+                  animate={{ width: showMenu ? "auto" : "32px" }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center overflow-hidden"
                 >
-                  {isGeneratingSubtasks ? (
-                    <Loader2 className="animate-spin" size={20} />
-                  ) : hasChildren ? (
-                    <RefreshCw size={20} />
-                  ) : (
-                    <Zap size={20} />
-                  )}
-                </Button>
-                {showIcons && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      onClick={handleEdit}
-                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
+                  <AnimatePresence>
+                    {showMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex mr-1"
+                      >
+                        <Button
+                          variant="ghost"
+                          onClick={handleEdit}
+                          className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900`}
+                        >
+                          <Pen size={20} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={() => void handleDelete()}
+                          className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900`}
+                        >
+                          <Trash2 size={20} />
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <Button
+                    variant="ghost"
+                    onClick={toggleMenu}
+                    className={`${iconButtonClass} text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900`}
+                  >
+                    <motion.div
+                      initial={false}
+                      animate={{ rotate: showMenu ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <Pen size={20} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => void handleDelete()}
-                      className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400"
-                    >
-                      <Trash2 size={20} />
-                    </Button>
-                  </>
-                )}
+                      {showMenu ? <X size={20} /> : <MoreHorizontal size={20} />}
+                    </motion.div>
+                  </Button>
+                </motion.div>
               </div>
             </>
           )}
-          <Button
-            variant="ghost"
-            onClick={toggleIconsVisibility}
-            className="h-8 w-8 p-0 text-gray-400 dark:text-gray-500 hover:text-amber-500 dark:hover:text-amber-400"
-          >
-            {showIcons ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          </Button>
         </div>
       </div>
       {isExpanded && (
