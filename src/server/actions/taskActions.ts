@@ -7,7 +7,6 @@ import { eq, and, inArray, or, ilike, desc } from 'drizzle-orm';
 import { auth } from "@clerk/nextjs/server";
 import OpenAI from 'openai';
 import { rateLimit } from '~/server/ratelimit';
-import { performance } from 'perf_hooks';
 
 
 const openai = new OpenAI({
@@ -271,8 +270,6 @@ export async function searchTasks(params: TaskSearchParams): Promise<Task[]> {
 }
 
 async function getAncestralChain(taskId: TaskSelect['id'], userId: string): Promise<TaskNode | null> {
-  const start = performance.now();
-
   // Fetch all tasks for the user in one query
   const allTasks = await db
     .select()
@@ -321,45 +318,30 @@ async function getAncestralChain(taskId: TaskSelect['id'], userId: string): Prom
     return task;
   }
 
-  const result = buildChain(taskId);
-
-  const end = performance.now();
-  console.log(`getAncestralChain execution time: ${end - start} ms`);
-  return result;
+  return buildChain(taskId);
 }
 
 export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
-  const totalStart = performance.now();
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
-  const rateLimitStart = performance.now();
   const { success } = await rateLimit.limit(userId);
-  const rateLimitEnd = performance.now();
-  console.log(`Rate limit check time: ${rateLimitEnd - rateLimitStart} ms`);
 
   if (!success) {
     throw new Error('Rate limit exceeded');
   }
 
-  const parentTaskStart = performance.now();
   const [parentTask] = await db
     .select()
     .from(tasks)
     .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)));
-  const parentTaskEnd = performance.now();
-  console.log(`Parent task fetch time: ${parentTaskEnd - parentTaskStart} ms`);
 
   if (!parentTask) throw new Error('Task not found');
 
-  const ancestralChainStart = performance.now();
   const ancestralChain = await getAncestralChain(taskId, userId);
-  const ancestralChainEnd = performance.now();
-  console.log(`Ancestral chain fetch time: ${ancestralChainEnd - ancestralChainStart} ms`);
 
   if (!ancestralChain) throw new Error('Task not found');
 
-  const openAIStart = performance.now();
   const completion = await openai.chat.completions.create({
     model: "gpt-4o",
     response_format: { type: "json_object" },
@@ -445,8 +427,6 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
       }
     ],
   });
-  const openAIEnd = performance.now();
-  console.log(`OpenAI API call time: ${openAIEnd - openAIStart} ms`);
 
   const message = completion.choices[0]?.message.content;
   if (!message) throw new Error('No message found in OpenAI response');
@@ -458,14 +438,12 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
         estimatedTimeInMinutes: number;
     }>;
   }
-  const parseStart = performance.now();
   try {
     const parsedContent = JSON.parse(message) as ParsedContent;
     if (!Array.isArray(parsedContent.subtasks)) {
       throw new Error('Invalid subtasks format in OpenAI response');
     }
 
-    const dbTransactionStart = performance.now();
     const subtasks = await db.transaction(async (tx) => {
       const createdSubtasks: Task[] = [];
       for (const subtaskInput of parsedContent.subtasks) {
@@ -496,23 +474,15 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
       }
       return createdSubtasks;
     });
-    const dbTransactionEnd = performance.now();
-    console.log(`Database transaction time: ${dbTransactionEnd - dbTransactionStart} ms`);
-
-    const totalEnd = performance.now();
-    console.log(`Total generateSubtasks execution time: ${totalEnd - totalStart} ms`);
 
     return subtasks;
   } catch (error) {
-    const parseEnd = performance.now();
-    console.log(`Parsing and error handling time: ${parseEnd - parseStart} ms`);
     console.error('Failed to parse OpenAI response:', error);
     throw new Error('Invalid response format from OpenAI');
   }
 }
 
 export async function refreshSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
-  const start = performance.now();
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -540,25 +510,15 @@ export async function refreshSubtasks(taskId: TaskSelect['id']): Promise<Task[]>
       }
     }
 
-    const deleteStart = performance.now();
     await deleteSubtasksRecursive(taskId);
-    const deleteEnd = performance.now();
-    console.log(`Subtasks deletion time: ${deleteEnd - deleteStart} ms`);
 
-    const generateStart = performance.now();
     const newSubtasks = await generateSubtasks(taskId);
-    const generateEnd = performance.now();
-    console.log(`New subtasks generation time: ${generateEnd - generateStart} ms`);
-
-    const end = performance.now();
-    console.log(`Total refreshSubtasks execution time: ${end - start} ms`);
 
     return [{ ...task, children: newSubtasks.map(subtask => subtask.id), parentId: null }, ...newSubtasks];
   });
 }
 
 export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
-  const start = performance.now();
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -587,9 +547,6 @@ export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
     .select()
     .from(taskRelationships)
     .where(inArray(taskRelationships.parentTaskId, subtasks.map(t => t.tasks.id)));
-
-  const end = performance.now();
-  console.log(`getSubtasks execution time: ${end - start} ms`);
 
   // Map subtasks to Task type
   return subtasks.map(subtask => ({
