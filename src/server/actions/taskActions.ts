@@ -435,7 +435,8 @@ export async function refreshSubtasks(taskId: TaskSelect['id']): Promise<Task[]>
     // Generate new subtasks
     const newSubtasks = await generateSubtasks(taskId);
 
-    return newSubtasks;
+    // Return the parent task along with the new subtasks
+    return [{ ...task, children: newSubtasks.map(subtask => subtask.id), parentId: null }, ...newSubtasks];
   });
 }
 

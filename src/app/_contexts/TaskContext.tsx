@@ -84,18 +84,23 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
   const refreshSubtasks = useCallback(async (taskId: TaskSelect["id"]) => {
     const refreshedSubtasks = await refreshSubtasksAction(taskId);
     setTasks(prevTasks => {
-      // Remove the old task and its subtasks
+      // Find the index of the parent task
+      const parentIndex = prevTasks.findIndex(task => task.id === taskId);
+      if (parentIndex === -1) return prevTasks; // If parent not found, return unchanged
+
+      // Create a new array with all tasks except the parent and its old subtasks
       const updatedTasks = prevTasks.filter(task => task.id !== taskId && task.parentId !== taskId);
-      // Add the parent task back (it might have updated properties)
-      const parentTask = prevTasks.find(task => task.id === taskId);
-      if (parentTask) {
-        updatedTasks.push({
-          ...parentTask,
-          children: refreshedSubtasks.map(subtask => subtask.id)
-        });
-      }
-      // Add the new subtasks
-      return [...updatedTasks, ...refreshedSubtasks];
+
+      // Update the parent task with new children
+      const updatedParentTask = {
+        ...prevTasks[parentIndex],
+        children: refreshedSubtasks.slice(1).map(subtask => subtask.id)
+      } as Task;
+
+      // Insert the updated parent task and new subtasks at the original parent's position
+      updatedTasks.splice(parentIndex, 0, updatedParentTask, ...refreshedSubtasks.slice(1));
+
+      return updatedTasks;
     });
     return refreshedSubtasks;
   }, []);
