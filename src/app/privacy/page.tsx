@@ -12,7 +12,7 @@ export default function PrivacyPolicy() {
             Last updated: August 6, 2024
           </p>
           <p className="mb-6 text-text-light dark:text-text-dark">
-            TaskMaster (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is
+            Sidekick (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is
             committed to protecting your privacy. This Privacy Policy explains
             how we collect, use, disclose, and safeguard your information when
             you use our application.
@@ -82,9 +82,7 @@ export default function PrivacyPolicy() {
             us at:
           </p>
           <p className="text-text-light dark:text-text-dark">
-            Email: privacy@taskmaster.com
-            <br />
-            Address: 123 Task Street, Productivity City, PC 12345
+            Email: help@sidekick.com
           </p>
         </div>
       </div>
