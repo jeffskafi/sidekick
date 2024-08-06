@@ -28,6 +28,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const ellipsisRef = useRef<HTMLButtonElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(task.description);
 
@@ -122,7 +123,21 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     };
   }, []);
 
-  const toggleMenu = () => setShowMenu(!showMenu);
+  const toggleMenu = () => {
+    setShowMenu(!showMenu);
+    if (!showMenu && ellipsisRef.current) {
+      ellipsisRef.current.blur();
+    }
+  };
+
+  useEffect(() => {
+    if (!showMenu) {
+      const activeElement = document.activeElement as HTMLElement;
+      if (activeElement && activeElement.tagName === 'BUTTON') {
+        activeElement.blur();
+      }
+    }
+  }, [showMenu]);
 
   return (
     <li className="mb-4 py-1">
@@ -244,7 +259,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     width: showMenu ? "auto" : "32px",
                     borderRadius: showMenu ? "16px" : "50%",
                   }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  transition={{ duration: 0.1, ease: "easeInOut" }}
                   className={`flex items-center overflow-hidden no-highlight ${
                     showMenu
                       ? "bg-amber-100 dark:bg-amber-900"
@@ -257,7 +272,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         initial={{ opacity: 0, width: 0 }}
                         animate={{ opacity: 1, width: "auto" }}
                         exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        transition={{ duration: 0.1, ease: "easeInOut" }}
                         className="flex items-center space-x-2"
                       >
                         <Button
@@ -306,6 +321,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     <Button
                       variant="ghost"
                       onClick={toggleMenu}
+                      ref={ellipsisRef}
                       className={`${iconButtonClass} ${hoverClass("text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300")}`}
                     >
                       <MoreHorizontal size={20} />
