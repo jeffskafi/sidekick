@@ -1,6 +1,18 @@
-import React from "react";
+'use client';
+
+import React, { useState, useEffect } from 'react';
 
 export default function PrivacyPolicy() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null; // or return a loading spinner
+  }
+
   return (
     <div className="min-h-screen bg-background-light px-4 py-12 dark:bg-background-dark sm:px-6 lg:px-8">
       <div className="container mx-auto">
