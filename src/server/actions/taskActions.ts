@@ -345,7 +345,7 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
   if (!ancestralChain) throw new Error('Task not found');
 
   const completion = await openai.chat.completions.create({
-    model: "gpt-4o",
+    model: "gpt-4o-2024-08-06",
     response_format: { type: "json_object" },
     messages: [
       {
