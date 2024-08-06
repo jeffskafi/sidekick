@@ -219,7 +219,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     width: showMenu ? "auto" : "32px",
                     borderRadius: showMenu ? "16px" : "50%",
                   }}
-                  transition={{ duration: 0.15 }}
+                  transition={{ duration: 0.2 }}
                   className={`flex items-center overflow-hidden ${
                     showMenu 
                       ? "bg-amber-100 dark:bg-amber-900" 
