@@ -1,20 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Button } from "~/components/ui/button";
-import {
-  ChevronRight,
-  Zap,
-  Loader2,
-  Trash2,
-  RefreshCw,
-  Pen,
-  X,
-  MoreHorizontal,
-  Check,
-} from "lucide-react";
+import { ChevronRight, Zap, Loader2, Trash2, RefreshCw, Pen, X, MoreHorizontal, Check } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import type { Task } from "~/server/db/schema";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Define the hoverClass function
+const hoverClass = (baseClass: string): string => `${baseClass} hover-effect:${baseClass}`;
 
 interface TaskItemProps {
   task: Task;
@@ -114,8 +107,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     }
   };
 
-  const iconButtonClass =
-    "h-8 w-8 p-0 rounded-full transition-colors duration-200 ease-in-out";
+  const iconButtonClass = "h-8 w-8 p-0 rounded-full transition-colors duration-200 ease-in-out no-highlight";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -151,7 +143,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 onClick={() => setIsExpanded(!isExpanded)}
                 className={`${iconButtonClass} ${
                   isExpanded ? "rotate-90" : ""
-                }`}
+                } no-highlight`}
                 style={{ marginRight: `${CHEVRON_RIGHT_PADDING}rem` }}
               >
                 <ChevronRight
@@ -211,14 +203,14 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               <Button
                 variant="ghost"
                 onClick={handleSave}
-                className={`${iconButtonClass} text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300`}
+                className={`${iconButtonClass} ${hoverClass("text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300")}`}
               >
                 <Check size={20} />
               </Button>
               <Button
                 variant="ghost"
                 onClick={handleDiscard}
-                className={`${iconButtonClass} text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300`}
+                className={`${iconButtonClass} ${hoverClass("text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300")}`}
               >
                 <X size={20} />
               </Button>
@@ -252,34 +244,30 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     width: showMenu ? "auto" : "32px",
                     borderRadius: showMenu ? "16px" : "50%",
                   }}
-                  transition={{ duration: 0.2 }}
-                  className={`flex items-center overflow-hidden ${
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className={`flex items-center overflow-hidden no-highlight ${
                     showMenu
                       ? "bg-amber-100 dark:bg-amber-900"
                       : "bg-transparent"
                   }`}
                 >
-                  <AnimatePresence>
+                  <AnimatePresence initial={false}>
                     {showMenu && (
                       <motion.div
                         initial={{ opacity: 0, width: 0 }}
                         animate={{ opacity: 1, width: "auto" }}
                         exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
                         className="flex items-center space-x-2"
                       >
                         <Button
                           variant="ghost"
-                          onClick={() =>
-                            void (hasChildren
-                              ? handleRefreshSubtasks()
-                              : handleGenerateSubtasks())
-                          }
+                          onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
                           disabled={isGeneratingSubtasks}
-                          className={`${iconButtonClass} text-amber-500 hover:bg-amber-500 hover:text-white dark:text-amber-400 dark:hover:bg-amber-500 dark:hover:text-white ${
+                          className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-white dark:hover:text-white hover:bg-amber-500 dark:hover:bg-amber-500")} ${
                             isGeneratingSubtasks
-                              ? "cursor-not-allowed opacity-50"
-                              : ""
+                              ? 'opacity-50 cursor-not-allowed'
+                              : ''
                           }`}
                         >
                           {isGeneratingSubtasks ? (
@@ -293,23 +281,23 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         <Button
                           variant="ghost"
                           onClick={handleEdit}
-                          className={`${iconButtonClass} text-amber-500 hover:bg-gray-200/80 hover:text-gray-100 dark:text-amber-400 dark:hover:bg-gray-700/50 dark:hover:text-gray-200`}
+                          className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-gray-100 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/50")}`}
                         >
-                          <Pen size={24} />
+                          <Pen size={20} />
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={() => void handleDelete()}
-                          className={`${iconButtonClass} text-amber-500 hover:bg-red-100 hover:text-red-600 dark:text-amber-400 dark:hover:bg-red-900 dark:hover:text-red-400`}
+                          className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900")}`}
                         >
-                          <Trash2 size={24} />
+                          <Trash2 size={20} />
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={toggleMenu}
-                          className={`${iconButtonClass} text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300`}
+                          className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900")}`}
                         >
-                          <X size={24} />
+                          <X size={20} />
                         </Button>
                       </motion.div>
                     )}
@@ -318,9 +306,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                     <Button
                       variant="ghost"
                       onClick={toggleMenu}
-                      className={`${iconButtonClass} text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300`}
+                      className={`${iconButtonClass} ${hoverClass("text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300")}`}
                     >
-                      <MoreHorizontal size={24} />
+                      <MoreHorizontal size={20} />
                     </Button>
                   )}
                 </motion.div>

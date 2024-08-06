@@ -126,3 +126,16 @@ img[src$=".svg"] {
   height: auto;
   max-width: 100%;
 }
+
+@media (hover: none) {
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.no-highlight {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
