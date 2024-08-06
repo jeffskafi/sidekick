@@ -122,7 +122,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const toggleMenu = () => setShowMenu(!showMenu);
 
   return (
-    <li className="mb-3">
+    <li className="mb-4 py-1">
       <div className="flex items-center group">
         <div style={{ width: `${level * INDENTATION_WIDTH}rem`, flexShrink: 0 }}></div>
         <div className="flex items-center">
@@ -141,7 +141,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             )}
           </div>
           <div 
-            className="relative cursor-pointer ml-2"
+            className="relative cursor-pointer ml-3"
             style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem` }}
             onClick={() => void handleStatusChange()}
           >
@@ -172,7 +172,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             )}
           </div>
         </div>
-        <div className="flex flex-grow items-center overflow-hidden ml-3 relative">
+        <div className="flex flex-grow items-center overflow-hidden ml-4 relative">
           {isEditing ? (
             <div className="flex flex-grow items-center">
               <Input
@@ -256,21 +256,21 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                           onClick={handleEdit}
                           className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-gray-100 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/50`}
                         >
-                          <Pen size={20} />
+                          <Pen size={24} />
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={() => void handleDelete()}
                           className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900`}
                         >
-                          <Trash2 size={20} />
+                          <Trash2 size={24} />
                         </Button>
                         <Button
                           variant="ghost"
                           onClick={toggleMenu}
                           className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
                         >
-                          <X size={20} />
+                          <X size={24} />
                         </Button>
                       </motion.div>
                     )}
@@ -281,7 +281,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                       onClick={toggleMenu}
                       className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
                     >
-                      <MoreHorizontal size={20} />
+                      <MoreHorizontal size={24} />
                     </Button>
                   )}
                 </motion.div>
@@ -291,7 +291,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         </div>
       </div>
       {isExpanded && (
-        <ul className="mt-1 space-y-1">
+        <ul className="mt-2 space-y-2">
           {subtasks.map((subtask) => (
             <TaskItem key={subtask.id} task={subtask} level={level + 1} />
           ))}

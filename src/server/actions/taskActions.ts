@@ -542,6 +542,10 @@ export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
     )
     .where(eq(taskRelationships.parentTaskId, taskId));
 
+    if (subtasks.length === 0) {
+      return []; // Return an empty array if there are no subtasks
+    }
+
   // Fetch child relationships for all subtasks in one query
   const childRelationships = await db
     .select()
