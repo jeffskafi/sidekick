@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Button } from "~/components/ui/button";
 import { ChevronRight, Zap, Loader2, Trash2, RefreshCw, Pen, X, MoreHorizontal, Check } from "lucide-react";
@@ -31,6 +31,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(task.description);
+  const [isFocusTrapped, setIsFocusTrapped] = useState(false);
 
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
@@ -123,12 +124,16 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     };
   }, []);
 
-  const toggleMenu = () => {
-    setShowMenu(!showMenu);
+  const toggleMenu = useCallback(() => {
+    setShowMenu((prev) => !prev);
+    if (!showMenu) {
+      setIsFocusTrapped(true);
+      setTimeout(() => setIsFocusTrapped(false), 100);
+    }
     if (!showMenu && ellipsisRef.current) {
       ellipsisRef.current.blur();
     }
-  };
+  }, [showMenu]);
 
   useEffect(() => {
     if (!showMenu) {
@@ -278,9 +283,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         <Button
                           variant="ghost"
                           onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-                          disabled={isGeneratingSubtasks}
+                          disabled={isGeneratingSubtasks || isFocusTrapped}
                           className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-white dark:hover:text-white hover:bg-amber-500 dark:hover:bg-amber-500")} ${
-                            isGeneratingSubtasks
+                            isGeneratingSubtasks || isFocusTrapped
                               ? 'opacity-50 cursor-not-allowed'
                               : ''
                           }`}
@@ -296,6 +301,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         <Button
                           variant="ghost"
                           onClick={handleEdit}
+                          disabled={isFocusTrapped}
                           className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-gray-100 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/50")}`}
                         >
                           <Pen size={20} />
@@ -303,6 +309,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         <Button
                           variant="ghost"
                           onClick={() => void handleDelete()}
+                          disabled={isFocusTrapped}
                           className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900")}`}
                         >
                           <Trash2 size={20} />
@@ -310,6 +317,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         <Button
                           variant="ghost"
                           onClick={toggleMenu}
+                          disabled={isFocusTrapped}
                           className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900")}`}
                         >
                           <X size={20} />
