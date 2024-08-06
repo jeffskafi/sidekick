@@ -33,7 +33,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   const CHEVRON_WIDTH = 2;
   const CHECKBOX_SIZE = 1.25;
-  const CHEVRON_RIGHT_PADDING = 0.5;
+  const CHEVRON_RIGHT_PADDING = 0;
   const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING;
 
   useEffect(() => {
@@ -140,20 +140,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               </Button>
             )}
           </div>
-          <Button
-            variant="ghost"
-            onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-            disabled={isGeneratingSubtasks}
-            className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
-          >
-            {isGeneratingSubtasks ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : hasChildren ? (
-              <RefreshCw size={20} />
-            ) : (
-              <Zap size={20} />
-            )}
-          </Button>
           <div 
             className="relative cursor-pointer ml-2"
             style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem` }}
@@ -251,6 +237,20 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                       >
                         <Button
                           variant="ghost"
+                          onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
+                          disabled={isGeneratingSubtasks}
+                          className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50`}
+                        >
+                          {isGeneratingSubtasks ? (
+                            <Loader2 className="animate-spin" size={20} />
+                          ) : hasChildren ? (
+                            <RefreshCw size={20} />
+                          ) : (
+                            <Zap size={20} />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
                           onClick={handleEdit}
                           className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
                         >
@@ -263,22 +263,25 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         >
                           <Trash2 size={20} />
                         </Button>
+                        <Button
+                          variant="ghost"
+                          onClick={toggleMenu}
+                          className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
+                        >
+                          <X size={20} />
+                        </Button>
                       </motion.div>
                     )}
                   </AnimatePresence>
-                  <Button
-                    variant="ghost"
-                    onClick={toggleMenu}
-                    className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
-                  >
-                    <motion.div
-                      initial={false}
-                      animate={{ rotate: showMenu ? 180 : 0 }}
-                      transition={{ duration: 0.15 }}
+                  {!showMenu && (
+                    <Button
+                      variant="ghost"
+                      onClick={toggleMenu}
+                      className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
                     >
-                      {showMenu ? <X size={20} /> : <MoreHorizontal size={20} />}
-                    </motion.div>
-                  </Button>
+                      <MoreHorizontal size={20} />
+                    </Button>
+                  )}
                 </motion.div>
               </div>
             </>
