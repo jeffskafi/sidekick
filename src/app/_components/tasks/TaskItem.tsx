@@ -31,8 +31,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const subtasks = tasks.filter((t) => t.parentId === task.id);
   const hasChildren = subtasks.length > 0 || task.children.length > 0;
 
-  const CHEVRON_WIDTH = 2;
-  const CHECKBOX_SIZE = 1.25;
+  const CHEVRON_WIDTH = 1.75;
+  const CHECKBOX_SIZE = 1.5;
   const CHEVRON_RIGHT_PADDING = 0;
   const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING;
 
@@ -233,13 +233,15 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.2 }}
-                        className="flex mr-1 ml-1"
+                        className="flex items-center"
                       >
                         <Button
                           variant="ghost"
                           onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
                           disabled={isGeneratingSubtasks}
-                          className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50`}
+                          className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-white dark:hover:text-white hover:bg-amber-500 dark:hover:bg-amber-500 ${
+                            isGeneratingSubtasks ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                         >
                           {isGeneratingSubtasks ? (
                             <Loader2 className="animate-spin" size={20} />
@@ -252,7 +254,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                         <Button
                           variant="ghost"
                           onClick={handleEdit}
-                          className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900`}
+                          className={`${iconButtonClass} text-amber-500 dark:text-amber-400 hover:text-gray-100 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/50`}
                         >
                           <Pen size={20} />
                         </Button>
