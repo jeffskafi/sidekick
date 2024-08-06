@@ -5,6 +5,11 @@ import type { NewTask, TaskUpdate, TaskSearchParams, TaskSelect } from '~/server
 
 export async function GET(request: Request) {
   try {
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const taskId = searchParams.get('taskId') as TaskSelect['id'] | undefined;
 
@@ -68,6 +73,11 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const taskId = searchParams.get('taskId');
     if (!taskId) {
@@ -83,6 +93,11 @@ export async function DELETE(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const taskId = searchParams.get('taskId');
     const newParentId = searchParams.get('newParentId');
@@ -99,6 +114,11 @@ export async function PATCH(request: Request) {
 
 export async function OPTIONS(request: Request) {
   try {
+    const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const url = new URL(request.url);
     const searchParams: TaskSearchParams = {
       query: url.searchParams.get('query') ?? undefined,
