@@ -23,18 +23,19 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     generateAISubtasks,
     refreshSubtasks,
   } = useTaskContext();
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingSubtasks, setIsGeneratingSubtasks] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const ellipsisRef = useRef<HTMLButtonElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(task.description);
   const [isFocusTrapped, setIsFocusTrapped] = useState(false);
 
-  const subtasks = tasks.filter((t) => t.parentId === task.id);
-  const hasChildren = subtasks.length > 0 || task.children.length > 0;
+  const menuRef = useRef<HTMLDivElement>(null);
+  const ellipsisRef = useRef<HTMLButtonElement>(null);
+
+  const hasChildren = tasks.some((t) => t.parentId === task.id);
 
   const CHEVRON_WIDTH = 1.75;
   const CHECKBOX_SIZE = 1.5;
@@ -42,13 +43,13 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING;
 
   useEffect(() => {
-    if (isExpanded && hasChildren && subtasks.length === 0) {
+    if (isExpanded && hasChildren && tasks.filter((t) => t.parentId === task.id).length === 0) {
       loadSubtasks(task.id).catch((error) => {
         console.error("Failed to load subtasks:", error);
         setError("Failed to load subtasks");
       });
     }
-  }, [isExpanded, hasChildren, subtasks.length, loadSubtasks, task.id]);
+  }, [isExpanded, hasChildren, tasks, loadSubtasks, task.id]);
 
   const handleStatusChange = async () => {
     const newStatus = task.status === "done" ? "todo" : "done";
@@ -57,6 +58,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   const handleDelete = async () => {
     await deleteTask(task.id);
+    setIsExpanded(false);
   };
 
   const handleGenerateSubtasks = async () => {
@@ -343,7 +345,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
       </div>
       {isExpanded && (
         <ul className="mt-2 space-y-2">
-          {subtasks.map((subtask) => (
+          {tasks.filter((t) => t.parentId === task.id).map((subtask) => (
             <TaskItem key={subtask.id} task={subtask} level={level + 1} />
           ))}
         </ul>
