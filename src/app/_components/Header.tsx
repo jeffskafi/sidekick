@@ -30,7 +30,7 @@ const Header = () => {
             WebkitTextFillColor: 'transparent',
             filter: 'drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))',
           }}>
-            Planika
+            Sidekick
           </h1>
         </Link>
         <div className="flex items-center space-x-4">

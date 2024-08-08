@@ -30,9 +30,9 @@
     
     <!-- Text -->
     <text x="380" y="220" font-family="Arial, sans-serif" font-size="100" font-weight="bold" fill="url(#textGradient)" filter="url(#innerShadow)" text-anchor="start">
-        Planika
+        Sidekick
     </text>
     <text x="380" y="220" font-family="Arial, sans-serif" font-size="100" font-weight="bold" fill="url(#textGradient)" filter="url(#outerShadow)" text-anchor="start">
-        Planika
+        Sidekick
     </text>
 </svg>

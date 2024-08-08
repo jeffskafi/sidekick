@@ -56,7 +56,7 @@ const Features: React.FC = () => {
   return (
     <section className="py-16 sm:py-20 bg-background-light dark:bg-background-dark">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-secondary-light dark:text-secondary-dark text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Why Choose Planika?</h2>
+        <h2 className="text-secondary-light dark:text-secondary-dark text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">Why Choose Sidekick?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
           {features.map((Feature, index) => (
             <motion.div 
@@ -92,7 +92,7 @@ export default function LandingPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <h2 className="text-secondary-light dark:text-secondary-dark text-3xl sm:text-4xl md:text-5xl font-bold leading-tight mb-6">
-                Welcome to Planika
+                Welcome to Sidekick
                 <span className="text-primary-light dark:text-primary-dark block mt-2">Your Journey Planner</span>
               </h2>
               <p className="text-text-light-light dark:text-text-light-dark text-lg sm:text-xl mb-8">
@@ -131,7 +131,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Start using Planika today and transform your task management experience.
+            Start using Sidekick today and transform your task management experience.
           </motion.p>
           <SignUpButton mode="modal">
             <motion.button

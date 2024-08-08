@@ -17,9 +17,9 @@
         </filter>
     </defs>
     <text x="10" y="90" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="url(#textGradient)" filter="url(#innerShadow)">
-        Planika
+        Sidekick
     </text>
     <text x="10" y="90" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="url(#textGradient)" filter="url(#outerShadow)">
-        Planika
+        Sidekick
     </text>
 </svg>
