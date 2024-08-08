@@ -22,21 +22,18 @@ const Header = () => {
 
   return (
     <header className="mb-0 border-b">
-      <nav className="container mx-auto flex items-center justify-between px-1 py-1">
+      <nav className="container mx-auto flex items-center justify-between px-4 py-2" style={{ width: '100%' }}>
         <Link href="/" className="flex items-center">
-          <h1 className={`text-[2.5rem] font-bold ${isDarkMode ? 'text-white' : 'text-black'}`} style={{
+          <h1 className={`text-[2rem] font-bold ${isDarkMode ? 'text-white' : 'text-black'}`} style={{
             background: 'linear-gradient(90deg, #ff7247 0%, #e63b00 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             filter: 'drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))',
-            marginLeft: '0.25rem',
-            marginTop: '0.25rem',
-            fontSize: '1.5rem',
           }}>
             Planika
           </h1>
         </Link>
-        <div className="flex items-center" style={{ marginBottom: '0.5rem', marginTop: '0.75rem', marginRight: '0rem' }}>
+        <div className="flex items-center space-x-4">
           {isSignedIn ? (
             <UserButton 
               afterSignOutUrl="/"
@@ -62,13 +59,11 @@ const Header = () => {
               </UserButton.UserProfilePage>
             </UserButton>
           ) : (
-            <>
-              <SignInButton mode="modal">
-                <button className="px-4 py-2 text-sm font-medium text-white bg-primary-light dark:bg-primary-dark rounded-full hover:bg-secondary-light dark:hover:bg-secondary-dark transition-colors duration-300">
-                  Sign In
-                </button>
-              </SignInButton>
-            </>
+            <SignInButton mode="modal">
+              <button className="px-4 py-2 text-sm font-medium text-white bg-primary-light dark:bg-primary-dark rounded-full hover:bg-secondary-light dark:hover:bg-secondary-dark transition-colors duration-300">
+                Sign In
+              </button>
+            </SignInButton>
           )}
         </div>
       </nav>
