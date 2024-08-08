@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
 import { Button } from "~/components/ui/button";
 import { ChevronRight, Zap, Loader2, Trash2, RefreshCw, Pen, X, MoreHorizontal, Check } from "lucide-react";
@@ -31,11 +31,11 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(task.description);
   const [isFocusTrapped, setIsFocusTrapped] = useState(false);
+  const hasChildren = useMemo(() => task.children && task.children.length > 0, [task.children]);
+  const [childrenLoaded, setChildrenLoaded] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const ellipsisRef = useRef<HTMLButtonElement>(null);
-
-  const hasChildren = tasks.some((t) => t.parentId === task.id);
 
   const CHEVRON_WIDTH = 1.75;
   const CHECKBOX_SIZE = 1.5;
@@ -43,13 +43,19 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING;
 
   useEffect(() => {
-    if (isExpanded && hasChildren && tasks.filter((t) => t.parentId === task.id).length === 0) {
-      loadSubtasks(task.id).catch((error) => {
-        console.error("Failed to load subtasks:", error);
-        setError("Failed to load subtasks");
-      });
+    console.log(`TaskItem ${task.id} expanded: ${isExpanded}, hasChildren: ${hasChildren}`);
+    if (isExpanded && hasChildren && !childrenLoaded) {
+      console.log(`Loading subtasks for task ${task.id}`);
+      loadSubtasks(task.id)
+        .then(() => {
+          setChildrenLoaded(true);
+        })
+        .catch((error) => {
+          console.error("Failed to load subtasks:", error);
+          setError("Failed to load subtasks");
+        });
     }
-  }, [isExpanded, hasChildren, tasks, loadSubtasks, task.id]);
+  }, [isExpanded, hasChildren, task.id, childrenLoaded, loadSubtasks]);
 
   const handleStatusChange = async () => {
     const newStatus = task.status === "done" ? "todo" : "done";
@@ -343,11 +349,14 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           )}
         </div>
       </div>
-      {isExpanded && (
+      {isExpanded && hasChildren && (
         <ul className="mt-2 space-y-2">
-          {tasks.filter((t) => t.parentId === task.id).map((subtask) => (
-            <TaskItem key={subtask.id} task={subtask} level={level + 1} />
-          ))}
+          {task.children.map((subtaskId) => {
+            const subtask = tasks.find((t) => t.id === subtaskId);
+            return subtask ? (
+              <TaskItem key={subtask.id} task={subtask} level={level + 1} />
+            ) : null;
+          })}
         </ul>
       )}
       {error && (

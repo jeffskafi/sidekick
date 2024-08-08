@@ -43,16 +43,47 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
   }, []);
 
   const loadSubtasks = useCallback(async (taskId: TaskSelect["id"]) => {
+    console.log(`Loading subtasks for task ${taskId}`);
     const subtasks = await getSubtasksAction(taskId);
+    console.log(`Loaded subtasks for task ${taskId}:`, subtasks);
     
     setTasks(prevTasks => {
-      const updatedTasks = prevTasks.map(task => 
-        task.id === taskId
-          ? { ...task, children: [...task.children, ...subtasks.map(st => st.id)] }
-          : task
-      );
+      // Find the parent task
+      const parentTask = prevTasks.find(task => task.id === taskId);
+      if (!parentTask) return prevTasks;
 
-      return [...updatedTasks, ...subtasks];
+      // Get the new subtask IDs that are not already in the parent's children
+      const newSubtaskIds = subtasks.map(st => st.id).filter(id => !parentTask.children.includes(id));
+
+      // Update the parent task with new children
+      const updatedParentTask = {
+        ...parentTask,
+        children: [...parentTask.children, ...newSubtaskIds]
+      };
+
+      // Create a map of existing tasks for quick lookup
+      const taskMap = new Map(prevTasks.map(task => [task.id, task]));
+
+      // Update existing tasks and add new ones
+      subtasks.forEach(subtask => {
+        if (taskMap.has(subtask.id)) {
+          // Update existing task
+          taskMap.set(subtask.id, { ...taskMap.get(subtask.id)!, ...subtask });
+        } else {
+          // Add new task
+          taskMap.set(subtask.id, subtask);
+        }
+      });
+
+      // Convert map back to array
+      const updatedTasks = Array.from(taskMap.values());
+
+      // Replace the parent task with the updated version
+      const finalTasks = updatedTasks.map(task => task.id === taskId ? updatedParentTask : task);
+
+      console.log(`Updated tasks after loading subtasks for ${taskId}:`, finalTasks);
+
+      return finalTasks;
     });
 
     return subtasks;
