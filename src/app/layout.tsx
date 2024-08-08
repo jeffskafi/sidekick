@@ -7,7 +7,7 @@ import { CSPostHogProvider } from "~/app/_analytics/provider";
 import { DarkModeProvider } from "~/app/_contexts/DarkModeContext";
 
 export const metadata: Metadata = {
-  title: "Sidekick",
+  title: "Planika",
   description: "Your AI-powered productivity assistant",
   icons: [{ rel: "icon", url: "/images/logo.svg" }],
 };

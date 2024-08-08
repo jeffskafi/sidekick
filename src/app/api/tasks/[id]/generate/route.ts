@@ -34,3 +34,4 @@ export async function POST(
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
+

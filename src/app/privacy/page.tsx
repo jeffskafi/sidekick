@@ -24,7 +24,7 @@ export default function PrivacyPolicy() {
             Last updated: August 6, 2024
           </p>
           <p className="mb-6 text-text-light dark:text-text-dark">
-            Sidekick (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is
+            Planika (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is
             committed to protecting your privacy. This Privacy Policy explains
             how we collect, use, disclose, and safeguard your information when
             you use our application.
@@ -94,7 +94,7 @@ export default function PrivacyPolicy() {
             us at:
           </p>
           <p className="text-text-light dark:text-text-dark">
-            Email: help@sidekick.com
+            Email: help@planika.com
           </p>
         </div>
       </div>

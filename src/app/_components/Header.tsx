@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
 import { Palette, CreditCard } from "lucide-react";
 import dynamic from "next/dynamic";
-import Image from "next/image";
+import { useDarkMode } from "~/app/_contexts/DarkModeContext";
 
 const AppearancePage = dynamic(
   () => import("~/app/_components/Settings/AppearanceSettings"),
@@ -18,22 +18,31 @@ const SubscriptionPage = dynamic(
 
 const Header = () => {
   const { isSignedIn } = useAuth();
+  const { isDarkMode } = useDarkMode();
 
   return (
     <header className="mb-0 border-b pb-0">
       <nav className="container mx-auto flex items-center justify-between px-4 py-4">
         <Link href="/" className="flex items-center text-xl font-semibold">
-          <Image
-            src="/images/logo_main.png"
-            alt="Sidekick Logo"
-            width={160}
-            height={72}
-            priority
-          />
+          <h1 className={`text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-black'}`} style={{
+            background: 'linear-gradient(90deg, #ff7247 0%, #e63b00 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3))',
+          }}>
+            Planika
+          </h1>
         </Link>
         <div className="flex items-center space-x-6">
           {isSignedIn ? (
-            <UserButton afterSignOutUrl="/">
+            <UserButton 
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: "w-12 h-12"
+                }
+              }}
+            >
               <UserButton.UserProfilePage
                 label="Appearance"
                 url="appearance"
