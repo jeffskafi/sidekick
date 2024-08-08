@@ -21,25 +21,28 @@ const Header = () => {
   const { isDarkMode } = useDarkMode();
 
   return (
-    <header className="mb-0 border-b pb-0">
-      <nav className="container mx-auto flex items-center justify-between px-4 py-4">
-        <Link href="/" className="flex items-center text-xl font-semibold">
-          <h1 className={`text-4xl font-bold ${isDarkMode ? 'text-white' : 'text-black'}`} style={{
+    <header className="mb-0 border-b">
+      <nav className="container mx-auto flex items-center justify-between px-1 py-1">
+        <Link href="/" className="flex items-center">
+          <h1 className={`text-[2.5rem] font-bold ${isDarkMode ? 'text-white' : 'text-black'}`} style={{
             background: 'linear-gradient(90deg, #ff7247 0%, #e63b00 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3))',
+            filter: 'drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))',
+            marginLeft: '0.25rem',
+            marginTop: '0.25rem',
+            fontSize: '1.5rem',
           }}>
             Planika
           </h1>
         </Link>
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center" style={{ marginBottom: '0.5rem', marginTop: '0.75rem', marginRight: '0rem' }}>
           {isSignedIn ? (
             <UserButton 
               afterSignOutUrl="/"
               appearance={{
                 elements: {
-                  avatarBox: "w-12 h-12"
+                  avatarBox: "w-10 h-10"
                 }
               }}
             >
