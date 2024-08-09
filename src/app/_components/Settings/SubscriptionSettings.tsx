@@ -71,25 +71,27 @@ export default function SubscriptionSettings() {
     <SettingsSection title="Subscription & Billing">
       <div className="space-y-6 rounded-lg bg-white p-6">
         <div className="space-y-6">
-          <div>
-            <Label className="block text-sm font-medium text-text-light">
-              Current Plan
-            </Label>
-            <p className="mt-1 text-sm text-text-light-light">
-              {/* Replace this with the actual current plan */}
-              Free Tier
-            </p>
-          </div>
-          <div>
-            <Label className="block text-sm font-medium text-text-light">
-              Usage
-            </Label>
-            <p className="mt-1 text-sm text-text-light-light">
-              {/* Replace these with actual usage data */}
-              Fast requests: 5/10 this month
-              <br />
-              Slow requests: 50/100 this month
-            </p>
+          <div className="flex justify-between">
+            <div className="w-1/2">
+              <Label className="block text-sm font-medium text-text-light">
+                Current Plan
+              </Label>
+              <p className="mt-1 text-sm text-text-light-light">
+                {/* Replace this with the actual current plan */}
+                Free Tier
+              </p>
+            </div>
+            <div className="w-1/2">
+              <Label className="block text-sm font-medium text-text-light">
+                Usage
+              </Label>
+              <p className="mt-1 text-sm text-text-light-light">
+                {/* Replace these with actual usage data */}
+                Fast requests: 5/10 this month
+                <br />
+                Slow requests: 50/100 this month
+              </p>
+            </div>
           </div>
           <div>
             <Label className="block text-lg font-semibold mb-4 text-text-light">
@@ -137,12 +139,6 @@ export default function SubscriptionSettings() {
                 </button>
               ))}
             </div>
-            <a
-              href="/pricing"
-              className="mt-4 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors bg-white text-amber-600 hover:bg-amber-50 shadow-sm border border-amber-300 text-center"
-            >
-              View Full Pricing Details
-            </a>
           </div>
         </div>
         {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
