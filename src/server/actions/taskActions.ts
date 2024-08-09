@@ -362,11 +362,11 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
   const message = completion.choices[0]?.message.content;
   if (!message) throw new Error('No message found in OpenAI response');
 
-    // Define the expected structure of the parsed content
-    interface ParsedContent {
-      subtasks: Array<{
-        description: string;
-        estimatedTimeInMinutes: number;
+  // Define the expected structure of the parsed content
+  interface ParsedContent {
+    subtasks: Array<{
+      description: string;
+      estimatedTimeInMinutes: number;
     }>;
   }
   try {
@@ -453,16 +453,6 @@ export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
-  const parentTask = await db
-    .select()
-    .from(tasks)
-    .where(and(eq(tasks.id, taskId), eq(tasks.userId, userId)))
-    .execute();
-
-  if (parentTask.length === 0) {
-    return []; // Return an empty array if the parent task is not found
-  }
-
   // Fetch subtasks
   const subtasks = await db
     .select()
@@ -471,11 +461,7 @@ export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
       taskRelationships,
       eq(taskRelationships.childTaskId, tasks.id)
     )
-    .where(eq(taskRelationships.parentTaskId, taskId));
-
-    if (subtasks.length === 0) {
-      return []; // Return an empty array if there are no subtasks
-    }
+    .where(eq(taskRelationships.parentTaskId, taskId))
 
   // Fetch child relationships for all subtasks in one query
   const childRelationships = await db

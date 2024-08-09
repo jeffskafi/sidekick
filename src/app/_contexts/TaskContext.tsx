@@ -43,9 +43,7 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
   }, []);
 
   const loadSubtasks = useCallback(async (taskId: TaskSelect["id"]) => {
-    console.log(`Loading subtasks for task ${taskId}`);
     const subtasks = await getSubtasksAction(taskId);
-    console.log(`Loaded subtasks for task ${taskId}:`, subtasks);
     
     setTasks(prevTasks => {
       // Find the parent task
@@ -80,8 +78,6 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
 
       // Replace the parent task with the updated version
       const finalTasks = updatedTasks.map(task => task.id === taskId ? updatedParentTask : task);
-
-      console.log(`Updated tasks after loading subtasks for ${taskId}:`, finalTasks);
 
       return finalTasks;
     });

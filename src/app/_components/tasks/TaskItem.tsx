@@ -43,9 +43,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING;
 
   useEffect(() => {
-    console.log(`TaskItem ${task.id} expanded: ${isExpanded}, hasChildren: ${hasChildren}`);
     if (isExpanded && hasChildren && !childrenLoaded) {
-      console.log(`Loading subtasks for task ${task.id}`);
       loadSubtasks(task.id)
         .then(() => {
           setChildrenLoaded(true);
