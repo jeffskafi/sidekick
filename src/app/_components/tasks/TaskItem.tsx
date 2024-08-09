@@ -67,6 +67,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   const handleGenerateSubtasks = async () => {
     setIsGeneratingSubtasks(true);
+    setShowMenu(false); // Close the menu
     try {
       await generateAISubtasks(task.id);
       setIsExpanded(true);
@@ -264,84 +265,94 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 className="absolute right-0 top-1/2 flex -translate-y-1/2 transform items-center"
                 ref={menuRef}
               >
-                <motion.div
-                  initial={false}
-                  animate={{
-                    width: showMenu ? "auto" : "32px",
-                    borderRadius: showMenu ? "16px" : "50%",
-                  }}
-                  transition={{ duration: 0.1, ease: "easeInOut" }}
-                  className={`flex items-center overflow-hidden no-highlight ${
-                    showMenu
-                      ? "bg-amber-100 dark:bg-amber-900"
-                      : "bg-transparent"
-                  }`}
-                >
-                  <AnimatePresence initial={false}>
-                    {showMenu && (
-                      <motion.div
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ duration: 0.1, ease: "easeInOut" }}
-                        className="flex items-center space-x-2"
+                {isGeneratingSubtasks ? (
+                  <Button
+                    variant="ghost"
+                    className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400")}`}
+                    disabled
+                  >
+                    <Loader2 className="animate-spin" size={20} />
+                  </Button>
+                ) : (
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      width: showMenu ? "auto" : "32px",
+                      borderRadius: showMenu ? "16px" : "50%",
+                    }}
+                    transition={{ duration: 0.1, ease: "easeInOut" }}
+                    className={`flex items-center overflow-hidden no-highlight ${
+                      showMenu
+                        ? "bg-amber-100 dark:bg-amber-900"
+                        : "bg-transparent"
+                    }`}
+                  >
+                    <AnimatePresence initial={false}>
+                      {showMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: "auto" }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.1, ease: "easeInOut" }}
+                          className="flex items-center space-x-2"
+                        >
+                          <Button
+                            variant="ghost"
+                            onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
+                            disabled={isGeneratingSubtasks || isFocusTrapped}
+                            className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-white dark:hover:text-white hover:bg-amber-500 dark:hover:bg-amber-500")} ${
+                              isGeneratingSubtasks || isFocusTrapped
+                                ? 'opacity-50 cursor-not-allowed'
+                                : ''
+                            }`}
+                          >
+                            {isGeneratingSubtasks ? (
+                              <Loader2 className="animate-spin" size={20} />
+                            ) : hasChildren ? (
+                              <RefreshCw size={20} />
+                            ) : (
+                              <Zap size={20} />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={handleEdit}
+                            disabled={isFocusTrapped}
+                            className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-gray-100 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/50")}`}
+                          >
+                            <Pen size={20} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={() => void handleDelete()}
+                            disabled={isFocusTrapped}
+                            className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900")}`}
+                          >
+                            <Trash2 size={20} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={toggleMenu}
+                            disabled={isFocusTrapped}
+                            className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900")}`}
+                          >
+                            <X size={20} />
+                          </Button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    {!showMenu && (
+                      <Button
+                        variant="ghost"
+                        onClick={toggleMenu}
+                        ref={ellipsisRef}
+                        className={`${iconButtonClass} ${hoverClass("text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300")}`}
                       >
-                        <Button
-                          variant="ghost"
-                          onClick={() => void (hasChildren ? handleRefreshSubtasks() : handleGenerateSubtasks())}
-                          disabled={isGeneratingSubtasks || isFocusTrapped}
-                          className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-white dark:hover:text-white hover:bg-amber-500 dark:hover:bg-amber-500")} ${
-                            isGeneratingSubtasks || isFocusTrapped
-                              ? 'opacity-50 cursor-not-allowed'
-                              : ''
-                          }`}
-                        >
-                          {isGeneratingSubtasks ? (
-                            <Loader2 className="animate-spin" size={20} />
-                          ) : hasChildren ? (
-                            <RefreshCw size={20} />
-                          ) : (
-                            <Zap size={20} />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={handleEdit}
-                          disabled={isFocusTrapped}
-                          className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-gray-100 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/50")}`}
-                        >
-                          <Pen size={20} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => void handleDelete()}
-                          disabled={isFocusTrapped}
-                          className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900")}`}
-                        >
-                          <Trash2 size={20} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={toggleMenu}
-                          disabled={isFocusTrapped}
-                          className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900")}`}
-                        >
-                          <X size={20} />
-                        </Button>
-                      </motion.div>
+                        <MoreHorizontal size={20} />
+                      </Button>
                     )}
-                  </AnimatePresence>
-                  {!showMenu && (
-                    <Button
-                      variant="ghost"
-                      onClick={toggleMenu}
-                      ref={ellipsisRef}
-                      className={`${iconButtonClass} ${hoverClass("text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300")}`}
-                    >
-                      <MoreHorizontal size={20} />
-                    </Button>
-                  )}
-                </motion.div>
+                  </motion.div>
+                )}
               </div>
             </>
           )}
