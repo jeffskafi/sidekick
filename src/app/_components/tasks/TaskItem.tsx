@@ -71,24 +71,31 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     try {
       await generateAISubtasks(task.id);
       setIsExpanded(true);
+      // Don't reopen the menu here
     } catch (error) {
       console.error("Failed to generate subtasks:", error);
       setError("Failed to generate subtasks");
     } finally {
       setIsGeneratingSubtasks(false);
+      // Ensure the menu stays closed
+      setShowMenu(false);
     }
   };
 
   const handleRefreshSubtasks = async () => {
     setIsGeneratingSubtasks(true);
+    setShowMenu(false); // Close the menu
     try {
       await refreshSubtasks(task.id);
       setIsExpanded(true);
+      // Don't reopen the menu here
     } catch (error) {
       console.error("Failed to refresh subtasks:", error);
       setError("Failed to refresh subtasks");
     } finally {
       setIsGeneratingSubtasks(false);
+      // Ensure the menu stays closed
+      setShowMenu(false);
     }
   };
 
