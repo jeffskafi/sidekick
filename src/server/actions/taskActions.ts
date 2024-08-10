@@ -9,6 +9,8 @@ import OpenAI from 'openai';
 import { rateLimit } from '~/server/ratelimit';
 import { generateSubtasksSystemPrompt } from '~/prompts/generateSubtasksSystemPrompt';
 import { generateSubtasksUserPrompt } from '~/prompts/generateSubtasksUserPrompt';
+import { z } from 'zod';
+import { zodResponseFormat } from 'openai/helpers/zod';
 
 
 const openai = new OpenAI({
@@ -344,17 +346,29 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
 
   if (!ancestralChain) throw new Error('Task not found');
 
+const Subtask = zodResponseFormat(
+  z.object({
+    subtasks: z.array(
+      z.object({
+        description: z.string(),
+        estimatedTimeInMinutes: z.number().int(),
+      })
+    ),
+  }),
+  'generated_subtasks'
+);
+
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-2024-08-06",
-    response_format: { type: "json_object" },
+    response_format: Subtask,
     messages: [
       {
         role: "system",
-        content: generateSubtasksSystemPrompt(taskId, ancestralChain)
+        content: generateSubtasksSystemPrompt(taskId)
       },
       {
         role: "user",
-        content: generateSubtasksUserPrompt(taskId, ancestralChain)
+        content: generateSubtasksUserPrompt(taskId, parentTask.description, ancestralChain)
       }
     ],
   });
@@ -369,6 +383,7 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
       estimatedTimeInMinutes: number;
     }>;
   }
+
   try {
     const parsedContent = JSON.parse(message) as ParsedContent;
     if (!Array.isArray(parsedContent.subtasks)) {
