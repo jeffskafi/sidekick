@@ -31,7 +31,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(task.description);
   const [isFocusTrapped, setIsFocusTrapped] = useState(false);
-  const hasChildren = useMemo(() => task.children && task.children.length > 0, [task.children]);
+  const [hasChildren, setHasChildren] = useState(task.children.length > 0);
   const [childrenLoaded, setChildrenLoaded] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -63,6 +63,15 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const handleDelete = async () => {
     await deleteTask(task.id);
     setIsExpanded(false);
+    
+    // If this task has a parent, update the parent's children
+    if (task.parentId) {
+      const parentTask = tasks.find(t => t.id === task.parentId);
+      if (parentTask) {
+        const updatedParentChildren = parentTask.children.filter(childId => childId !== task.id);
+        await updateTask(parentTask.id, { children: updatedParentChildren });
+      }
+    }
   };
 
   const handleGenerateSubtasks = async () => {
@@ -157,6 +166,11 @@ export default function TaskItem({ task, level }: TaskItemProps) {
       }
     }
   }, [showMenu]);
+
+  // Effect to update hasChildren when task.children changes
+  useEffect(() => {
+    setHasChildren(task.children.length > 0);
+  }, [task.children]);
 
   return (
     <li className="mb-4 py-1">
