@@ -33,6 +33,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [isFocusTrapped, setIsFocusTrapped] = useState(false);
   const [hasChildren, setHasChildren] = useState(task.children.length > 0);
   const [childrenLoaded, setChildrenLoaded] = useState(false);
+  const [isLoadingSubtasks, setIsLoadingSubtasks] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const ellipsisRef = useRef<HTMLButtonElement>(null);
@@ -44,6 +45,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   useEffect(() => {
     if (isExpanded && hasChildren && !childrenLoaded) {
+      setIsLoadingSubtasks(true);
       loadSubtasks(task.id)
         .then(() => {
           setChildrenLoaded(true);
@@ -51,6 +53,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         .catch((error) => {
           console.error("Failed to load subtasks:", error);
           setError("Failed to load subtasks");
+        })
+        .finally(() => {
+          setIsLoadingSubtasks(false);
         });
     }
   }, [isExpanded, hasChildren, task.id, childrenLoaded, loadSubtasks]);
@@ -209,19 +214,31 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             }}
             onClick={() => void handleStatusChange()}
           >
-            <div
-              className={`absolute left-0 top-0 h-full w-full rounded-full transition-all duration-200 ease-in-out ${
-                task.status === "done"
-                  ? "border-2 border-amber-500 bg-amber-500"
-                  : "border-2 border-amber-400 bg-white hover:border-amber-500 dark:border-amber-600 dark:bg-gray-800 dark:hover:border-amber-500"
-              }`}
-              style={{
-                boxShadow:
+            {isLoadingSubtasks ? (
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: `${CHECKBOX_SIZE}rem`,
+                  height: `${CHECKBOX_SIZE}rem`,
+                }}
+              >
+                <Loader2 className="animate-spin text-amber-500" size={20} />
+              </div>
+            ) : (
+              <div
+                className={`absolute left-0 top-0 h-full w-full rounded-full transition-all duration-200 ease-in-out ${
                   task.status === "done"
-                    ? "none"
-                    : "inset 1px 1px 2px rgba(255, 255, 255, 0.1), inset -1px -1px 2px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)",
-              }}
-            />
+                    ? "border-2 border-amber-500 bg-amber-500"
+                    : "border-2 border-amber-400 bg-white hover:border-amber-500 dark:border-amber-600 dark:bg-gray-800 dark:hover:border-amber-500"
+                }`}
+                style={{
+                  boxShadow:
+                    task.status === "done"
+                      ? "none"
+                      : "inset 1px 1px 2px rgba(255, 255, 255, 0.1), inset -1px -1px 2px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)",
+                }}
+              />
+            )}
             {task.status === "done" && (
               <svg
                 className="absolute left-1/2 top-1/2 h-2/3 w-2/3 -translate-x-1/2 -translate-y-1/2 text-white"
