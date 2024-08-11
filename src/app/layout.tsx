@@ -5,7 +5,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import Header from "~/app/_components/Header";
 import { CSPostHogProvider } from "~/app/_analytics/provider";
 import { DarkModeProvider } from "~/app/_contexts/DarkModeContext";
-import { clerkClient } from "@clerk/nextjs/server";
 
 export const metadata: Metadata = {
   title: "Sidekick",
@@ -23,37 +22,7 @@ export const viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  clerkClient.redirectUrls
-    .getRedirectUrlList()
-    .then((response) => {
-      console.log(
-        "response from clerkClient.redirectUrls.getRedirectUrlList()",
-        response,
-      );
-    })
-    .catch((error) => {
-      console.error(
-        "error from clerkClient.redirectUrls.getRedirectUrlList()",
-        error,
-      );
-    });
 
-  clerkClient.redirectUrls
-    .createRedirectUrl({
-      url: process.env.OPENAI_CHATGPT_REDIRECT_URL!,
-    })
-    .then((response) => {
-      console.log(
-        "response from clerkClient.redirectUrls.createRedirectUrl()",
-        response,
-      );
-    })
-    .catch((error) => {
-      console.error(
-        "error from clerkClient.redirectUrls.createRedirectUrl()",
-        error,
-      );
-    });
   return (
     <ClerkProvider>
       <CSPostHogProvider>
