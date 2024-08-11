@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ListTodo, GitBranch, Workflow, Zap, Target, Lightbulb } from 'lucide-react';
-import { SignUpButton } from '@clerk/nextjs';
+import { SignUpButton, SignInButton } from '@clerk/nextjs';
 
 const HowItWorks: React.FC = () => {
   const steps = [
@@ -133,15 +133,26 @@ export default function LandingPage() {
           >
             Start using Sidekick today and transform your task management experience.
           </motion.p>
-          <SignUpButton mode="modal">
-            <motion.button
-              className="inline-block px-8 py-3 text-lg font-semibold text-primary-light dark:text-primary-dark bg-white dark:bg-gray-800 border-2 border-primary-light dark:border-primary-dark rounded-full shadow-lg hover:bg-primary-light hover:text-white dark:hover:bg-primary-dark dark:hover:text-white transition-colors duration-300 ease-in-out"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Get Started
-            </motion.button>
-          </SignUpButton>
+          <div className="space-x-4">
+            <SignUpButton mode="modal">
+              <motion.button
+                className="inline-block px-8 py-3 text-lg font-semibold text-primary-light dark:text-primary-dark bg-white dark:bg-gray-800 border-2 border-primary-light dark:border-primary-dark rounded-full shadow-lg hover:bg-primary-light hover:text-white dark:hover:bg-primary-dark dark:hover:text-white transition-colors duration-300 ease-in-out"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Sign Up
+              </motion.button>
+            </SignUpButton>
+            <SignInButton mode="modal">
+              <motion.button
+                className="inline-block px-8 py-3 text-lg font-semibold text-white bg-secondary-light dark:bg-secondary-dark rounded-full shadow-lg hover:bg-opacity-90 transition-colors duration-300 ease-in-out"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Sign In
+              </motion.button>
+            </SignInButton>
+          </div>
         </div>
       </section>
     </div>
