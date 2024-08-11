@@ -12,18 +12,12 @@ export default clerkMiddleware((auth, req) => {
   // Check if the user is authenticated
   const { userId } = auth();
 
-// If the user is not authenticated and trying to access a protected route
-if (!userId) {
-  const signInUrl = new URL("/sign-in", req.url);
-  signInUrl.searchParams.set("redirect_url", req.url);
-
-  // Check if the request is from OpenAI and set the redirect URL accordingly
-  if (req.headers.get("referer")?.includes("openai.com")) {
-    signInUrl.href = process.env.OPENAI_CHATGPT_REDIRECT_URL!;
+  // If the user is not authenticated and trying to access a protected route
+  if (!userId) {
+    const signInUrl = new URL("/sign-in", req.url);
+    signInUrl.searchParams.set("redirect_url", req.url);
+    return NextResponse.redirect(signInUrl);
   }
-
-  return NextResponse.redirect(signInUrl);
-}
 
   // Allow authenticated users to access protected routes
   return NextResponse.next();
