@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import type { Task, NewTask, TaskSelect, TaskUpdate } from "~/server/db/schema";
+import type { Task, NewTask, TaskSelect } from "~/server/db/schema";
 import {
   createTask as createTaskAction,
   updateTask as updateTaskAction,
@@ -13,7 +13,7 @@ import { useAuth } from "@clerk/nextjs";
 type TaskContextType = {
   tasks: Task[];
   addTask: (newTask: NewTask) => Promise<void>;
-  updateTask: (id: TaskSelect["id"], updates: TaskUpdate) => Promise<void>;
+  updateTask: (id: TaskSelect["id"], updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
   deleteTask: (id: TaskSelect["id"]) => Promise<void>;
   loadSubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
   generateAISubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
@@ -32,7 +32,7 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     setTasks(prevTasks => [createdTask, ...prevTasks]); // Add new task to the beginning of the list
   }, []);
 
-  const updateTask = useCallback(async (id: TaskSelect["id"], updates: TaskUpdate) => {
+  const updateTask = useCallback(async (id: TaskSelect["id"], updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>) => {
     const updatedTask = await updateTaskAction(id, updates);
     setTasks(prevTasks => prevTasks.map(task => task.id === id ? { ...task, ...updatedTask } : task));
   }, []);
