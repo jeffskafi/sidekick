@@ -2,7 +2,7 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export default clerkMiddleware((auth, req) => {
-  const publicPaths = ["/", "/sign-in", "/sign-up", "/privacy"];
+  const publicPaths = ["/", "/sign-in", "/sign-up", "/privacy", "/api/auth/callback/clerk"];
   const isPublicPath = publicPaths.includes(req.nextUrl.pathname);
 
   if (isPublicPath) {
@@ -11,7 +11,10 @@ export default clerkMiddleware((auth, req) => {
 
   // Check if the user is authenticated
   const everythingAuthenticated = auth();
-  console.log('everythingAuthenticated', everythingAuthenticated);
+  console.log('Request URL:', req.url);
+  console.log('Request method:', req.method);
+  console.log('Request headers:', req.headers);
+  console.log('everythingAuthenticated', JSON.stringify(everythingAuthenticated, null, 2));
   const userId = everythingAuthenticated.userId;
 
   // If the user is not authenticated and trying to access a protected route
