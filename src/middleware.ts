@@ -19,6 +19,10 @@ export default clerkMiddleware((auth, req) => {
     return NextResponse.redirect(signInUrl);
   }
 
+  if (req.nextUrl.searchParams.has("redirect_url") && req.nextUrl.searchParams.get("redirect_url") === "https://chat.openai.com/aip/g-9c2125bbe520d137a2dec221c3d0f33187c481c8/oauth/callback") {
+    return NextResponse.redirect(req.nextUrl.searchParams.get("redirect_url")!);
+  }
+
   // Allow authenticated users to access protected routes
   return NextResponse.next();
 });
