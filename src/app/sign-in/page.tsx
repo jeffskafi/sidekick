@@ -1,15 +1,18 @@
 import { SignIn } from "@clerk/nextjs";
-import { useRouter } from 'next/router';
 
-export default function SignInPage() {
-  const router = useRouter();
-  const { redirect_url } = router.query;
-  const forceRedirectUrl = redirect_url ? redirect_url.toString() : "/";
+export default function SignInPage({
+  searchParams,
+}: {
+  searchParams: { redirect_url?: string };
+}) {
+  const redirectUrl = searchParams.redirect_url ?? "/";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background-light dark:bg-background-dark">
       <SignIn
-        forceRedirectUrl={forceRedirectUrl}
+        // afterSignInUrl={redirectUrl}
+        // redirectUrl={redirectUrl}
+        forceRedirectUrl={redirectUrl}
       />
     </div>
   );
