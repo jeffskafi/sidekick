@@ -134,9 +134,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 onClick={() => setIsExpanded(!isExpanded)}
               >
                 {isExpanded ? (
-                  <ChevronUp size={16} className="stroke-2" />
+                  <ChevronUp size={16} className="stroke-2 drop-shadow-sm" />
                 ) : (
-                  <span className="text-sm font-bold">{task.children.length}</span>
+                  <span className="text-sm font-bold drop-shadow-sm">{task.children.length}</span>
                 )}
               </div>
             )}
