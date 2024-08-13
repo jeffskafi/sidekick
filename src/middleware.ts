@@ -26,6 +26,7 @@ export default clerkMiddleware((auth, req) => {
   console.log("authObject", authObject);
   const userId = authObject.userId;
   console.log("userId", userId);
+  console.log("TOKEN", authObject.getToken());
 
   // If the user is not authenticated and trying to access a protected route
   if (!userId) {
