@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
-import { Button } from "~/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import type { Task } from "~/server/db/schema";
 import TaskCheckbox from "./TaskCheckbox";
 import TaskMenu from "./TaskMenu";
 import TaskDescription from "./TaskDescription";
 
-
 interface TaskItemProps {
   task: Task;
   level: number;
 }
+
+const INDENTATION_WIDTH = 1.5; // rem
+const CHECKBOX_SIZE = 1.5; // rem
 
 export default function TaskItem({ task, level }: TaskItemProps) {
   const {
@@ -29,10 +30,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [hasChildren, setHasChildren] = useState(task.children.length > 0);
   const [childrenLoaded, setChildrenLoaded] = useState(false);
   const [isLoadingSubtasks, setIsLoadingSubtasks] = useState(false);
-
-  const CHEVRON_WIDTH = 1.75;
-  const CHEVRON_RIGHT_PADDING = 0;
-  const INDENTATION_WIDTH = CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING;
 
   useEffect(() => {
     if (isExpanded && hasChildren && !childrenLoaded) {
@@ -110,9 +107,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     // Handle discard logic
   };
 
-  const iconButtonClass =
-    "h-8 w-8 p-0 rounded-full transition-colors duration-200 ease-in-out no-highlight";
-
   // Effect to update hasChildren when task.children changes
   useEffect(() => {
     setHasChildren(task.children.length > 0);
@@ -124,29 +118,26 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         <div
           style={{ width: `${level * INDENTATION_WIDTH}rem`, flexShrink: 0 }}
         ></div>
-        <div className="flex items-center">
-          <div
-            style={{
-              width: `${CHEVRON_WIDTH + CHEVRON_RIGHT_PADDING}rem`,
-              flexShrink: 0,
-            }}
-          >
-            {hasChildren && (
-              <Button
-                variant="ghost"
-                onClick={() => setIsExpanded(!isExpanded)}
-                className={`${iconButtonClass} ${
-                  isExpanded ? "rotate-90" : ""
-                } no-highlight`}
-                style={{ marginRight: `${CHEVRON_RIGHT_PADDING}rem` }}
-              >
-                <ChevronRight
-                  size={20}
-                  className="text-amber-500 dark:text-amber-400"
-                />
-              </Button>
-            )}
-          </div>
+        <div className="relative flex items-center" style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem` }}>
+          {hasChildren && (
+            <div
+              className="absolute left-0 top-0 z-10 flex cursor-pointer items-center justify-center rounded-full bg-amber-500 text-xs font-semibold text-white shadow-md transition-all duration-200 ease-in-out hover:bg-amber-600 active:bg-amber-700 active:shadow-inner"
+              style={{ 
+                width: `${CHECKBOX_SIZE}rem`, 
+                height: `${CHECKBOX_SIZE}rem`,
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.2)',
+              }}
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? (
+                <ChevronUp size={16} className="stroke-2" />
+              ) : (
+                <span className="text-sm font-bold">{task.children.length}</span>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="ml-2">
           <TaskCheckbox
             task={task}
             isLoadingSubtasks={isLoadingSubtasks}
@@ -184,7 +175,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
       {error && (
         <p
           className="mt-1 text-xs text-red-500"
-          style={{ marginLeft: `${level * INDENTATION_WIDTH}rem` }}
+          style={{ marginLeft: `${(level + 1) * INDENTATION_WIDTH}rem` }}
         >
           {error}
         </p>

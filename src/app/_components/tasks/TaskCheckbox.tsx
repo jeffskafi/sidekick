@@ -8,7 +8,7 @@ interface TaskCheckboxProps {
   onStatusChange: () => void;
 }
 
-const CHECKBOX_SIZE = 1.5;
+const CHECKBOX_SIZE = 1.5; // rem
 
 export default function TaskCheckbox({
   task,
@@ -17,7 +17,7 @@ export default function TaskCheckbox({
 }: TaskCheckboxProps) {
   return (
     <div
-      className="relative ml-3 cursor-pointer"
+      className="relative cursor-pointer"
       style={{
         width: `${CHECKBOX_SIZE}rem`,
         height: `${CHECKBOX_SIZE}rem`,

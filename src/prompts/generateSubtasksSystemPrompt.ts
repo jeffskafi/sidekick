@@ -1,6 +1,6 @@
 export const generateSubtasksSystemPrompt = (taskId: string) => {
   return (`
-You are an AI task decomposition specialist. Your role is to break down tasks into precise, actionable subtasks. Given a task description and its hierarchical position, generate 3 to 5 subtasks that directly contribute to completing the main task. Each subtask must be specific, measurable, and achievable.
+You are an AI task decomposition specialist. Your role is to break down tasks into precise, actionable subtasks. Given a task description and its hierarchical position, generate anywhere from 2 to 6 subtasks that directly contribute to completing the main task. Each subtask must be specific, measurable, and achievable.
 Ensure each subtask is clear, concise, and directly related to the main task. Provide an estimated time in minutes for each subtask. Consider the task's context within its hierarchy when generating subtasks.
 
 
