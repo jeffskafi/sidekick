@@ -36,10 +36,29 @@ export default function TaskMenu({
     setShowMenu(!showMenu);
   };
 
+  const closeMenu = () => {
+    setShowMenu(false);
+  };
+
+  const handleGenerateOrRefresh = () => {
+    closeMenu();
+    void (hasChildren ? onRefreshSubtasks() : onGenerateSubtasks());
+  };
+
+  const handleEdit = () => {
+    closeMenu();
+    onEdit();
+  };
+
+  const handleDelete = () => {
+    closeMenu();
+    onDelete();
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
+        closeMenu();
       }
     };
 
@@ -52,7 +71,7 @@ export default function TaskMenu({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setShowMenu(false);
+        closeMenu();
       }
     };
 
@@ -100,7 +119,7 @@ export default function TaskMenu({
               >
                 <Button
                   variant="ghost"
-                  onClick={() => void (hasChildren ? onRefreshSubtasks() : onGenerateSubtasks())}
+                  onClick={handleGenerateOrRefresh}
                   disabled={isGeneratingSubtasks || isFocusTrapped}
                   className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-white dark:hover:text-white hover:bg-amber-500 dark:hover:bg-amber-500")} ${
                     isGeneratingSubtasks || isFocusTrapped
@@ -118,7 +137,7 @@ export default function TaskMenu({
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={onEdit}
+                  onClick={handleEdit}
                   disabled={isFocusTrapped}
                   className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-gray-100 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/50")}`}
                 >
@@ -126,7 +145,7 @@ export default function TaskMenu({
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={onDelete}
+                  onClick={handleDelete}
                   disabled={isFocusTrapped}
                   className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900")}`}
                 >
