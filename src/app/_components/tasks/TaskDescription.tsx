@@ -1,69 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Check, X } from "lucide-react";
 import type { Task } from "~/server/db/schema";
 
-const hoverClass = (baseClass: string): string =>
-  `${baseClass} hover-effect:${baseClass}`;
-
 interface TaskDescriptionProps {
   task: Task;
+  isEditing: boolean;
   onEdit: () => void;
   onSave: (description: string) => void;
   onDiscard: () => void;
 }
 
-export default function TaskDescription({ task, onSave, onDiscard }: TaskDescriptionProps) {
-  const [isEditing, setIsEditing] = useState(false);
+export default function TaskDescription({ task, isEditing, onSave, onDiscard }: TaskDescriptionProps) {
   const [editedDescription, setEditedDescription] = useState(task.description);
+
+  useEffect(() => {
+    setEditedDescription(task.description);
+  }, [task.description]);
 
   const handleSave = () => {
     onSave(editedDescription);
-    setIsEditing(false);
   };
-
-  const handleDiscard = () => {
-    onDiscard();
-    setIsEditing(false);
-    setEditedDescription(task.description);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSave();
-    } else if (e.key === "Escape") {
-      handleDiscard();
-    }
-  };
-
-  const iconButtonClass = "h-8 w-8 p-0 rounded-full transition-colors duration-200 ease-in-out no-highlight";
 
   if (isEditing) {
     return (
-      <div className="flex flex-grow items-center">
+      <div className="flex items-center w-full">
         <Input
           value={editedDescription}
           onChange={(e) => setEditedDescription(e.target.value)}
-          onKeyDown={handleKeyDown}
+          className="flex-grow border-none shadow-none focus:ring-0 bg-transparent px-0"
           autoFocus
-          className="flex-grow border-transparent text-sm focus:border-transparent focus:ring-0"
-          variant="edit"
         />
-        <Button
-          variant="ghost"
-          onClick={handleSave}
-          className={`${iconButtonClass} ${hoverClass("text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300")}`}
-        >
-          <Check size={20} />
-        </Button>
-        <Button
-          variant="ghost"
-          onClick={handleDiscard}
-          className={`${iconButtonClass} ${hoverClass("text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300")}`}
-        >
-          <X size={20} />
-        </Button>
+        <div className="flex-shrink-0 flex items-center">
+          <Button onClick={handleSave} size="sm" variant="ghost" className="text-green-500 hover:text-green-600 hover:bg-green-100">
+            <Check size={20} />
+          </Button>
+          <Button onClick={onDiscard} size="sm" variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-100">
+            <X size={20} />
+          </Button>
+        </div>
       </div>
     );
   }

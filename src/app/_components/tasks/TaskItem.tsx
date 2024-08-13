@@ -31,6 +31,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [hasChildren, setHasChildren] = useState(task.children.length > 0);
   const [childrenLoaded, setChildrenLoaded] = useState(false);
   const [isLoadingSubtasks, setIsLoadingSubtasks] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (isExpanded && hasChildren && !childrenLoaded) {
@@ -97,15 +98,16 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   };
 
   const handleEdit = () => {
-    // Handle edit logic
+    setIsEditing(true);
   };
 
-  const handleSave = async () => {
-    // Handle save logic
+  const handleSave = async (description: string) => {
+    await updateTask(task.id, { description });
+    setIsEditing(false);
   };
 
   const handleDiscard = () => {
-    // Handle discard logic
+    setIsEditing(false);
   };
 
   // Effect to update hasChildren when task.children changes
@@ -150,19 +152,22 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         <div className="relative ml-4 flex flex-grow items-center overflow-hidden">
           <TaskDescription
             task={task}
+            isEditing={isEditing}
             onEdit={handleEdit}
             onSave={handleSave}
             onDiscard={handleDiscard}
           />
-          <TaskMenu
-            task={task}
-            isGeneratingSubtasks={isGeneratingSubtasks}
-            hasChildren={hasChildren}
-            onGenerateSubtasks={handleGenerateSubtasks}
-            onRefreshSubtasks={handleRefreshSubtasks}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          {!isEditing && (
+            <TaskMenu
+              task={task}
+              isGeneratingSubtasks={isGeneratingSubtasks}
+              hasChildren={hasChildren}
+              onGenerateSubtasks={handleGenerateSubtasks}
+              onRefreshSubtasks={handleRefreshSubtasks}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          )}
         </div>
       </div>
       {isExpanded && hasChildren && (
