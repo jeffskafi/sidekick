@@ -13,6 +13,7 @@ interface TaskItemProps {
 
 const INDENTATION_WIDTH = 1.5; // rem
 const CHECKBOX_SIZE = 1.5; // rem
+const INDICATOR_SIZE = 1.5; // rem
 
 export default function TaskItem({ task, level }: TaskItemProps) {
   const {
@@ -118,31 +119,33 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         <div
           style={{ width: `${level * INDENTATION_WIDTH}rem`, flexShrink: 0 }}
         ></div>
-        <div className="relative flex items-center" style={{ width: `${CHECKBOX_SIZE}rem`, height: `${CHECKBOX_SIZE}rem` }}>
-          {hasChildren && (
-            <div
-              className="absolute left-0 top-0 z-10 flex cursor-pointer items-center justify-center rounded-full bg-amber-500 text-xs font-semibold text-white shadow-md transition-all duration-200 ease-in-out hover:bg-amber-600 active:bg-amber-700 active:shadow-inner"
-              style={{ 
-                width: `${CHECKBOX_SIZE}rem`, 
-                height: `${CHECKBOX_SIZE}rem`,
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.2)',
-              }}
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? (
-                <ChevronUp size={16} className="stroke-2" />
-              ) : (
-                <span className="text-sm font-bold">{task.children.length}</span>
-              )}
-            </div>
-          )}
-        </div>
-        <div className="ml-2">
-          <TaskCheckbox
-            task={task}
-            isLoadingSubtasks={isLoadingSubtasks}
-            onStatusChange={handleStatusChange}
-          />
+        <div className="flex items-center" style={{ width: `${INDICATOR_SIZE + CHECKBOX_SIZE + 0.5}rem` }}>
+          <div className="relative" style={{ width: `${INDICATOR_SIZE}rem`, height: `${INDICATOR_SIZE}rem` }}>
+            {hasChildren && (
+              <div
+                className="absolute left-0 top-0 z-10 flex cursor-pointer items-center justify-center rounded-full bg-amber-500 text-xs font-semibold text-white shadow-md transition-all duration-200 ease-in-out hover:bg-amber-600 active:bg-amber-700 active:shadow-inner"
+                style={{ 
+                  width: `${INDICATOR_SIZE}rem`, 
+                  height: `${INDICATOR_SIZE}rem`,
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.2)',
+                }}
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                {isExpanded ? (
+                  <ChevronUp size={16} className="stroke-2" />
+                ) : (
+                  <span className="text-sm font-bold">{task.children.length}</span>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="ml-2">
+            <TaskCheckbox
+              task={task}
+              isLoadingSubtasks={isLoadingSubtasks}
+              onStatusChange={handleStatusChange}
+            />
+          </div>
         </div>
         <div className="relative ml-4 flex flex-grow items-center overflow-hidden">
           <TaskDescription
