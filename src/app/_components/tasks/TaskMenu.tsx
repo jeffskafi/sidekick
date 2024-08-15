@@ -4,9 +4,6 @@ import { Zap, Loader2, Trash2, RefreshCw, Pen, X, MoreHorizontal } from "lucide-
 import { motion, AnimatePresence } from "framer-motion";
 import type { Task } from "~/server/db/schema";
 
-const hoverClass = (baseClass: string): string =>
-  `${baseClass} hover-effect:${baseClass}`;
-
 interface TaskMenuProps {
   task: Task;
   isGeneratingSubtasks: boolean;
@@ -27,17 +24,24 @@ export default function TaskMenu({
 }: TaskMenuProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [isFocusTrapped,] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const ellipsisRef = useRef<HTMLButtonElement>(null);
 
   const iconButtonClass = "h-8 w-8 p-0 rounded-full transition-colors duration-200 ease-in-out no-highlight";
 
-  const toggleMenu = () => {
+  const toggleMenu = (event: React.MouseEvent) => {
+    event.stopPropagation();
     setShowMenu(!showMenu);
+    if (!showMenu) {
+      setTimeout(() => setIsMenuOpen(true), 150);
+    } else {
+      setIsMenuOpen(false);
+    }
   };
 
   const closeMenu = () => {
     setShowMenu(false);
+    setIsMenuOpen(false);
   };
 
   const handleGenerateOrRefresh = () => {
@@ -62,24 +66,18 @@ export default function TaskMenu({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    if (showMenu) {
+      document.addEventListener('click', handleClickOutside);
+    }
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeMenu();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('click', handleClickOutside);
     };
-  }, []);
+  }, [showMenu]);
+
+  const getButtonClass = (baseClass: string) => {
+    return `${iconButtonClass} ${baseClass} ${isMenuOpen ? '' : 'pointer-events-none'}`;
+  };
 
   return (
     <div
@@ -89,7 +87,7 @@ export default function TaskMenu({
       {isGeneratingSubtasks ? (
         <Button
           variant="ghost"
-          className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400")}`}
+          className={`${iconButtonClass} text-amber-500 dark:text-amber-400`}
           disabled
         >
           <Loader2 className="animate-spin" size={20} />
@@ -119,13 +117,9 @@ export default function TaskMenu({
               >
                 <Button
                   variant="ghost"
-                  onClick={handleGenerateOrRefresh}
+                  onClick={(e) => { e.stopPropagation(); handleGenerateOrRefresh(); }}
                   disabled={isGeneratingSubtasks || isFocusTrapped}
-                  className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-white dark:hover:text-white hover:bg-amber-500 dark:hover:bg-amber-500")} ${
-                    isGeneratingSubtasks || isFocusTrapped
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
-                  }`}
+                  className={getButtonClass("text-amber-500 dark:text-amber-400 hover:text-white dark:hover:text-white hover:bg-amber-500 dark:hover:bg-amber-500")}
                 >
                   {isGeneratingSubtasks ? (
                     <Loader2 className="animate-spin" size={20} />
@@ -137,17 +131,17 @@ export default function TaskMenu({
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={handleEdit}
+                  onClick={(e) => { e.stopPropagation(); handleEdit(); }}
                   disabled={isFocusTrapped}
-                  className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-gray-100 dark:hover:text-gray-200 hover:bg-gray-200/80 dark:hover:bg-gray-700/50")}`}
+                  className={getButtonClass("text-amber-600 dark:text-amber-300 hover:text-white dark:hover:text-white hover:bg-amber-600 dark:hover:bg-amber-500")}
                 >
                   <Pen size={20} />
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={handleDelete}
+                  onClick={(e) => { e.stopPropagation(); handleDelete(); }}
                   disabled={isFocusTrapped}
-                  className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900")}`}
+                  className={getButtonClass("text-amber-500 dark:text-amber-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-900")}
                 >
                   <Trash2 size={20} />
                 </Button>
@@ -155,7 +149,7 @@ export default function TaskMenu({
                   variant="ghost"
                   onClick={toggleMenu}
                   disabled={isFocusTrapped}
-                  className={`${iconButtonClass} ${hoverClass("text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900")}`}
+                  className={getButtonClass("text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900")}
                 >
                   <X size={20} />
                 </Button>
@@ -166,8 +160,7 @@ export default function TaskMenu({
             <Button
               variant="ghost"
               onClick={toggleMenu}
-              ref={ellipsisRef}
-              className={`${iconButtonClass} ${hoverClass("text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300")}`}
+              className={`${iconButtonClass} text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300`}
             >
               <MoreHorizontal size={20} />
             </Button>
