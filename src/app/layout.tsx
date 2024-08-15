@@ -2,9 +2,38 @@ import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import Header from "~/app/_components/Header";
+import dynamic from "next/dynamic";
 import { CSPostHogProvider } from "~/app/_analytics/provider";
 import { DarkModeProvider } from "~/app/_contexts/DarkModeContext";
+
+// Dynamically import the Header component
+const Header = dynamic(() => import("~/app/_components/Header"), {
+  ssr: false,
+});
+
+function themeScript() {
+  return `
+    (function() {
+      function getInitialTheme() {
+        const persistedColorPreference = window.localStorage.getItem('theme');
+        const hasPersistedPreference = typeof persistedColorPreference === 'string';
+        if (hasPersistedPreference) {
+          return persistedColorPreference;
+        }
+        const mql = window.matchMedia('(prefers-color-scheme: dark)');
+        const hasMediaQueryPreference = typeof mql.matches === 'boolean';
+        if (hasMediaQueryPreference) {
+          return mql.matches ? 'dark' : 'light';
+        }
+        return 'light';
+      }
+
+      const theme = getInitialTheme();
+      document.documentElement.classList.toggle('dark', theme === 'dark');
+      window.localStorage.setItem('theme', theme);
+    })();
+  `;
+}
 
 export const metadata: Metadata = {
   title: "Sidekick",
@@ -27,9 +56,12 @@ export default function RootLayout({
       <CSPostHogProvider>
         <DarkModeProvider>
           <html lang="en" className={`${GeistSans.variable}`}>
+            <head>
+              <script dangerouslySetInnerHTML={{ __html: themeScript() }} />
+            </head>
             <body className="flex min-h-screen flex-col bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
               <Header />
-              <main className="flex-grow -mt-px">{children}</main>
+              <main className="-mt-px flex-grow">{children}</main>
             </body>
           </html>
         </DarkModeProvider>
