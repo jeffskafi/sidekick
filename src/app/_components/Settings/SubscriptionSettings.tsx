@@ -55,8 +55,9 @@ export default function SubscriptionSettings() {
   };
 
   const tiers = [
-    { name: 'Free', requests: '10 fast requests/month', color: 'gray', tier: 'free', price: '$0/month' },
-    { name: 'Pro', requests: '500 fast requests/month', color: 'amber', tier: 'pro', price: '$7.99/month' },
+    { name: 'Free', requests: '10 fast requests/month\nUnlimited slow requests', color: 'gray', tier: 'free', price: '$0/month' },
+    { name: 'Pro', requests: '500 fast requests/month', color: 'amber', tier: 'pro', price: '$19.99/month' },
+    { name: 'Team', requests: '1000 fast requests/month/user', color: 'blue', tier: 'team', price: '$39.99/month/user' },
   ];
 
   const features = [
@@ -65,6 +66,7 @@ export default function SubscriptionSettings() {
     'API access',
     'Custom integrations',
     'Priority support',
+    'Team collaboration',
   ];
 
   return (
@@ -97,44 +99,53 @@ export default function SubscriptionSettings() {
             <Label className="block text-lg font-semibold mb-4 text-text-light">
               Subscription Tiers
             </Label>
-            <div className="grid grid-cols-3 gap-x-4 text-sm">
+            <div className="grid grid-cols-4 gap-x-4 text-sm">
               <div className="font-medium text-gray-900 p-2">Feature</div>
               {tiers.map((tier) => (
                 <div key={tier.name} className="font-medium text-gray-900 p-2">{tier.name}</div>
               ))}
               
-              {['Price', 'Requests', ...features].map((feature, index) => (
+              {['Requests', ...features].map((feature, index) => (
                 <React.Fragment key={feature}>
                   <div className={`text-gray-600 p-2 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>{feature}</div>
                   {tiers.map((tier) => (
                     <div key={tier.name} className={`text-center p-2 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
-                      {feature === 'Price' && tier.price}
-                      {feature === 'Requests' && tier.requests}
-                      {feature !== 'Price' && feature !== 'Requests' && (tier.tier === 'free' ? '❌' : '✅')}
+                      {feature === 'Requests' && (
+                        <span className="whitespace-pre-line">{tier.requests}</span>
+                      )}
+                      {feature === 'Slow requests' && '✅'}
+                      {feature !== 'Requests' && feature !== 'Slow requests' && (
+                        tier.tier === 'free' ? '❌' : 
+                        tier.tier === 'pro' && feature === 'Team collaboration' ? '❌' : '✅'
+                      )}
                     </div>
                   ))}
                 </React.Fragment>
               ))}
             </div>
-            <div className="mt-6 grid grid-cols-3 gap-x-4">
+            <div className="mt-6 grid grid-cols-4 gap-x-4">
               <div></div> {/* Empty column for alignment */}
               {tiers.map((tier) => (
                 <button
                   key={tier.name}
-                  className={`w-full rounded-md px-4 py-3 text-sm font-medium transition-all duration-200 ease-in-out
+                  className={`w-full rounded-md px-3 py-2 text-sm font-medium transition-all duration-200 ease-in-out
                     ${tier.color === 'gray'
                       ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                      : `bg-amber-500 text-white hover:bg-amber-600 hover:-translate-y-0.5`
+                      : tier.color === 'amber'
+                      ? 'bg-amber-500 text-white hover:bg-amber-600'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
                     } 
-                    shadow-md hover:shadow-lg ${tier.tier === 'pro' ? 'transform hover:-translate-y-0.5' : ''}`}
-                  onClick={tier.tier === 'pro' ? handleUpgrade : undefined}
+                    shadow-md hover:shadow-lg ${tier.tier !== 'free' ? 'hover:-translate-y-0.5' : ''}`}
+                  onClick={tier.tier !== 'free' ? handleUpgrade : undefined}
                   disabled={tier.tier === 'free'}
                 >
-                  {tier.tier === 'free' ? 'Current Plan' : (
-                    <>
-                      Upgrade to Pro
-                      <span className="block text-xs mt-1 font-normal">$7.99/month</span>
-                    </>
+                  {tier.tier === 'free' ? (
+                    <span>Current Plan</span>
+                  ) : (
+                    <span className="flex flex-col items-center">
+                      <span className="text-sm">{tier.name}</span>
+                      <span className="text-xs opacity-80">{tier.price}</span>
+                    </span>
                   )}
                 </button>
               ))}
