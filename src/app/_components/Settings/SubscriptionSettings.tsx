@@ -14,10 +14,13 @@ const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
 );
 
+const PRO_PRODUCT_ID = process.env.STRIPE_PRO_SUBSCRIPTION_PRODUCT_ID!;
+const TEAMS_PRODUCT_ID = process.env.STRIPE_TEAMS_SUBSCRIPTION_PRODUCT_ID!;
+
 export default function SubscriptionSettings() {
   const { user, isLoaded } = useUser();
   const [error, setError] = useState<string | null>(null);
-  const [, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -25,7 +28,7 @@ export default function SubscriptionSettings() {
     }
   }, [isLoaded, user]);
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (productId: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -35,7 +38,7 @@ export default function SubscriptionSettings() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          priceId: "price_pro",
+          productId: productId,
         }),
       });
       const session: CheckoutSession = await response.json() as CheckoutSession;
@@ -55,9 +58,9 @@ export default function SubscriptionSettings() {
   };
 
   const tiers = [
-    { name: 'Free', requests: '10 fast requests/month\nUnlimited slow requests', color: 'gray', tier: 'free', price: '$0/month' },
-    { name: 'Pro', requests: '500 fast requests/month', color: 'amber', tier: 'pro', price: '$19.99/month' },
-    { name: 'Team', requests: '1000 fast requests/month/user', color: 'blue', tier: 'team', price: '$39.99/month/user' },
+    { name: 'Free', requests: '10 fast requests/month\nUnlimited slow requests', color: 'gray', tier: 'free', price: '$0/month', productId: null },
+    { name: 'Pro', requests: '500 fast requests/month', color: 'amber', tier: 'pro', price: '$19.99/month', productId: PRO_PRODUCT_ID },
+    { name: 'Teams', requests: '1000 fast requests/month/user', color: 'blue', tier: 'team', price: '$39.99/month/user', productId: TEAMS_PRODUCT_ID },
   ];
 
   const features = [
@@ -136,8 +139,8 @@ export default function SubscriptionSettings() {
                       : 'bg-blue-500 text-white hover:bg-blue-600'
                     } 
                     shadow-md hover:shadow-lg ${tier.tier !== 'free' ? 'hover:-translate-y-0.5' : ''}`}
-                  onClick={tier.tier !== 'free' ? handleUpgrade : undefined}
-                  disabled={tier.tier === 'free'}
+                  onClick={() => tier.productId && handleUpgrade(tier.productId)}
+                  disabled={tier.tier === 'free' || loading}
                 >
                   {tier.tier === 'free' ? (
                     <span>Current Plan</span>
