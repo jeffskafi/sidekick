@@ -56,3 +56,5 @@ expo/node_modules
 
 expo-env.d.ts
 # @end expo-cli
+# Sentry Config File
+.env.sentry-build-plugin

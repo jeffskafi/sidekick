@@ -9,7 +9,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "dev": "next dev --turbo",
+    "dev": "next dev",
     "lint": "next lint",
     "start": "next start"
   },
@@ -25,6 +25,7 @@
     "@radix-ui/react-tabs": "^1.1.0",
     "@react-spring/web": "^9.7.4",
     "@redis/search": "^1.2.0",
+    "@sentry/nextjs": "^8",
     "@stripe/react-stripe-js": "^2.8.0",
     "@stripe/stripe-js": "^4.3.0",
     "@t3-oss/env-nextjs": "^0.10.1",
