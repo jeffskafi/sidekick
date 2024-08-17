@@ -27,14 +27,14 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
   const isButtonDisabled = !userId || description.trim() === "";
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center w-full">
+    <form onSubmit={handleSubmit} className="flex items-center w-full mb-4">
       <div className="relative flex-grow">
         <Input
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add a new task..."
-          className="pr-14 py-2 text-base w-full rounded-full"
+          className="pr-14 py-3 text-base w-full rounded-full"
         />
         <Button
           type="submit"

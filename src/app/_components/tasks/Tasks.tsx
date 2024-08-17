@@ -13,10 +13,14 @@ interface TasksProps {
 export default function Tasks({ initialTasks, userId }: TasksProps) {
   return (
     <TaskProvider initialTasks={initialTasks}>
-      <div className="min-h-screen bg-gray-50 dark:bg-dark-bg p-4 sm:p-6 md:p-9">
-        <div className="w-full max-w-3xl mx-auto">
-          <AddTaskForm userId={userId} />
-          <div className="mt-6 sm:mt-9">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-bg p-6 sm:p-8 md:p-12">
+        <div className="w-full max-w-3xl mx-auto relative">
+          <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-50 dark:bg-dark-bg p-4">
+            <div className="max-w-3xl mx-auto">
+              <AddTaskForm userId={userId} />
+            </div>
+          </div>
+          <div className="pb-20">
             <TaskList />
           </div>
         </div>

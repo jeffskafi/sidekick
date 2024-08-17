@@ -150,13 +150,17 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           </div>
         </div>
         <div className="relative ml-4 flex flex-grow items-center overflow-hidden">
-          <TaskDescription
-            task={task}
-            isEditing={isEditing}
-            onEdit={handleEdit}
-            onSave={handleSave}
-            onDiscard={handleDiscard}
-          />
+          <div className="w-full">
+            {!isEditing && (
+              <TaskDescription
+                task={task}
+                isEditing={false}
+                onEdit={handleEdit}
+                onSave={handleSave}
+                onDiscard={handleDiscard}
+              />
+            )}
+          </div>
           {!isEditing && (
             <TaskMenu
               task={task}
@@ -187,6 +191,19 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         >
           {error}
         </p>
+      )}
+      {isEditing && (
+        <div className="fixed inset-x-0 bottom-0 z-50">
+          <div className="mx-auto max-w-2xl bg-white p-4 shadow-lg">
+            <TaskDescription
+              task={task}
+              isEditing={true}
+              onEdit={handleEdit}
+              onSave={handleSave}
+              onDiscard={handleDiscard}
+            />
+          </div>
+        </div>
       )}
     </li>
   );
