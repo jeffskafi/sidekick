@@ -125,7 +125,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           <div className="relative" style={{ width: `${INDICATOR_SIZE}rem`, height: `${INDICATOR_SIZE}rem` }}>
             {hasChildren && (
               <div
-                className="absolute left-0 top-0 z-10 flex cursor-pointer items-center justify-center rounded-full bg-amber-500 text-xs font-semibold text-white shadow-md transition-all duration-200 ease-in-out hover:bg-amber-600 active:bg-amber-700 active:shadow-inner"
+                className="absolute left-0 top-0 z-10 flex cursor-pointer items-center justify-center rounded-full bg-amber-500 text-xs font-semibold text-black shadow-md transition-all duration-200 ease-in-out hover:bg-amber-600 active:bg-amber-700 active:shadow-inner"
                 style={{ 
                   width: `${INDICATOR_SIZE}rem`, 
                   height: `${INDICATOR_SIZE}rem`,
@@ -134,9 +134,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 onClick={() => setIsExpanded(!isExpanded)}
               >
                 {isExpanded ? (
-                  <ChevronUp size={16} className="stroke-2 drop-shadow-sm" />
+                  <ChevronUp size={16} className="stroke-2 drop-shadow-sm text-black" />
                 ) : (
-                  <span className="text-sm font-bold drop-shadow-sm">{task.children.length}</span>
+                  <span className="text-sm font-bold drop-shadow-sm text-black">{task.children.length}</span>
                 )}
               </div>
             )}

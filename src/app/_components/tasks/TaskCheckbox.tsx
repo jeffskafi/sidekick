@@ -51,7 +51,7 @@ export default function TaskCheckbox({
       )}
       {task.status === "done" && (
         <svg
-          className="absolute left-1/2 top-1/2 h-2/3 w-2/3 -translate-x-1/2 -translate-y-1/2 text-white"
+          className="absolute left-1/2 top-1/2 h-2/3 w-2/3 -translate-x-1/2 -translate-y-1/2 text-black"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
