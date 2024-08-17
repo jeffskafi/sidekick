@@ -27,7 +27,7 @@ export default function TaskMenu({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const iconButtonClass = "h-8 w-8 p-0 rounded-full transition-colors duration-200 ease-in-out no-highlight";
+  const iconButtonClass = "h-8 w-8 p-0 rounded-full transition-colors duration-200 ease-in-out no-highlight flex items-center justify-center";
 
   const toggleMenu = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -81,7 +81,7 @@ export default function TaskMenu({
 
   return (
     <div
-      className="absolute right-0 top-1/2 flex -translate-y-1/2 transform items-center"
+      className="absolute right-0 top-0 flex items-center"
       ref={menuRef}
     >
       {isGeneratingSubtasks ? (

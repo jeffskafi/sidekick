@@ -8,7 +8,7 @@ interface TaskCheckboxProps {
   onStatusChange: () => void;
 }
 
-const CHECKBOX_SIZE = 1.5; // rem
+const CHECKBOX_SIZE = 1.75; // rem
 
 export default function TaskCheckbox({
   task,

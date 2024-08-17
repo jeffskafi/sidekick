@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import type { KeyboardEvent } from "react";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { Check, X } from "lucide-react";
@@ -7,7 +8,6 @@ import type { Task } from "~/server/db/schema";
 interface TaskDescriptionProps {
   task: Task;
   isEditing: boolean;
-  onEdit: () => void;
   onSave: (description: string) => void;
   onDiscard: () => void;
 }
@@ -23,13 +23,21 @@ export default function TaskDescription({ task, isEditing, onSave, onDiscard }: 
     onSave(editedDescription);
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSave();
+    }
+  };
+
   if (isEditing) {
     return (
-      <div className="flex items-center w-full">
+      <div className="flex items-center w-full h-full">
         <Input
           value={editedDescription}
           onChange={(e) => setEditedDescription(e.target.value)}
-          className="flex-grow border-none shadow-none focus:ring-0 bg-transparent px-0"
+          onKeyDown={handleKeyDown}
+          className="flex-grow border-none shadow-none focus:ring-0 bg-transparent px-0 h-full"
           autoFocus
         />
         <div className="flex-shrink-0 flex items-center">
@@ -45,22 +53,14 @@ export default function TaskDescription({ task, isEditing, onSave, onDiscard }: 
   }
 
   return (
-    <div className="mr-8 min-w-0 flex-grow">
-      <div
-        className={`line-clamp-3 overflow-hidden bg-transparent py-1.5 text-sm focus:outline-none ${
-          task.status === "done"
-            ? "text-gray-400 line-through dark:text-gray-500"
-            : "text-gray-700 dark:text-gray-200"
-        }`}
-        style={{
-          display: "-webkit-box",
-          WebkitBoxOrient: "vertical",
-          WebkitLineClamp: 3,
-          overflow: "hidden",
-        }}
-      >
+    <div className="overflow-hidden bg-transparent text-sm focus:outline-none break-words flex items-center h-full">
+      <span className={`${
+        task.status === "done"
+          ? "text-gray-400 line-through dark:text-gray-500"
+          : "text-gray-700 dark:text-gray-200"
+      }`}>
         {task.description}
-      </div>
+      </span>
     </div>
   );
 }

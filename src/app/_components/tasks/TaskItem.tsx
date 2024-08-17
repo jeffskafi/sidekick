@@ -11,9 +11,9 @@ interface TaskItemProps {
   level: number;
 }
 
-const INDENTATION_WIDTH = 1.5; // rem
-const CHECKBOX_SIZE = 1.5; // rem
-const INDICATOR_SIZE = 1.5; // rem
+const INDENTATION_WIDTH = 1.75; // rem
+const CHECKBOX_SIZE = 1.75; // rem
+const INDICATOR_SIZE = 1.75; // rem
 
 export default function TaskItem({ task, level }: TaskItemProps) {
   const {
@@ -117,11 +117,18 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   return (
     <li className="mb-4 py-1">
-      <div className="group flex items-center">
+      <div className="group flex items-center relative h-8">
         <div
-          style={{ width: `${level * INDENTATION_WIDTH}rem`, flexShrink: 0 }}
+          className="absolute left-0 top-0 bottom-0"
+          style={{ width: `${level * INDENTATION_WIDTH}rem` }}
         ></div>
-        <div className="flex items-center" style={{ width: `${INDICATOR_SIZE + CHECKBOX_SIZE + 0.5}rem` }}>
+        <div 
+          className="flex items-center absolute left-0 ml-2" 
+          style={{ 
+            width: `${INDICATOR_SIZE + CHECKBOX_SIZE + 0.5}rem`,
+            marginLeft: `${level * INDENTATION_WIDTH}rem`
+          }}
+        >
           <div className="relative" style={{ width: `${INDICATOR_SIZE}rem`, height: `${INDICATOR_SIZE}rem` }}>
             {hasChildren && (
               <div
@@ -134,9 +141,9 @@ export default function TaskItem({ task, level }: TaskItemProps) {
                 onClick={() => setIsExpanded(!isExpanded)}
               >
                 {isExpanded ? (
-                  <ChevronUp size={16} className="stroke-2 drop-shadow-sm text-black" />
+                  <ChevronUp size={18} className="stroke-2 drop-shadow-sm text-black" />
                 ) : (
-                  <span className="text-sm font-bold drop-shadow-sm text-black">{task.children.length}</span>
+                  <span className="text-base font-bold drop-shadow-sm text-black">{task.children.length}</span>
                 )}
               </div>
             )}
@@ -149,19 +156,23 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             />
           </div>
         </div>
-        <div className="relative ml-4 flex flex-grow items-center overflow-hidden">
-          <div className="w-full">
-            {!isEditing && (
-              <TaskDescription
-                task={task}
-                isEditing={false}
-                onEdit={handleEdit}
-                onSave={handleSave}
-                onDiscard={handleDiscard}
-              />
-            )}
+        <div 
+          className="flex-grow flex items-center overflow-hidden pr-10" 
+          style={{ 
+            paddingLeft: `calc(${level * INDENTATION_WIDTH}rem + ${INDICATOR_SIZE}rem + ${CHECKBOX_SIZE}rem + 1rem)`
+          }}
+        >
+          <div className="w-full overflow-hidden">
+            <TaskDescription
+              task={task}
+              isEditing={isEditing}
+              onSave={handleSave}
+              onDiscard={handleDiscard}
+            />
           </div>
-          {!isEditing && (
+        </div>
+        {!isEditing && (
+          <div className="absolute right-0 top-0 h-full flex items-center">
             <TaskMenu
               task={task}
               isGeneratingSubtasks={isGeneratingSubtasks}
@@ -171,8 +182,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
       {isExpanded && hasChildren && (
         <ul className="mt-2 space-y-2">
@@ -191,19 +202,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         >
           {error}
         </p>
-      )}
-      {isEditing && (
-        <div className="fixed inset-x-0 bottom-0 z-50">
-          <div className="mx-auto max-w-2xl bg-white p-4 shadow-lg">
-            <TaskDescription
-              task={task}
-              isEditing={true}
-              onEdit={handleEdit}
-              onSave={handleSave}
-              onDiscard={handleDiscard}
-            />
-          </div>
-        </div>
       )}
     </li>
   );
