@@ -117,7 +117,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   return (
     <li className="mb-4 py-1">
-      <div className="group flex items-center relative h-8">
+      <div className="group flex items-center relative min-h-[3rem] py-2">
         <div
           className="absolute left-0 top-0 bottom-0"
           style={{ width: `${level * INDENTATION_WIDTH}rem` }}

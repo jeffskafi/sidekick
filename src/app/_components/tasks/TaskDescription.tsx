@@ -54,11 +54,13 @@ export default function TaskDescription({ task, isEditing, onSave, onDiscard }: 
 
   return (
     <div className="overflow-hidden bg-transparent text-sm focus:outline-none break-words flex items-center h-full">
-      <span className={`${
-        task.status === "done"
-          ? "text-gray-400 line-through dark:text-gray-500"
-          : "text-gray-700 dark:text-gray-200"
-      }`}>
+      <span
+        className={`${
+          task.status === "done"
+            ? "text-gray-400 line-through dark:text-gray-500"
+            : "text-gray-700 dark:text-gray-200"
+        } line-clamp-3`}
+      >
         {task.description}
       </span>
     </div>
