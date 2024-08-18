@@ -58,3 +58,5 @@ expo-env.d.ts
 # @end expo-cli
 # Sentry Config File
 .env.sentry-build-plugin
+
+manage_oauth_app.sh
