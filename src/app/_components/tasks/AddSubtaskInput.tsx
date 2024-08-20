@@ -5,10 +5,9 @@ import { Button } from "~/components/ui/button";
 interface AddSubtaskInputProps {
   onSave: (description: string) => void;
   onCancel: () => void;
-  level: number;
 }
 
-export default function AddSubtaskInput({ onSave, onCancel, level }: AddSubtaskInputProps) {
+export default function AddSubtaskInput({ onSave, onCancel }: AddSubtaskInputProps) {
   const [description, setDescription] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -31,7 +30,7 @@ export default function AddSubtaskInput({ onSave, onCancel, level }: AddSubtaskI
   };
 
   return (
-    <div className="flex items-center" style={{ paddingLeft: `${level * 1.75 + 3.5}rem` }}>
+    <div className="flex items-center">
       <div className="w-7 h-7 rounded-full border-2 border-amber-400 mr-2"></div>
       <input
         ref={inputRef}

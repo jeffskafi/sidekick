@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
-import { ChevronUp, Plus } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import type { Task } from "~/server/db/schema";
 import TaskCheckbox from "./TaskCheckbox";
 import TaskMenu from "./TaskMenu";
@@ -15,6 +15,7 @@ interface TaskItemProps {
 const INDENTATION_WIDTH = 1.75; // rem
 const CHECKBOX_SIZE = 1.75; // rem
 const INDICATOR_SIZE = 1.75; // rem
+const SUBTASK_ADJUSTMENT = 0.5; // rem (adjust this value to fine-tune the position)
 
 export default function TaskItem({ task, level }: TaskItemProps) {
   const {
@@ -212,15 +213,18 @@ export default function TaskItem({ task, level }: TaskItemProps) {
       {(isExpanded || isAddingSubtask) && (
         <>
           <ul className="mt-2 space-y-2">
-            {isAddingSubtask && (
-              <li>
+            <li
+              style={{
+                paddingLeft: `calc(${level * INDENTATION_WIDTH}rem + ${INDICATOR_SIZE}rem + ${CHECKBOX_SIZE}rem + 1rem - ${SUBTASK_ADJUSTMENT}rem)`,
+              }}
+            >
+              {isAddingSubtask && (
                 <AddSubtaskInput
                   onSave={handleAddSubtask}
                   onCancel={() => setIsAddingSubtask(false)}
-                  level={level + 1}
                 />
-              </li>
-            )}
+              )}
+            </li>
             {task.children.map((subtaskId) => {
               const subtask = tasks.find((t) => t.id === subtaskId);
               return subtask ? (
