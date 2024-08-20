@@ -19,6 +19,7 @@ type TaskContextType = {
   generateAISubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
   refreshSubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
   userId: string | null;
+  createSubtask: (parentId: TaskSelect["id"], newTask: Omit<NewTask, 'parentId'>) => Promise<void>;
 };
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -132,6 +133,18 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     return refreshedSubtasks;
   }, []);
 
+  const createSubtask = useCallback(async (parentId: TaskSelect["id"], newTask: Omit<NewTask, 'parentId'>) => {
+    const createdTask = await createTaskAction({ ...newTask, parentId });
+    setTasks(prevTasks => {
+      const updatedTasks = prevTasks.map(task =>
+        task.id === parentId
+          ? { ...task, children: [...task.children, createdTask.id] }
+          : task
+      );
+      return [...updatedTasks, createdTask];
+    });
+  }, []);
+
   const value = {
     tasks,
     addTask,
@@ -141,6 +154,7 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     generateAISubtasks,
     refreshSubtasks,
     userId: userId ?? null,
+    createSubtask,
   };
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;

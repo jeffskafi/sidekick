@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useTaskContext } from "~/app/_contexts/TaskContext";
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, Plus } from "lucide-react";
 import type { Task } from "~/server/db/schema";
 import TaskCheckbox from "./TaskCheckbox";
 import TaskMenu from "./TaskMenu";
 import TaskDescription from "./TaskDescription";
+import AddSubtaskInput from "./AddSubtaskInput";
 
 interface TaskItemProps {
   task: Task;
@@ -23,6 +24,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     loadSubtasks,
     generateAISubtasks,
     refreshSubtasks,
+    createSubtask,
+    userId,
   } = useTaskContext();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -32,6 +35,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const [childrenLoaded, setChildrenLoaded] = useState(false);
   const [isLoadingSubtasks, setIsLoadingSubtasks] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isAddingSubtask, setIsAddingSubtask] = useState(false);
 
   useEffect(() => {
     if (isExpanded && hasChildren && !childrenLoaded) {
@@ -110,6 +114,25 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     setIsEditing(false);
   };
 
+  const handleAddSubtaskClick = () => {
+    setIsExpanded(true);
+    setIsAddingSubtask(true);
+  };
+
+  const handleAddSubtask = async (description: string) => {
+    if (description && userId) {
+      await createSubtask(task.id, {
+        description,
+        userId,
+        completed: false,
+        status: 'todo',
+        priority: 'none',
+        dueDate: null,
+      });
+      setIsAddingSubtask(false);
+    }
+  };
+
   // Effect to update hasChildren when task.children changes
   useEffect(() => {
     setHasChildren(task.children.length > 0);
@@ -181,19 +204,31 @@ export default function TaskItem({ task, level }: TaskItemProps) {
               onRefreshSubtasks={handleRefreshSubtasks}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onAddSubtask={handleAddSubtaskClick}
             />
           </div>
         )}
       </div>
-      {isExpanded && hasChildren && (
-        <ul className="mt-2 space-y-2">
-          {task.children.map((subtaskId) => {
-            const subtask = tasks.find((t) => t.id === subtaskId);
-            return subtask ? (
-              <TaskItem key={subtask.id} task={subtask} level={level + 1} />
-            ) : null;
-          })}
-        </ul>
+      {(isExpanded || isAddingSubtask) && (
+        <>
+          <ul className="mt-2 space-y-2">
+            {isAddingSubtask && (
+              <li>
+                <AddSubtaskInput
+                  onSave={handleAddSubtask}
+                  onCancel={() => setIsAddingSubtask(false)}
+                  level={level + 1}
+                />
+              </li>
+            )}
+            {task.children.map((subtaskId) => {
+              const subtask = tasks.find((t) => t.id === subtaskId);
+              return subtask ? (
+                <TaskItem key={subtask.id} task={subtask} level={level + 1} />
+              ) : null;
+            })}
+          </ul>
+        </>
       )}
       {error && (
         <p
