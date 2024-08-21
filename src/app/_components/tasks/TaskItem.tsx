@@ -6,6 +6,7 @@ import TaskCheckbox from "./TaskCheckbox";
 import TaskMenu from "./TaskMenu";
 import TaskDescription from "./TaskDescription";
 import AddSubtaskInput from "./AddSubtaskInput";
+import { useToast } from "~/components/ui/use-toast"
 
 interface TaskItemProps {
   task: Task;
@@ -28,6 +29,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     createSubtask,
     userId,
   } = useTaskContext();
+
+  const { toast } = useToast()
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +77,13 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         await updateTask(parentTask.id, { children: updatedParentChildren });
       }
     }
+
+    // Show toast message
+    toast({
+      title: "Task deleted",
+      description: `"${task.description}" has been deleted.`,
+      duration: 3000,
+    })
   };
 
   const handleGenerateSubtasks = async () => {

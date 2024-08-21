@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import dynamic from "next/dynamic";
 import { CSPostHogProvider } from "~/app/_analytics/provider";
 import { DarkModeProvider } from "~/app/_contexts/DarkModeContext";
+import { Toaster } from "~/components/ui/toaster"
 
 // Dynamically import the Header component
 const Header = dynamic(() => import("~/app/_components/Header"), {
@@ -62,6 +63,7 @@ export default function RootLayout({
             <body className="flex min-h-screen flex-col bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
               <Header />
               <main className="-mt-px flex-grow">{children}</main>
+              <Toaster />
             </body>
           </html>
         </DarkModeProvider>
