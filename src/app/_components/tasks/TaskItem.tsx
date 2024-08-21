@@ -7,6 +7,7 @@ import TaskMenu from "./TaskMenu";
 import TaskDescription from "./TaskDescription";
 import AddSubtaskInput from "./AddSubtaskInput";
 import { useToast } from "~/components/ui/use-toast"
+import { Button } from "~/components/ui/button";
 
 interface TaskItemProps {
   task: Task;
@@ -28,6 +29,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     refreshSubtasks,
     createSubtask,
     userId,
+    restoreTask,
   } = useTaskContext();
 
   const { toast } = useToast()
@@ -64,6 +66,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   };
 
   const handleDelete = async () => {
+    const deletedTask = { ...task };
     await deleteTask(task.id);
     setIsExpanded(false);
 
@@ -78,12 +81,30 @@ export default function TaskItem({ task, level }: TaskItemProps) {
       }
     }
 
-    // Show toast message
+    // Show toast message with undo functionality
     toast({
       title: "Task deleted",
       description: `"${task.description}" has been deleted.`,
+      duration: 5000,
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleUndoDelete(deletedTask)}
+        >
+          Undo
+        </Button>
+      ),
+    });
+  };
+
+  const handleUndoDelete = async (deletedTask: Task) => {
+    await restoreTask(deletedTask);
+    toast({
+      title: "Task restored",
+      description: `"${deletedTask.description}" has been restored.`,
       duration: 3000,
-    })
+    });
   };
 
   const handleGenerateSubtasks = async () => {

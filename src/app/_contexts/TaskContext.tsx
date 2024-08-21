@@ -13,13 +13,14 @@ import { useAuth } from "@clerk/nextjs";
 type TaskContextType = {
   tasks: Task[];
   addTask: (newTask: NewTask) => Promise<void>;
-  updateTask: (id: TaskSelect["id"], updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
+  updateTask: (id: TaskSelect["id"], updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>> & { children?: TaskSelect["id"][] }) => Promise<void>;
   deleteTask: (id: TaskSelect["id"]) => Promise<void>;
   loadSubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
   generateAISubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
   refreshSubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
   userId: string | null;
   createSubtask: (parentId: TaskSelect["id"], newTask: Omit<NewTask, 'parentId'>) => Promise<void>;
+  restoreTask: (task: Task) => Promise<void>;
 };
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -33,9 +34,9 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     setTasks(prevTasks => [createdTask, ...prevTasks]); // Add new task to the beginning of the list
   }, []);
 
-  const updateTask = useCallback(async (id: TaskSelect["id"], updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>>) => {
+  const updateTask = useCallback(async (id: TaskSelect["id"], updates: Partial<Omit<Task, 'id' | 'createdAt' | 'updatedAt'>> & { children?: TaskSelect["id"][] }) => {
     const updatedTask = await updateTaskAction(id, updates);
-    setTasks(prevTasks => prevTasks.map(task => task.id === id ? { ...task, ...updatedTask } : task));
+    setTasks(prevTasks => prevTasks.map(task => task.id === id ? { ...task, ...updatedTask, children: updates.children ?? task.children } : task));
   }, []);
 
   const deleteTask = useCallback(async (id: TaskSelect["id"]) => {
@@ -145,6 +146,19 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     });
   }, []);
 
+  const restoreTask = useCallback(async (task: Task) => {
+    await createTaskAction(task);
+    if (task.parentId) {
+      const parentTask = tasks.find((t) => t.id === task.parentId);
+      if (parentTask) {
+        await updateTask(parentTask.id, {
+          children: [...parentTask.children, task.id],
+        });
+      }
+    }
+    setTasks((prevTasks) => [...prevTasks, task]);
+  }, [tasks, updateTask]);
+
   const value = {
     tasks,
     addTask,
@@ -155,6 +169,7 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     refreshSubtasks,
     userId: userId ?? null,
     createSubtask,
+    restoreTask,
   };
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
