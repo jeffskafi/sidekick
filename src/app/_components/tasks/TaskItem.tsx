@@ -6,7 +6,7 @@ import TaskCheckbox from "./TaskCheckbox";
 import TaskMenu from "./TaskMenu";
 import TaskDescription from "./TaskDescription";
 import AddSubtaskInput from "./AddSubtaskInput";
-import { useToast } from "~/components/ui/use-toast"
+import { useToast } from "~/components/ui/use-toast";
 import { Button } from "~/components/ui/button";
 
 interface TaskItemProps {
@@ -32,7 +32,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
     restoreTask,
   } = useTaskContext();
 
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +90,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         <Button
           variant="outline"
           size="sm"
+          className="rounded-full"
           onClick={() => handleUndoDelete(deletedTask)}
         >
           Undo
@@ -157,8 +158,8 @@ export default function TaskItem({ task, level }: TaskItemProps) {
         description,
         userId,
         completed: false,
-        status: 'todo',
-        priority: 'none',
+        status: "todo",
+        priority: "none",
         dueDate: null,
       });
       setIsAddingSubtask(false);
@@ -172,33 +173,45 @@ export default function TaskItem({ task, level }: TaskItemProps) {
 
   return (
     <li className="mb-4 py-1">
-      <div className="group flex items-center relative min-h-[3rem] py-2">
+      <div className="group relative flex min-h-[3rem] items-center py-2">
         <div
-          className="absolute left-0 top-0 bottom-0"
+          className="absolute bottom-0 left-0 top-0"
           style={{ width: `${level * INDENTATION_WIDTH}rem` }}
         ></div>
-        <div 
-          className="flex items-center absolute left-0 ml-2" 
-          style={{ 
+        <div
+          className="absolute left-0 ml-2 flex items-center"
+          style={{
             width: `${INDICATOR_SIZE + CHECKBOX_SIZE + 0.5}rem`,
-            marginLeft: `${level * INDENTATION_WIDTH}rem`
+            marginLeft: `${level * INDENTATION_WIDTH}rem`,
           }}
         >
-          <div className="relative" style={{ width: `${INDICATOR_SIZE}rem`, height: `${INDICATOR_SIZE}rem` }}>
+          <div
+            className="relative"
+            style={{
+              width: `${INDICATOR_SIZE}rem`,
+              height: `${INDICATOR_SIZE}rem`,
+            }}
+          >
             {hasChildren && (
               <div
                 className="absolute left-0 top-0 z-10 flex cursor-pointer items-center justify-center rounded-full bg-amber-500 text-xs font-semibold text-black shadow-md transition-all duration-200 ease-in-out hover:bg-amber-600 active:bg-amber-700 active:shadow-inner"
-                style={{ 
-                  width: `${INDICATOR_SIZE}rem`, 
+                style={{
+                  width: `${INDICATOR_SIZE}rem`,
                   height: `${INDICATOR_SIZE}rem`,
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.2)',
+                  boxShadow:
+                    "0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 2px rgba(255, 255, 255, 0.2)",
                 }}
                 onClick={() => setIsExpanded(!isExpanded)}
               >
                 {isExpanded ? (
-                  <ChevronUp size={18} className="stroke-2 drop-shadow-sm text-black" />
+                  <ChevronUp
+                    size={18}
+                    className="stroke-2 text-black drop-shadow-sm"
+                  />
                 ) : (
-                  <span className="text-base font-bold drop-shadow-sm text-black">{task.children.length}</span>
+                  <span className="text-base font-bold text-black drop-shadow-sm">
+                    {task.children.length}
+                  </span>
                 )}
               </div>
             )}
@@ -211,10 +224,10 @@ export default function TaskItem({ task, level }: TaskItemProps) {
             />
           </div>
         </div>
-        <div 
-          className="flex-grow flex items-center overflow-hidden pr-10" 
-          style={{ 
-            paddingLeft: `calc(${level * INDENTATION_WIDTH}rem + ${INDICATOR_SIZE}rem + ${CHECKBOX_SIZE}rem + 1rem)`
+        <div
+          className="flex flex-grow items-center overflow-hidden pr-10"
+          style={{
+            paddingLeft: `calc(${level * INDENTATION_WIDTH}rem + ${INDICATOR_SIZE}rem + ${CHECKBOX_SIZE}rem + 1rem)`,
           }}
         >
           <div className="w-full overflow-hidden">
@@ -227,7 +240,7 @@ export default function TaskItem({ task, level }: TaskItemProps) {
           </div>
         </div>
         {!isEditing && (
-          <div className="absolute right-0 top-0 h-full flex items-center">
+          <div className="absolute right-0 top-0 flex h-full items-center">
             <TaskMenu
               task={task}
               isGeneratingSubtasks={isGeneratingSubtasks}
