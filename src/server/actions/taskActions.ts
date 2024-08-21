@@ -12,22 +12,28 @@ import { generateSubtasksUserPrompt } from '~/prompts/generateSubtasksUserPrompt
 import { z } from 'zod';
 import { zodResponseFormat } from 'openai/helpers/zod';
 
+console.log('Initializing taskActions...');
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+console.log('OpenAI client initialized');
+
 export async function getTopLevelTasks(): Promise<Task[]> {
+  console.log('getTopLevelTasks called');
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
+  console.log('Fetching all tasks for user:', userId);
   const allTasks = await db
     .select()
     .from(tasks)
     .where(eq(tasks.userId, userId))
-    .orderBy(desc(tasks.createdAt)) // Sort by creation date, newest first
+    .orderBy(desc(tasks.createdAt))
     .execute();
 
+  console.log('Fetching task relationships');
   const relationships = await db
     .select()
     .from(taskRelationships)
@@ -36,7 +42,7 @@ export async function getTopLevelTasks(): Promise<Task[]> {
   const taskMap = new Map<string, Task>();
   const topLevelTasks: Task[] = [];
 
-  // Create Task objects and store them in the map
+  console.log('Processing tasks and relationships');
   allTasks.forEach(task => {
     taskMap.set(task.id, {
       ...task,
@@ -45,7 +51,6 @@ export async function getTopLevelTasks(): Promise<Task[]> {
     });
   });
 
-  // Establish parent-child relationships
   relationships.forEach(rel => {
     if (rel.parentTaskId !== null) {
       const childTask = taskMap.get(rel.childTaskId);
@@ -57,33 +62,33 @@ export async function getTopLevelTasks(): Promise<Task[]> {
     }
   });
 
-  // Collect top-level tasks
   taskMap.forEach(task => {
     if (task.parentId === null) {
       topLevelTasks.push(task);
     }
   });
 
+  console.log('Returning top level tasks, count:', topLevelTasks.length);
   return topLevelTasks;
 }
 
 export async function createTask(newTask: NewTask): Promise<Task> {
-  const { userId } = auth(); // Get the userId from the authenticated session
+  console.log('createTask called with:', newTask);
+  const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
-  // Ensure the userId from the auth matches the one in newTask
   if (newTask.userId !== userId) throw new Error('Unauthorized: User ID mismatch');
 
   try {
-    // Insert the task into the database
+    console.log('Inserting new task into database');
     const [insertedTask] = await db.insert(tasks).values(newTask).returning();
 
     if (!insertedTask) {
       throw new Error('Failed to insert task');
     }
 
-    // Handle parent-child relationship if parentId is provided
     if (newTask.parentId) {
+      console.log('Creating task relationship');
       const result = await db.insert(taskRelationships).values({
         parentTaskId: newTask.parentId,
         childTaskId: insertedTask.id,
@@ -94,7 +99,7 @@ export async function createTask(newTask: NewTask): Promise<Task> {
       }
     }
 
-    // Return the created task
+    console.log('Task created successfully:', insertedTask.id);
     return {
       ...insertedTask,
       parentId: newTask.parentId ?? null,
@@ -107,11 +112,12 @@ export async function createTask(newTask: NewTask): Promise<Task> {
 }
 
 export async function updateTask(id: TaskSelect['id'], updates: TaskUpdate): Promise<Task> {
+  console.log('updateTask called for task:', id, 'with updates:', updates);
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
   return await db.transaction(async (tx) => {
-    // Ensure the task belongs to the authenticated user and update it
+    console.log('Updating task in database');
     const [updatedTask] = await tx
       .update(tasks)
       .set({ ...updates, updatedAt: new Date() })
@@ -120,7 +126,7 @@ export async function updateTask(id: TaskSelect['id'], updates: TaskUpdate): Pro
 
     if (!updatedTask) throw new Error('Task not found, not owned by user, or failed to update');
 
-    // Get both child and parent relationships in one query
+    console.log('Fetching task relationships');
     const relationships = await tx
       .select()
       .from(taskRelationships)
@@ -131,6 +137,7 @@ export async function updateTask(id: TaskSelect['id'], updates: TaskUpdate): Pro
 
     const parentId = relationships.find(r => r.childTaskId === id)?.parentTaskId ?? null;
 
+    console.log('Task updated successfully:', updatedTask.id);
     return {
       ...updatedTask,
       parentId,
@@ -140,14 +147,16 @@ export async function updateTask(id: TaskSelect['id'], updates: TaskUpdate): Pro
 }
 
 export async function deleteTask(id: TaskSelect['id']): Promise<void> {
+  console.log('deleteTask called for task:', id);
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
+  console.log('Getting descendant task IDs');
   const descendantIds = await getDescendantTaskIds(id);
   const allTaskIds = [id, ...descendantIds];
 
   await db.transaction(async (tx) => {
-    // Delete all relationships
+    console.log('Deleting task relationships');
     await tx
       .delete(taskRelationships)
       .where(
@@ -157,7 +166,7 @@ export async function deleteTask(id: TaskSelect['id']): Promise<void> {
         )
       );
 
-    // Delete all tasks
+    console.log('Deleting tasks');
     await tx
       .delete(tasks)
       .where(
@@ -167,18 +176,23 @@ export async function deleteTask(id: TaskSelect['id']): Promise<void> {
         )
       );
   });
+
+  console.log('Task and its descendants deleted successfully');
 }
 
 async function getDescendantTaskIds(taskId: TaskSelect['id']): Promise<TaskSelect['id'][]> {
+  console.log('getDescendantTaskIds called for task:', taskId);
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
+  console.log('Fetching all tasks for user');
   const allTasks = await db
     .select()
     .from(tasks)
     .where(eq(tasks.userId, userId))
     .execute();
 
+  console.log('Fetching all task relationships');
   const relationships = await db
     .select()
     .from(taskRelationships)
@@ -186,8 +200,9 @@ async function getDescendantTaskIds(taskId: TaskSelect['id']): Promise<TaskSelec
 
   const taskMap = new Map(allTasks.map(task => [task.id, { ...task, children: [] as string[] }]));
 
+  console.log('Processing task relationships');
   relationships.forEach(rel => {
-    if (rel.parentTaskId) {  // Check if parentTaskId is not null
+    if (rel.parentTaskId) {
       const parentTask = taskMap.get(rel.parentTaskId);
       if (parentTask) {
         parentTask.children.push(rel.childTaskId);
@@ -201,14 +216,18 @@ async function getDescendantTaskIds(taskId: TaskSelect['id']): Promise<TaskSelec
     return [id, ...task.children.flatMap(collectDescendants)];
   }
 
-  return collectDescendants(taskId).filter(id => id !== taskId);
+  const descendants = collectDescendants(taskId).filter(id => id !== taskId);
+  console.log('Descendant tasks found:', descendants.length);
+  return descendants;
 }
 
 export async function moveTask(taskId: TaskSelect['id'], newParentId: TaskSelect['id'] | null): Promise<void> {
+  console.log('moveTask called for task:', taskId, 'to new parent:', newParentId);
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
   await db.transaction(async (tx) => {
+    console.log('Fetching task to be moved');
     const [task] = await tx
       .select()
       .from(tasks)
@@ -216,11 +235,13 @@ export async function moveTask(taskId: TaskSelect['id'], newParentId: TaskSelect
 
     if (!task) throw new Error('Task not found');
 
+    console.log('Deleting old task relationship');
     await tx
       .delete(taskRelationships)
       .where(eq(taskRelationships.childTaskId, taskId));
 
     if (newParentId !== null) {
+      console.log('Fetching new parent task');
       const [newParent] = await tx
         .select()
         .from(tasks)
@@ -228,18 +249,23 @@ export async function moveTask(taskId: TaskSelect['id'], newParentId: TaskSelect
 
       if (!newParent) throw new Error('New parent task not found');
 
+      console.log('Creating new task relationship');
       await tx.insert(taskRelationships).values({
         parentTaskId: newParentId,
         childTaskId: taskId,
       });
     }
   });
+
+  console.log('Task moved successfully');
 }
 
 export async function searchTasks(params: TaskSearchParams): Promise<Task[]> {
+  console.log('searchTasks called with params:', params);
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
+  console.log('Searching for tasks');
   const searchResults = await db.select()
     .from(tasks)
     .where(and(
@@ -252,8 +278,10 @@ export async function searchTasks(params: TaskSearchParams): Promise<Task[]> {
     ))
     .execute();
 
-  // Fetch relationships for the found tasks
+  console.log('Search results found:', searchResults.length);
+
   const taskIds = searchResults.map(task => task.id);
+  console.log('Fetching relationships for found tasks');
   const relationships = await db
     .select()
     .from(taskRelationships)
@@ -263,7 +291,7 @@ export async function searchTasks(params: TaskSearchParams): Promise<Task[]> {
     ))
     .execute();
 
-  // Map the results to include parentId and children
+  console.log('Mapping search results with relationships');
   return searchResults.map(task => ({
     ...task,
     parentId: relationships.find(r => r.childTaskId === task.id)?.parentTaskId ?? null,
@@ -274,26 +302,27 @@ export async function searchTasks(params: TaskSearchParams): Promise<Task[]> {
 }
 
 async function getAncestralChain(taskId: TaskSelect['id'], userId: string): Promise<TaskNode | null> {
-  // Fetch all tasks for the user in one query
+  console.log('getAncestralChain called for task:', taskId);
+  console.log('Fetching all tasks for user');
   const allTasks = await db
     .select()
     .from(tasks)
     .where(eq(tasks.userId, userId))
     .execute();
 
-  // Fetch all relationships in one query
+  console.log('Fetching all relationships');
   const allRelationships = await db
     .select()
     .from(taskRelationships)
     .execute();
 
-  // Create a map of tasks and their relationships
+  console.log('Creating task map');
   const taskMap = new Map<string, TaskNode>();
   allTasks.forEach(task => {
     taskMap.set(task.id, { ...task, parentId: null, children: [] });
   });
 
-  // Establish parent-child relationships
+  console.log('Establishing parent-child relationships');
   allRelationships.forEach(rel => {
     if (rel.parentTaskId !== null) {
       const child = taskMap.get(rel.childTaskId);
@@ -305,7 +334,6 @@ async function getAncestralChain(taskId: TaskSelect['id'], userId: string): Prom
     }
   });
 
-  // Function to recursively build the ancestral chain
   function buildChain(id: string): TaskNode | null {
     const task = taskMap.get(id);
     if (!task) return null;
@@ -322,19 +350,25 @@ async function getAncestralChain(taskId: TaskSelect['id'], userId: string): Prom
     return task;
   }
 
-  return buildChain(taskId);
+  console.log('Building ancestral chain');
+  const chain = buildChain(taskId);
+  console.log('Ancestral chain built');
+  return chain;
 }
 
 export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
+  console.log('generateSubtasks called for task:', taskId);
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
+  console.log('Checking rate limit');
   const { success } = await rateLimit.limit(userId);
 
   if (!success) {
     throw new Error('Rate limit exceeded');
   }
 
+  console.log('Fetching parent task');
   const [parentTask] = await db
     .select()
     .from(tasks)
@@ -342,6 +376,7 @@ export async function generateSubtasks(taskId: TaskSelect['id']): Promise<Task[]
 
   if (!parentTask) throw new Error('Task not found');
 
+  console.log('Getting ancestral chain');
   const ancestralChain = await getAncestralChain(taskId, userId);
 
   if (!ancestralChain) throw new Error('Task not found');
@@ -358,6 +393,7 @@ const Subtask = zodResponseFormat(
   'generated_subtasks'
 );
 
+  console.log('Calling OpenAI API');
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-2024-08-06",
     response_format: Subtask,
@@ -390,9 +426,11 @@ const Subtask = zodResponseFormat(
       throw new Error('Invalid subtasks format in OpenAI response');
     }
 
+    console.log('Creating subtasks in database');
     const subtasks = await db.transaction(async (tx) => {
       const createdSubtasks: Task[] = [];
       for (const subtaskInput of parsedContent.subtasks) {
+        console.log('Inserting subtask:', subtaskInput.description);
         const [insertedTask] = await tx
           .insert(tasks)
           .values({
@@ -407,6 +445,7 @@ const Subtask = zodResponseFormat(
 
         if (!insertedTask) throw new Error('Failed to insert subtask');
 
+        console.log('Creating task relationship for subtask:', insertedTask.id);
         await tx.insert(taskRelationships).values({
           parentTaskId: parentTask.id,
           childTaskId: insertedTask.id,
@@ -465,10 +504,16 @@ export async function refreshSubtasks(taskId: TaskSelect['id']): Promise<Task[]>
 }
 
 export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
+  console.log('getSubtasks called with taskId:', taskId);
   const { userId } = auth();
-  if (!userId) throw new Error('Unauthorized');
+  if (!userId) {
+    console.log('Unauthorized: userId not found');
+    throw new Error('Unauthorized');
+  }
+  console.log('Authorized user:', userId);
 
   // Fetch subtasks
+  console.log('Fetching subtasks');
   const subtasks = await db
     .select()
     .from(tasks)
@@ -477,19 +522,30 @@ export async function getSubtasks(taskId: TaskSelect['id']): Promise<Task[]> {
       eq(taskRelationships.childTaskId, tasks.id)
     )
     .where(eq(taskRelationships.parentTaskId, taskId))
+  console.log('Fetched subtasks:', subtasks);
 
   // Fetch child relationships for all subtasks in one query
+  console.log('Fetching child relationships');
   const childRelationships = await db
     .select()
     .from(taskRelationships)
     .where(inArray(taskRelationships.parentTaskId, subtasks.map(t => t.tasks.id)));
+  console.log('Fetched child relationships:', childRelationships);
 
   // Map subtasks to Task type
-  return subtasks.map(subtask => ({
-    ...subtask.tasks,
-    parentId: taskId,
-    children: childRelationships
+  console.log('Mapping subtasks to Task type');
+  const mappedSubtasks = subtasks.map(subtask => {
+    const children = childRelationships
       .filter(r => r.parentTaskId === subtask.tasks.id)
-      .map(r => r.childTaskId),
-  }));
+      .map(r => r.childTaskId);
+    console.log(`Mapped subtask ${subtask.tasks.id} with ${children.length} children`);
+    return {
+      ...subtask.tasks,
+      parentId: taskId,
+      children,
+    };
+  });
+
+  console.log('Returning mapped subtasks');
+  return mappedSubtasks;
 }
