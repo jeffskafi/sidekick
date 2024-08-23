@@ -63,17 +63,6 @@ export default function TaskItem({ task, level }: TaskItemProps) {
   const handleDelete = async () => {
     await deleteTask(task.id);
     setIsExpanded(false);
-
-    // If this task has a parent, update the parent's children
-    if (task.parentId) {
-      const parentTask = tasks.find((t) => t.id === task.parentId);
-      if (parentTask) {
-        const updatedParentChildren = parentTask.children.filter(
-          (childId) => childId !== task.id,
-        );
-        await updateTask(parentTask.id, { children: updatedParentChildren });
-      }
-    }
   };
 
   const handleGenerateSubtasks = async () => {

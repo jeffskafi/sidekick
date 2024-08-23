@@ -39,8 +39,16 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
   }, []);
 
   const deleteTask = useCallback(async (id: TaskSelect["id"]) => {
-    await deleteTaskAction(id);
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== id));
+    const { deletedIds, updatedParent } = await deleteTaskAction(id);
+    setTasks(prevTasks => {
+      const updatedTasks = prevTasks.filter(task => !deletedIds.includes(task.id));
+      if (updatedParent) {
+        return updatedTasks.map(task => 
+          task.id === updatedParent.id ? updatedParent : task
+        );
+      }
+      return updatedTasks;
+    });
   }, []);
 
   const loadSubtasks = useCallback(async (taskId: TaskSelect["id"]) => {

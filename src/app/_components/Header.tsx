@@ -23,7 +23,7 @@ const Header = () => {
   const flagEnabled = useFeatureFlagEnabled("subscriptions");
 
   return (
-    <header className="sticky top-0 z-50 mb-0 bg-white dark:bg-dark-bg">
+    <header className="sticky top-0 z-50 mb-0 bg-white dark:bg-dark-bg h-16">
       <nav
         className="container mx-auto flex items-center justify-between px-4 py-2"
         style={{ width: "100%" }}

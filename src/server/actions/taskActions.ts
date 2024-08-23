@@ -139,14 +139,20 @@ export async function updateTask(id: TaskSelect['id'], updates: TaskUpdate): Pro
   });
 }
 
-export async function deleteTask(id: TaskSelect['id']): Promise<void> {
+export async function deleteTask(id: TaskSelect['id']): Promise<{ deletedIds: TaskSelect['id'][], updatedParent: Task | null }> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
   const descendantIds = await getDescendantTaskIds(id);
   const allTaskIds = [id, ...descendantIds];
 
-  await db.transaction(async (tx) => {
+  return await db.transaction(async (tx) => {
+    // Get the parent task before deletion
+    const [parentRelation] = await tx
+      .select()
+      .from(taskRelationships)
+      .where(eq(taskRelationships.childTaskId, id));
+
     // Delete all relationships
     await tx
       .delete(taskRelationships)
@@ -166,6 +172,30 @@ export async function deleteTask(id: TaskSelect['id']): Promise<void> {
           eq(tasks.userId, userId)
         )
       );
+
+    let updatedParent: Task | null = null;
+    if (parentRelation?.parentTaskId) {
+      // Update the parent task
+      const [parent] = await tx
+        .select()
+        .from(tasks)
+        .where(eq(tasks.id, parentRelation.parentTaskId));
+
+      if (parent) {
+        const updatedChildren = await tx
+          .select({ childId: taskRelationships.childTaskId })
+          .from(taskRelationships)
+          .where(eq(taskRelationships.parentTaskId, parent.id));
+
+        updatedParent = {
+          ...parent,
+          children: updatedChildren.map(child => child.childId),
+          parentId: null // We don't know the parent's parent here, so we set it to null
+        };
+      }
+    }
+
+    return { deletedIds: allTaskIds, updatedParent };
   });
 }
 
