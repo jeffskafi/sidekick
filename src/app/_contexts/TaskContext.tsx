@@ -20,7 +20,6 @@ type TaskContextType = {
   refreshSubtasks: (taskId: TaskSelect["id"]) => Promise<Task[]>;
   userId: string | null;
   createSubtask: (parentId: TaskSelect["id"], newTask: Omit<NewTask, 'parentId'>) => Promise<void>;
-  restoreTask: (task: Task) => Promise<void>;
 };
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -146,19 +145,6 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     });
   }, []);
 
-  const restoreTask = useCallback(async (task: Task) => {
-    await createTaskAction(task);
-    if (task.parentId) {
-      const parentTask = tasks.find((t) => t.id === task.parentId);
-      if (parentTask) {
-        await updateTask(parentTask.id, {
-          children: [...parentTask.children, task.id],
-        });
-      }
-    }
-    setTasks((prevTasks) => [...prevTasks, task]);
-  }, [tasks, updateTask]);
-
   const value = {
     tasks,
     addTask,
@@ -169,7 +155,6 @@ export function TaskProvider({ children, initialTasks }: { children: React.React
     refreshSubtasks,
     userId: userId ?? null,
     createSubtask,
-    restoreTask,
   };
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>;
