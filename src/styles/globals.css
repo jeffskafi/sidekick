@@ -140,67 +140,15 @@ img[src$=".svg"] {
   user-select: none;
 }
 
-/* Scrollbar styles */
-/* For Webkit browsers like Chrome, Safari */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: theme('colors.background.light');
-}
-
-::-webkit-scrollbar-thumb {
-  background: theme('colors.primary.light');
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: theme('colors.secondary.light');
-}
-
-/* For Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: theme('colors.primary.light') theme('colors.background.light');
-}
-
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-track {
-  background: theme('colors.background.dark');
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: theme('colors.primary.dark');
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: theme('colors.secondary.dark');
-}
-
-.dark * {
-  scrollbar-color: theme('colors.primary.dark') theme('colors.background.dark');
-}
-
 /* Hide scrollbar for Chrome, Safari and Opera */
-.scrollbar-hide::-webkit-scrollbar {
+::-webkit-scrollbar {
   display: none;
 }
 
 /* Hide scrollbar for IE, Edge and Firefox */
-.scrollbar-hide {
+* {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
-}
-
-/* Show scrollbar when scrolling */
-.scrollbar-show::-webkit-scrollbar {
-  display: block;
-  width: 10px;
-}
-
-.scrollbar-show {
-  scrollbar-width: thin;
 }
 
 /* Keep the rest of your scrollbar styles */

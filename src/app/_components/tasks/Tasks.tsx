@@ -16,7 +16,7 @@ export default function Tasks({ initialTasks, userId }: TasksProps) {
       <div className="flex flex-col h-[calc(100vh-4rem)] bg-gray-50 dark:bg-dark-bg">
         <div 
           id="task-list"
-          className="flex-grow overflow-y-auto p-6 sm:p-8 md:p-12 scrollbar-hide"
+          className="flex-grow overflow-y-auto pt-0 px-6 sm:px-8 md:px-12 scrollbar-hide"
         >
           <div className="w-full max-w-3xl mx-auto">
             <TaskList />
