@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
-import { Palette, CreditCard } from "lucide-react";
+import { Palette, CreditCard, ExternalLink } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useDarkMode } from "~/app/_contexts/DarkModeContext";
 import { useFeatureFlagEnabled } from "posthog-js/react";
@@ -42,6 +42,15 @@ const Header = () => {
           </h1>
         </Link>
         <div className="flex items-center space-x-4">
+          <a
+            href="https://chatgpt.com/g/g-DMgdGagJK-sidekick"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-1 rounded-full bg-primary-light px-3 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-secondary-light dark:bg-primary-dark dark:hover:bg-secondary-dark"
+          >
+            <span>Try on ChatGPT</span>
+            <ExternalLink size={14} />
+          </a>
           {isSignedIn ? (
             <UserButton
               afterSignOutUrl="/"
