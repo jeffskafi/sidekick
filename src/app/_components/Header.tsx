@@ -23,7 +23,7 @@ const Header = () => {
   const flagEnabled = useFeatureFlagEnabled("subscriptions");
 
   return (
-    <header className="sticky top-0 z-50 mb-0 bg-white dark:bg-dark-bg h-16">
+    <header className="sticky top-0 z-50 mb-0 h-16 bg-white dark:bg-dark-bg">
       <nav
         className="container mx-auto flex items-center justify-between px-4 py-2"
         style={{ width: "100%" }}
@@ -42,41 +42,43 @@ const Header = () => {
           </h1>
         </Link>
         <div className="flex items-center space-x-4">
-          <a
-            href="https://chatgpt.com/g/g-DMgdGagJK-sidekick"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center space-x-1 rounded-full bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 px-3 py-2 text-sm font-medium text-white transition-colors duration-300"
-          >
-            <span>Try on ChatGPT</span>
-            <ExternalLink size={14} />
-          </a>
           {isSignedIn ? (
-            <UserButton
-              afterSignOutUrl="/"
-              appearance={{
-                elements: {
-                  avatarBox: "w-10 h-10",
-                },
-              }}
-            >
-              <UserButton.UserProfilePage
-                label="Appearance"
-                url="appearance"
-                labelIcon={<Palette size={16} />}
+            <>
+              <a
+                href="https://chatgpt.com/g/g-DMgdGagJK-sidekick"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-1 rounded-full bg-amber-500 px-3 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700"
               >
-                <AppearancePage />
-              </UserButton.UserProfilePage>
-              {flagEnabled && (
+                <span>Try on ChatGPT</span>
+                <ExternalLink size={14} />
+              </a>
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "w-10 h-10",
+                  },
+                }}
+              >
                 <UserButton.UserProfilePage
-                  label="Subscription"
-                  url="subscription"
-                  labelIcon={<CreditCard size={16} />}
+                  label="Appearance"
+                  url="appearance"
+                  labelIcon={<Palette size={16} />}
                 >
-                  <SubscriptionPage />
+                  <AppearancePage />
                 </UserButton.UserProfilePage>
-              )}
-            </UserButton>
+                {flagEnabled && (
+                  <UserButton.UserProfilePage
+                    label="Subscription"
+                    url="subscription"
+                    labelIcon={<CreditCard size={16} />}
+                  >
+                    <SubscriptionPage />
+                  </UserButton.UserProfilePage>
+                )}
+              </UserButton>
+            </>
           ) : (
             <SignInButton mode="modal">
               <button className="rounded-full bg-primary-light px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-secondary-light dark:bg-primary-dark dark:hover:bg-secondary-dark">
