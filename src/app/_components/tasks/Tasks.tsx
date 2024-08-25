@@ -18,7 +18,7 @@ export default function Tasks({ initialTasks, userId }: TasksProps) {
           id="task-list"
           className="flex-grow overflow-y-auto pt-0 px-6 sm:px-8 md:px-12 scrollbar-hide"
         >
-          <div className="w-full max-w-3xl mx-auto h-full flex items-center justify-center">
+          <div className="w-full max-w-3xl mx-auto h-full">
             <TaskList />
           </div>
         </div>

@@ -11,11 +11,15 @@ export default function TaskList() {
   }, [tasks]);
 
   if (topLevelTasks.length === 0) {
-    return <EmptyState />;
+    return (
+      <div className="h-full flex items-center justify-center">
+        <EmptyState />
+      </div>
+    );
   }
 
   return (
-    <div className="task-list w-full">
+    <div className="task-list w-full py-4">
       <ul className="space-y-2 w-full">
         {topLevelTasks.map((task) => (
           <TaskItem
