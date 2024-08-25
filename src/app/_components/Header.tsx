@@ -46,7 +46,7 @@ const Header = () => {
             href="https://chatgpt.com/g/g-DMgdGagJK-sidekick"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center space-x-1 rounded-full bg-primary-light px-3 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-secondary-light dark:bg-primary-dark dark:hover:bg-secondary-dark"
+            className="flex items-center space-x-1 rounded-full bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 px-3 py-2 text-sm font-medium text-white transition-colors duration-300"
           >
             <span>Try on ChatGPT</span>
             <ExternalLink size={14} />
