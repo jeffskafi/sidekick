@@ -41,6 +41,12 @@ const Header = () => {
             Sidekick
           </h1>
         </Link>
+        <Link href="/tasks" className="rounded-full bg-blue-500 px-3 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">
+          Tasks
+        </Link>
+        <Link href="/mind-map" className="rounded-full bg-blue-500 px-3 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">
+          Mind Map
+        </Link>
         <div className="flex items-center space-x-4">
           {isSignedIn ? (
             <>

@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, useCallback } from "react";
 import type { Task, NewTask, TaskSelect } from "~/server/db/schema";
 import {
