@@ -1,5 +1,5 @@
 import { MindMapProvider } from '~/app/_contexts/MindMapContext';
-import MindMap from '~/app/_components/MindMap';
+import MindMap from '~/app/_components/mindMap/MindMap';
 
 export default function MindMapPage() {
   return (
