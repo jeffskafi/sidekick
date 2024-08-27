@@ -254,7 +254,6 @@ const MindMap: React.FC = () => {
             border: '1px solid black',
             borderRadius: '5px',
             padding: '5px',
-            transform: `scale(${1 / scale})`,
             transformOrigin: 'top left',
           }}
         >
