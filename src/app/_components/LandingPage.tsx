@@ -81,7 +81,7 @@ const Features: React.FC = () => {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+    <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark flex flex-col">
       <section className="pt-24 pb-12 sm:pt-32 sm:pb-20 md:pt-40 md:pb-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center text-center">
@@ -144,6 +144,14 @@ export default function LandingPage() {
           </SignUpButton>
         </div>
       </section>
+
+      <footer className="bg-background-light dark:bg-background-dark py-4 mt-auto">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-sm text-text-light dark:text-text-dark">
+            Made with ❤️ in Santa Monica | © {new Date().getFullYear()} Sidekick
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
