@@ -1,234 +1,182 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback, useState } from "react";
-import ForceGraph, {
-  type NodeObject,
-  type ForceGraphInstance,
-} from "force-graph";
-import { useMindMapContext } from "~/app/_contexts/MindMapContext";
-import * as d3 from "d3";
+import React, { useRef, useEffect, useState, useCallback } from "react";
+import { Stage, Layer, Circle, Line, Text } from "react-konva";
+import type Konva from "konva";
+import type { KonvaEventObject } from 'konva/lib/Node';
 
-interface Node extends NodeObject {
+interface Node {
   id: string;
-  name: string;
-  isRoot?: boolean;
-  isLoading?: boolean;
-  __bckgDimensions?: [number, number, number, number, number];
-}
-
-interface ContextMenuState {
-  visible: boolean;
   x: number;
   y: number;
-  nodeId: string | null;
+  text: string;
 }
 
-const NODE_R = 5; // Node radius
-const MAX_NODE_WIDTH = 150; // Maximum width of the node
-const MAX_NODE_HEIGHT = 40; // Maximum height of the node
-const LINK_DISTANCE = 60; // Desired distance between linked nodes
+interface Link {
+  from: string;
+  to: string;
+}
 
 const MindMap: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const graphRef = useRef<ForceGraphInstance | null>(null);
-  const { data, addNode, removeNode, generateRelatedWords } =
-    useMindMapContext();
-
-  const [contextMenu, setContextMenu] = useState<ContextMenuState>({
-    visible: false,
-    x: 0,
-    y: 0,
-    nodeId: null,
-  });
-
-  const handleMenuClick = useCallback(
-    (node: NodeObject, event: MouseEvent) => {
-      event.stopPropagation();
-      console.log("Menu clicked for node:", node.id);
-      setContextMenu({
-        visible: true,
-        x: event.clientX,
-        y: event.clientY,
-        nodeId: node.id as string,
-      });
-    },
-    []
-  );
-
-  const handleContextMenuAction = useCallback(
-    (action: 'expand' | 'remove') => {
-      if (contextMenu.nodeId) {
-        if (action === 'remove') {
-          removeNode(contextMenu.nodeId);
-        } else if (action === 'expand') {
-          // Wrap the async operation in a void function
-          void (async () => {
-            try {
-              const node = data.nodes.find(n => n.id === contextMenu.nodeId) as Node;
-              if (node && !node.isLoading) {
-                const relatedWords = await generateRelatedWords(node.name);
-                addNode(node.id, relatedWords);
-              }
-            } catch (error) {
-              console.error("Failed to generate related words:", error);
-            }
-          })();
-        }
-      }
-      setContextMenu({ ...contextMenu, visible: false });
-    },
-    [contextMenu, removeNode, addNode, generateRelatedWords, data.nodes]
-  );
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [nodes, setNodes] = useState<Node[]>([
+    { id: "root", x: 400, y: 300, text: "Root" }
+  ]);
+  const [links, setLinks] = useState<Link[]>([]);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    console.log("Initializing ForceGraph");
-
-    graphRef.current = ForceGraph()(containerRef.current)
-      .graphData(data)
-      .nodeId("id")
-      .nodeColor((node: NodeObject) =>
-        (node as Node).isRoot ? "#ff7f0e" : "#1f77b4"
-      )
-      .nodeVal(NODE_R)
-      .linkColor(() => "#999999")
-      .linkWidth(1)
-      .d3Force("link", d3.forceLink().id((d: d3.SimulationNodeDatum) => (d as Node).id).distance(LINK_DISTANCE))
-      .nodeCanvasObject((node, ctx, globalScale) => {
-        const typedNode = node as Node;
-        const label = typedNode.name;
-        const fontSize = 12 / globalScale;
-        ctx.font = `${fontSize}px Sans-Serif`;
-        
-        // Measure text width and apply ellipsis if necessary
-        let textWidth = ctx.measureText(label).width;
-        let displayLabel = label;
-        if (textWidth > MAX_NODE_WIDTH - 20) {
-          const ellipsisWidth = ctx.measureText('...').width;
-          const availableWidth = MAX_NODE_WIDTH - 20 - ellipsisWidth;
-          let truncatedLabel = '';
-          for (const char of label) {
-            if (ctx.measureText(truncatedLabel + char).width > availableWidth) {
-              break;
-            }
-            truncatedLabel += char;
-          }
-          displayLabel = truncatedLabel + '...';
-          textWidth = MAX_NODE_WIDTH - 20;
-        }
-
-        const nodeWidth = Math.min(textWidth + 20, MAX_NODE_WIDTH);
-        const nodeHeight = Math.min(fontSize + 10, MAX_NODE_HEIGHT);
-
-        // Draw pill shape
-        ctx.beginPath();
-        ctx.moveTo(node.x! - nodeWidth/2 + nodeHeight/2, node.y! - nodeHeight/2);
-        ctx.lineTo(node.x! + nodeWidth/2 - nodeHeight/2, node.y! - nodeHeight/2);
-        ctx.arc(node.x! + nodeWidth/2 - nodeHeight/2, node.y!, nodeHeight/2, -Math.PI/2, Math.PI/2);
-        ctx.lineTo(node.x! - nodeWidth/2 + nodeHeight/2, node.y! + nodeHeight/2);
-        ctx.arc(node.x! - nodeWidth/2 + nodeHeight/2, node.y!, nodeHeight/2, Math.PI/2, -Math.PI/2);
-        ctx.closePath();
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-        ctx.fill();
-
-        ctx.strokeStyle = typedNode.isRoot ? "#ff7f0e" : "#1f77b4";
-        ctx.stroke();
-
-        // Draw text
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = typedNode.isRoot ? "#ff7f0e" : "#1f77b4";
-        ctx.fillText(displayLabel, node.x!, node.y!);
-
-        // Draw menu button outside the node
-        const menuSize = 16;
-        const menuX = node.x! + nodeWidth / 2 + menuSize / 2 + 5;
-        const menuY = node.y!;
-        
-        ctx.fillStyle = "#666";
-        ctx.beginPath();
-        ctx.arc(menuX, menuY, menuSize / 2, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(menuX - menuSize / 4, menuY - 1, menuSize / 2, 2);
-        ctx.fillRect(menuX - menuSize / 4, menuY - 4, menuSize / 2, 2);
-        ctx.fillRect(menuX - menuSize / 4, menuY + 2, menuSize / 2, 2);
-
-        typedNode.__bckgDimensions = [nodeWidth, nodeHeight, menuX, menuY, menuSize];
-      })
-      .nodePointerAreaPaint((node, color, ctx) => {
-        const typedNode = node as Node;
-        const [nodeWidth, nodeHeight, menuX, menuY, menuSize] = typedNode.__bckgDimensions ?? [0, 0, 0, 0, 0];
-        
-        // Paint node area
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(node.x! - nodeWidth/2 + nodeHeight/2, node.y! - nodeHeight/2);
-        ctx.lineTo(node.x! + nodeWidth/2 - nodeHeight/2, node.y! - nodeHeight/2);
-        ctx.arc(node.x! + nodeWidth/2 - nodeHeight/2, node.y!, nodeHeight/2, -Math.PI/2, Math.PI/2);
-        ctx.lineTo(node.x! - nodeWidth/2 + nodeHeight/2, node.y! + nodeHeight/2);
-        ctx.arc(node.x! - nodeWidth/2 + nodeHeight/2, node.y!, nodeHeight/2, Math.PI/2, -Math.PI/2);
-        ctx.closePath();
-        ctx.fill();
-        
-        // Paint menu button area
-        ctx.beginPath();
-        ctx.arc(menuX, menuY, menuSize / 2, 0, 2 * Math.PI);
-        ctx.fill();
-      })
-      .onNodeClick((node, event) => {
-        console.log("Node clicked:", node.id);
-        const typedNode = node as Node;
-        const [,, menuX, menuY, menuSize] = typedNode.__bckgDimensions ?? [0, 0, 0, 0, 0];
-        
-        const graphPos = graphRef.current!.screen2GraphCoords(event.offsetX, event.offsetY);
-        const dx = graphPos.x - menuX;
-        const dy = graphPos.y - menuY;
-        
-        console.log("Click position:", dx, dy);
-        console.log("Menu position:", menuX, menuY);
-        console.log("Menu size:", menuSize);
-
-        if (dx * dx + dy * dy <= (menuSize / 2) * (menuSize / 2)) {
-          console.log("Menu click detected");
-          handleMenuClick(node, event);
-        } else {
-          console.log("Click on node body");
-          // Handle node body click if needed
-        }
+    const updateDimensions = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight,
       });
-
-    console.log("ForceGraph initialized");
-
-    return () => {
-      graphRef.current?.pauseAnimation();
     };
-  }, [data, handleMenuClick]);
 
-  console.log("Rendering MindMap component");
-  console.log("Context menu state:", contextMenu);
+    window.addEventListener("resize", updateDimensions);
+    updateDimensions();
+
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, []);
+
+  const handleNodeClick = useCallback((node: Node, e: KonvaEventObject<MouseEvent>) => {
+    e.cancelBubble = true;
+    setSelectedNode(node);
+    const stage = e.target.getStage();
+    const pointerPosition = stage?.getPointerPosition();
+    if (pointerPosition) {
+      setContextMenu({ x: pointerPosition.x, y: pointerPosition.y });
+    }
+    console.log('Node clicked:', node); // Add this line for debugging
+  }, []);
+
+  const handleStageClick = useCallback(() => {
+    setContextMenu(null);
+    setSelectedNode(null);
+  }, []);
+
+  const handleGenerate = useCallback(() => {
+    if (selectedNode) {
+      const newNodes: Node[] = [];
+      const newLinks: Link[] = [];
+      for (let i = 0; i < 3; i++) {
+        const angle = (Math.PI * 2 / 3) * i;
+        const newNode: Node = {
+          id: `${selectedNode.id}-${i}`,
+          x: selectedNode.x + Math.cos(angle) * 100,
+          y: selectedNode.y + Math.sin(angle) * 100,
+          text: `Child ${i + 1}`
+        };
+        newNodes.push(newNode);
+        newLinks.push({ from: selectedNode.id, to: newNode.id });
+      }
+      setNodes(prevNodes => [...prevNodes, ...newNodes]);
+      setLinks(prevLinks => [...prevLinks, ...newLinks]);
+    }
+    setContextMenu(null);
+  }, [selectedNode]);
+
+  const handleDelete = useCallback(() => {
+    if (selectedNode && selectedNode.id !== "root") {
+      setNodes(prevNodes => prevNodes.filter(node => node.id !== selectedNode.id));
+      setLinks(prevLinks => prevLinks.filter(link => link.from !== selectedNode.id && link.to !== selectedNode.id));
+    }
+    setContextMenu(null);
+    setSelectedNode(null);
+  }, [selectedNode]);
+
+  const handleMenuClick = useCallback((node: Node, e: KonvaEventObject<MouseEvent>) => {
+    e.cancelBubble = true;
+    setSelectedNode(node);
+    const stage = e.target.getStage();
+    const pointerPosition = stage?.getPointerPosition();
+    if (pointerPosition) {
+      setContextMenu({ x: pointerPosition.x, y: pointerPosition.y });
+    }
+  }, []);
 
   return (
     <>
-      <div ref={containerRef} className="w-full h-full" />
-      {contextMenu.visible && (
+      <Stage width={dimensions.width} height={dimensions.height} onClick={handleStageClick}>
+        <Layer>
+          {links.map(link => {
+            const fromNode = nodes.find(n => n.id === link.from);
+            const toNode = nodes.find(n => n.id === link.to);
+            if (fromNode && toNode) {
+              return (
+                <Line
+                  key={`${link.from}-${link.to}`}
+                  points={[fromNode.x, fromNode.y, toNode.x, toNode.y]}
+                  stroke="black"
+                  strokeWidth={1}
+                />
+              );
+            }
+            return null;
+          })}
+          {nodes.map(node => (
+            <React.Fragment key={node.id}>
+              <Circle
+                x={node.x}
+                y={node.y}
+                radius={30}
+                fill={node.id === "root" ? "lightblue" : "lightgreen"}
+                stroke="black"
+                strokeWidth={2}
+                onClick={(e: KonvaEventObject<MouseEvent>) => {
+                  console.log('Circle clicked:', node.id); // Add this line
+                  e.cancelBubble = true;
+                  handleNodeClick(node, e);
+                }}
+              />
+              <Text
+                x={node.x - 25}
+                y={node.y - 6}
+                text={node.text}
+                fontSize={12}
+                fill="black"
+                width={50}
+                align="center"
+              />
+              {/* Menu button */}
+              <Circle
+                x={node.x - 25}
+                y={node.y - 25}
+                radius={8}
+                fill="white"
+                stroke="black"
+                strokeWidth={1}
+                onClick={(e: KonvaEventObject<MouseEvent>) => handleMenuClick(node, e)}
+              />
+              <Text
+                x={node.x - 29}
+                y={node.y - 29}
+                text="☰"
+                fontSize={10}
+                fill="black"
+                onClick={(e: KonvaEventObject<MouseEvent>) => handleMenuClick(node, e)}
+              />
+            </React.Fragment>
+          ))}
+        </Layer>
+      </Stage>
+      {contextMenu && selectedNode && (
         <div
           style={{
             position: 'absolute',
-            top: `${contextMenu.y}px`,
-            left: `${contextMenu.x}px`,
+            top: contextMenu.y,
+            left: contextMenu.x,
             background: 'white',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            padding: '8px',
-            zIndex: 1000,
+            border: '1px solid black',
+            borderRadius: '5px',
+            padding: '5px',
           }}
         >
-          <button onClick={() => handleContextMenuAction('expand')}>Expand</button>
-          <button onClick={() => handleContextMenuAction('remove')}>Remove</button>
+          <button onClick={handleGenerate}>Generate</button>
+          {selectedNode.id !== "root" && (
+            <button onClick={handleDelete}>Delete</button>
+          )}
         </div>
       )}
     </>
