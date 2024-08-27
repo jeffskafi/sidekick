@@ -79,12 +79,25 @@ const MindMap: React.FC = () => {
 
   const handleDelete = useCallback(() => {
     if (selectedNode && selectedNode.id !== "root") {
-      setNodes(prevNodes => prevNodes.filter(node => node.id !== selectedNode.id));
-      setLinks(prevLinks => prevLinks.filter(link => link.from !== selectedNode.id && link.to !== selectedNode.id));
+      const nodesToDelete = new Set<string>();
+
+      const recursivelyFindNodesToDelete = (nodeId: string) => {
+        nodesToDelete.add(nodeId);
+        links.forEach(link => {
+          if (link.from === nodeId) {
+            recursivelyFindNodesToDelete(link.to);
+          }
+        });
+      };
+
+      recursivelyFindNodesToDelete(selectedNode.id);
+
+      setNodes(prevNodes => prevNodes.filter(node => !nodesToDelete.has(node.id)));
+      setLinks(prevLinks => prevLinks.filter(link => !nodesToDelete.has(link.from) && !nodesToDelete.has(link.to)));
     }
     setContextMenu(null);
     setSelectedNode(null);
-  }, [selectedNode]);
+  }, [selectedNode, links]);
 
   const handleMenuClick = useCallback((node: Node, e: KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
