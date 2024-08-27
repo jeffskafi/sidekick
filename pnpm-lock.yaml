@@ -143,6 +143,9 @@ dependencies:
   react-konva:
     specifier: ^18.2.10
     version: 18.2.10(konva@9.3.14)(react-dom@18.3.1)(react@18.3.1)
+  react-konva-utils:
+    specifier: ^1.0.6
+    version: 1.0.6(konva@9.3.14)(react-dom@18.3.1)(react@18.3.1)
   redis:
     specifier: ^4.7.0
     version: 4.7.0
@@ -7558,6 +7561,20 @@ packages:
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
+  /react-konva-utils@1.0.6(konva@9.3.14)(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-011+jyXwadFDkbIUdlTarKwbqME0ljX1vPeW5oyLQx4rtHdcsDr43tdOdSsMT3XpZyl8clgM9I/eK0lBuBuFHg==}
+    peerDependencies:
+      konva: ^8.3.5 || ^9.0.0
+      react: ^18.2.0
+      react-dom: ^18.2.0
+    dependencies:
+      konva: 9.3.14
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      react-konva: 18.2.10(konva@9.3.14)(react-dom@18.3.1)(react@18.3.1)
+      use-image: 1.1.1(react-dom@18.3.1)(react@18.3.1)
+    dev: false
+
   /react-konva@18.2.10(konva@9.3.14)(react-dom@18.3.1)(react@18.3.1):
     resolution: {integrity: sha512-ohcX1BJINL43m4ynjZ24MxFI1syjBdrXhqVxYVDw2rKgr3yuS0x/6m1Y2Z4sl4T/gKhfreBx8KHisd0XC6OT1g==}
     peerDependencies:
@@ -8549,6 +8566,16 @@ packages:
       '@types/react': 18.3.4
       react: 18.3.1
       tslib: 2.7.0
+    dev: false
+
+  /use-image@1.1.1(react-dom@18.3.1)(react@18.3.1):
+    resolution: {integrity: sha512-n4YO2k8AJG/BcDtxmBx8Aa+47kxY5m335dJiCQA5tTeVU4XdhrhqR6wT0WISRXwdMEOv5CSjqekDZkEMiiWaYQ==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+    dependencies:
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
     dev: false
 
   /use-sidecar@1.1.2(@types/react@18.3.4)(react@18.3.1):

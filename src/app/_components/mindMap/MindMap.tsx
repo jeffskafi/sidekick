@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState, useCallback } from "react";
 import { Stage, Layer, Circle, Line, Text } from "react-konva";
 import type Konva from "konva";
 import type { KonvaEventObject } from 'konva/lib/Node';
+import { Html } from "react-konva-utils";
 
 interface Node {
   id: string;
@@ -17,6 +18,17 @@ interface Link {
   to: string;
 }
 
+interface TextInputProps {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fontSize: number;
+  align: 'left' | 'center' | 'right';
+  defaultValue: string;
+  onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+}
+
 const MindMap: React.FC = () => {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
@@ -28,6 +40,7 @@ const MindMap: React.FC = () => {
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const stageRef = useRef<Konva.Stage>(null);
+  const [editingNode, setEditingNode] = useState<string | null>(null);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -161,6 +174,55 @@ const MindMap: React.FC = () => {
     }
   }, []);
 
+  const handleTextEdit = useCallback((nodeId: string, newText: string) => {
+    setNodes(prevNodes =>
+      prevNodes.map(node =>
+        node.id === nodeId ? { ...node, text: newText } : node
+      )
+    );
+    setEditingNode(null);
+  }, []);
+
+  const TextInput: React.FC<TextInputProps> = ({ x, y, width, height, fontSize, align, defaultValue, onBlur }) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, []);
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        inputRef.current?.blur();
+      }
+    };
+
+    return (
+      <Html>
+        <input
+          ref={inputRef}
+          style={{
+            position: 'absolute',
+            top: `${y}px`,
+            left: `${x}px`,
+            width: `${width}px`,
+            height: `${height}px`,
+            fontSize: `${fontSize}px`,
+            textAlign: align,
+            border: 'none',
+            background: 'transparent',
+            outline: 'none',
+          }}
+          defaultValue={defaultValue}
+          onBlur={onBlur}
+          onKeyDown={handleKeyDown}
+        />
+      </Html>
+    );
+  };
+
   return (
     <>
       <Stage
@@ -213,15 +275,29 @@ const MindMap: React.FC = () => {
                   handleNodeClick(node, e);
                 }}
               />
-              <Text
-                x={node.x - 25}
-                y={node.y - 6}
-                text={node.text}
-                fontSize={12}
-                fill="black"
-                width={50}
-                align="center"
-              />
+              {editingNode === node.id ? (
+                <TextInput
+                  x={node.x - 25}
+                  y={node.y - 6}
+                  width={50}
+                  height={12}
+                  fontSize={12}
+                  align="center"
+                  defaultValue={node.text}
+                  onBlur={(e) => handleTextEdit(node.id, e.target.value)}
+                />
+              ) : (
+                <Text
+                  x={node.x - 25}
+                  y={node.y - 6}
+                  text={node.text}
+                  fontSize={12}
+                  fill="black"
+                  width={50}
+                  align="center"
+                  onDblClick={() => setEditingNode(node.id)}
+                />
+              )}
               {/* Menu button */}
               <Circle
                 x={node.x - 25}
@@ -258,6 +334,7 @@ const MindMap: React.FC = () => {
           }}
         >
           <button onClick={handleGenerate}>Generate</button>
+          <button onClick={() => setEditingNode(selectedNode.id)}>Edit</button>
           {selectedNode.id !== "root" && (
             <button onClick={handleDelete}>Delete</button>
           )}
