@@ -19,12 +19,15 @@ interface Link {
 
 const MindMap: React.FC = () => {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
   const [nodes, setNodes] = useState<Node[]>([
     { id: "root", x: 400, y: 300, text: "Root" }
   ]);
   const [links, setLinks] = useState<Link[]>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const stageRef = useRef<Konva.Stage>(null);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -40,15 +43,56 @@ const MindMap: React.FC = () => {
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
+  const handleWheel = useCallback((e: KonvaEventObject<WheelEvent>) => {
+    e.evt.preventDefault();
+    const stage = e.target.getStage();
+    
+    if (!stage) {
+      return; // Exit the function if stage is null
+    }
+
+    const oldScale = stage.scaleX();
+    const pointerPosition = stage.getPointerPosition();
+
+    if (!pointerPosition) {
+      return; // Exit the function if pointerPosition is null
+    }
+
+    const mousePointTo = {
+      x: (pointerPosition.x - stage.x()) / oldScale,
+      y: (pointerPosition.y - stage.y()) / oldScale,
+    };
+
+    // Adjust the scale change based on the delta
+    const zoomSensitivity = 0.01; // Lower value for less sensitivity
+    const newScale = e.evt.deltaY < 0 
+      ? oldScale * (1 + zoomSensitivity) 
+      : oldScale / (1 + zoomSensitivity);
+
+    setScale(newScale);
+    setPosition({
+      x: pointerPosition.x - mousePointTo.x * newScale,
+      y: pointerPosition.y - mousePointTo.y * newScale,
+    });
+  }, []);
+
+  const handleDragStart = useCallback(() => {
+    setContextMenu(null);
+    setSelectedNode(null);
+  }, []);
+
   const handleNodeClick = useCallback((node: Node, e: KonvaEventObject<MouseEvent>) => {
     e.cancelBubble = true;
     setSelectedNode(node);
     const stage = e.target.getStage();
     const pointerPosition = stage?.getPointerPosition();
     if (pointerPosition) {
-      setContextMenu({ x: pointerPosition.x, y: pointerPosition.y });
+      setContextMenu({ 
+        x: pointerPosition.x, 
+        y: pointerPosition.y, 
+        nodeId: node.id  // Add this line
+      });
     }
-    console.log('Node clicked:', node); // Add this line for debugging
   }, []);
 
   const handleStageClick = useCallback(() => {
@@ -103,15 +147,41 @@ const MindMap: React.FC = () => {
     e.cancelBubble = true;
     setSelectedNode(node);
     const stage = e.target.getStage();
-    const pointerPosition = stage?.getPointerPosition();
-    if (pointerPosition) {
-      setContextMenu({ x: pointerPosition.x, y: pointerPosition.y });
+    if (stage) {
+      const menuButtonPosition = {
+        x: node.x - 25, // This is the x position of the menu button
+        y: node.y - 25, // This is the y position of the menu button
+      };
+      // Remove the unused stagePosition variable
+      setContextMenu({
+        x: menuButtonPosition.x,
+        y: menuButtonPosition.y,
+        nodeId: node.id
+      });
     }
   }, []);
 
   return (
     <>
-      <Stage width={dimensions.width} height={dimensions.height} onClick={handleStageClick}>
+      <Stage
+        width={dimensions.width}
+        height={dimensions.height}
+        onWheel={handleWheel}
+        scaleX={scale}
+        scaleY={scale}
+        x={position.x}
+        y={position.y}
+        draggable
+        onDragStart={handleDragStart}
+        onDragEnd={(e: KonvaEventObject<DragEvent>) => {
+          const stage = e.target.getStage();
+          if (stage) {
+            setPosition({ x: stage.x(), y: stage.y() });
+          }
+        }}
+        onClick={handleStageClick}
+        ref={stageRef}
+      >
         <Layer>
           {links.map(link => {
             const fromNode = nodes.find(n => n.id === link.from);
@@ -178,12 +248,14 @@ const MindMap: React.FC = () => {
         <div
           style={{
             position: 'absolute',
-            top: contextMenu.y,
-            left: contextMenu.x,
+            top: (contextMenu.y * scale) + position.y,
+            left: (contextMenu.x * scale) + position.x,
             background: 'white',
             border: '1px solid black',
             borderRadius: '5px',
             padding: '5px',
+            transform: `scale(${1 / scale})`,
+            transformOrigin: 'top left',
           }}
         >
           <button onClick={handleGenerate}>Generate</button>
