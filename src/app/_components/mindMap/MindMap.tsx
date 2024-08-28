@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import type { Node } from "./types";
 import ForceGraphComponent from "./DynamicForceGraph";
 import type { ForceGraphMethods } from "react-force-graph-2d";
 import NodeContextMenu from "./NodeContextMenu";
 import { useMindMapContext } from "~/app/_contexts/MindMapContext";
+import EditNodeModal from "./EditNodeModal";
 
 const MindMap: React.FC = () => {
   const {
@@ -13,6 +14,9 @@ const MindMap: React.FC = () => {
     handleDeleteNode,
     handleEditNode,
     handleGenerateChildren,
+    editingNode,
+    setEditingNode,
+    handleConfirmEdit,
   } = useMindMapContext();
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -84,6 +88,10 @@ const MindMap: React.FC = () => {
     [],
   );
 
+  useEffect(() => {
+    console.log('Graph data updated:', graphData);
+  }, [graphData]);
+
   return (
     <div className="relative h-screen w-screen bg-background-light dark:bg-background-dark">
       <ForceGraphComponent
@@ -106,6 +114,13 @@ const MindMap: React.FC = () => {
           onDelete={() => handleDeleteNode(contextMenu.node.id)}
           onEdit={() => handleEditNode(contextMenu.node)}
           onGenerate={() => handleGenerateChildren(contextMenu.node)}
+        />
+      )}
+      {editingNode && (
+        <EditNodeModal
+          node={editingNode}
+          onConfirm={(newLabel) => handleConfirmEdit(editingNode.id, newLabel)}
+          onCancel={() => setEditingNode(null)}
         />
       )}
     </div>

@@ -10,6 +10,9 @@ interface MindMapContextType {
   handleDeleteNode: (nodeId: string) => void;
   handleEditNode: (node: Node) => void;
   handleGenerateChildren: (node: Node) => Promise<void>;
+  editingNode: Node | null;
+  setEditingNode: React.Dispatch<React.SetStateAction<Node | null>>;
+  handleConfirmEdit: (nodeId: string, newLabel: string) => void;
 }
 
 const MindMapContext = createContext<MindMapContextType | undefined>(undefined);
@@ -19,6 +22,7 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
     nodes: [],
     links: [],
   });
+  const [editingNode, setEditingNode] = useState<Node | null>(null);
 
   useEffect(() => {
     setGraphData({
@@ -65,8 +69,39 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleEditNode = useCallback((node: Node) => {
-    console.log("Edit node:", node);
-    // Implement edit functionality here
+    setEditingNode(node);
+  }, []);
+
+  const handleConfirmEdit = useCallback((nodeId: string, newLabel: string) => {
+    setGraphData((prevData) => {
+      const nodeBeforeUpdate = prevData.nodes.find(node => node.id === nodeId);
+      console.log('Node before update:', nodeBeforeUpdate);
+
+      const updatedData = {
+        ...prevData,
+        nodes: prevData.nodes.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                label: newLabel,
+                name: newLabel,
+                x: node.x,
+                y: node.y,
+                vx: 0,
+                vy: 0,
+                fx: node.x,
+                fy: node.y,
+              }
+            : node
+        ),
+      };
+
+      const nodeAfterUpdate = updatedData.nodes.find(node => node.id === nodeId);
+      console.log('Node after update:', nodeAfterUpdate);
+
+      return updatedData;
+    });
+    setEditingNode(null);
   }, []);
 
   const handleGenerateChildren = useCallback(async (node: Node) => {
@@ -107,6 +142,9 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
     handleDeleteNode,
     handleEditNode,
     handleGenerateChildren,
+    editingNode,
+    setEditingNode,
+    handleConfirmEdit,
   };
 
   return (
