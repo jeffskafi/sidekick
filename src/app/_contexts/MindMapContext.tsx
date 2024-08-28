@@ -1,150 +1,97 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { generateRelatedWords as generateRelatedWordsAction } from "~/server/actions/mindMapActions";
-import type { GraphData, Node, Link } from "~/app/_components/mindMap/types";
+import React, { createContext, useContext, useState, useCallback } from "react";
+import * as mindMapActions from "~/server/actions/mindMapActions";
+import type { MindMap, MindMapNode, MindMapLink } from "~/server/db/schema";
 
 interface MindMapContextType {
-  graphData: GraphData;
-  setGraphData: React.Dispatch<React.SetStateAction<GraphData>>;
-  handleDeleteNode: (nodeId: string) => void;
-  handleEditNode: (node: Node) => void;
-  handleGenerateChildren: (node: Node) => Promise<void>;
-  editingNode: Node | null;
-  setEditingNode: React.Dispatch<React.SetStateAction<Node | null>>;
-  handleConfirmEdit: (nodeId: string, newLabel: string) => void;
+  mindMap: MindMap | null;
+  nodes: MindMapNode[];
+  links: MindMapLink[];
+  loadMindMap: (mindMapId: string) => Promise<void>;
+  createMindMap: (name: string) => Promise<MindMap>;
+  addNode: (label: string, x?: number, y?: number) => Promise<MindMapNode>;
+  updateNode: (nodeId: string, label: string, x?: number, y?: number) => Promise<MindMapNode>;
+  deleteNode: (nodeId: string) => Promise<void>;
+  addLink: (sourceId: string, targetId: string) => Promise<MindMapLink>;
+  generateRelatedWords: (word: string) => Promise<string[]>;
+  deleteMindMap: (mindMapId: string) => Promise<void>;
 }
 
 const MindMapContext = createContext<MindMapContextType | undefined>(undefined);
 
 export function MindMapProvider({ children }: { children: React.ReactNode }) {
-  const [graphData, setGraphData] = useState<GraphData>({
-    nodes: [],
-    links: [],
-  });
-  const [editingNode, setEditingNode] = useState<Node | null>(null);
+  const [mindMap, setMindMap] = useState<MindMap | null>(null);
+  const [nodes, setNodes] = useState<MindMapNode[]>([]);
+  const [links, setLinks] = useState<MindMapLink[]>([]);
 
-  useEffect(() => {
-    setGraphData({
-      nodes: [{ id: "root", label: "Root", name: "Root" }],
-      links: [],
-    });
+  const loadMindMap = useCallback(async (mindMapId: string) => {
+    const data = await mindMapActions.getMindMap(mindMapId);
+    setMindMap(data.mindMap);
+    setNodes(data.nodes);
+    setLinks(data.links);
   }, []);
 
-  const handleDeleteNode = useCallback((nodeId: string) => {
-    setGraphData((prevData) => {
-      const nodesToDelete = new Set<string>();
-      const linksToDelete = new Set<string>();
-
-      const deleteRecursively = (id: string) => {
-        nodesToDelete.add(id);
-        prevData.links.forEach((link) => {
-          const sourceId = typeof link.source === "object" ? link.source.id : link.source;
-          const targetId = typeof link.target === "object" ? link.target.id : link.target;
-
-          if (targetId === id) {
-            const linkId = `${sourceId}-${targetId}`;
-            linksToDelete.add(linkId);
-          }
-
-          if (sourceId === id) {
-            const linkId = `${sourceId}-${targetId}`;
-            linksToDelete.add(linkId);
-            deleteRecursively(targetId);
-          }
-        });
-      };
-
-      deleteRecursively(nodeId);
-
-      return {
-        nodes: prevData.nodes.filter((node) => !nodesToDelete.has(node.id)),
-        links: prevData.links.filter((link) => {
-          const sourceId = typeof link.source === "object" ? link.source.id : link.source;
-          const targetId = typeof link.target === "object" ? link.target.id : link.target;
-          return !linksToDelete.has(`${sourceId}-${targetId}`);
-        }),
-      };
-    });
+  const createMindMap = useCallback(async (name: string) => {
+    const newMindMap = await mindMapActions.createMindMap(name);
+    setMindMap(newMindMap);
+    setNodes([]);
+    setLinks([]);
+    return newMindMap;
   }, []);
 
-  const handleEditNode = useCallback((node: Node) => {
-    setEditingNode(node);
+  const addNode = useCallback(async (label: string, x?: number, y?: number) => {
+    if (!mindMap) throw new Error('No mind map loaded');
+    const newNode = await mindMapActions.addNodeToMindMap(mindMap.id, label, x, y);
+    setNodes(prev => [...prev, newNode]);
+    return newNode;
+  }, [mindMap]);
+
+  const updateNode = useCallback(async (nodeId: string, label: string, x?: number, y?: number) => {
+    const updatedNode = await mindMapActions.updateNode(nodeId, label, x, y);
+    setNodes(prev => prev.map(node => node.id === nodeId ? updatedNode : node));
+    return updatedNode;
   }, []);
 
-  const handleConfirmEdit = useCallback((nodeId: string, newLabel: string) => {
-    setGraphData((prevData) => {
-      const nodeBeforeUpdate = prevData.nodes.find(node => node.id === nodeId);
-      console.log('Node before update:', nodeBeforeUpdate);
-
-      const updatedData = {
-        ...prevData,
-        nodes: prevData.nodes.map((node) =>
-          node.id === nodeId
-            ? {
-                ...node,
-                label: newLabel,
-                name: newLabel,
-                x: node.x,
-                y: node.y,
-                vx: 0,
-                vy: 0,
-                fx: node.x,
-                fy: node.y,
-              }
-            : node
-        ),
-      };
-
-      const nodeAfterUpdate = updatedData.nodes.find(node => node.id === nodeId);
-      console.log('Node after update:', nodeAfterUpdate);
-
-      return updatedData;
-    });
-    setEditingNode(null);
+  const deleteNode = useCallback(async (nodeId: string) => {
+    await mindMapActions.deleteNode(nodeId);
+    setNodes(prev => prev.filter(node => node.id !== nodeId));
+    setLinks(prev => prev.filter(link => link.sourceId !== nodeId && link.targetId !== nodeId));
   }, []);
 
-  const handleGenerateChildren = useCallback(async (node: Node) => {
-    const relatedWords = await generateRelatedWordsAction(node.label);
+  const addLink = useCallback(async (sourceId: string, targetId: string) => {
+    if (!mindMap) throw new Error('No mind map loaded');
+    const newLink = await mindMapActions.addLinkToMindMap(mindMap.id, sourceId, targetId);
+    setLinks(prev => [...prev, newLink]);
+    return newLink;
+  }, [mindMap]);
 
-    setGraphData((prevData) => {
-      const newNodes: Node[] = relatedWords.map((word, index) => ({
-        id: `${node.id}-${index}`,
-        label: word,
-        name: word,
-      }));
+  const generateRelatedWords = useCallback(async (word: string) => {
+    if (!mindMap) throw new Error('No mind map loaded');
+    const relatedWords = await mindMapActions.generateRelatedWords(word, mindMap.id);
+    await loadMindMap(mindMap.id); // Refresh the mind map data after generating related words
+    return relatedWords;
+  }, [mindMap, loadMindMap]);
 
-      const newLinks: Link[] = newNodes.map((newNode) => ({
-        source: node.id,
-        target: newNode.id,
-      }));
-
-      const existingChildrenIds = prevData.links
-        .filter((link) => link.source === node.id)
-        .map((link) => link.target as string);
-
-      return {
-        nodes: [
-          ...prevData.nodes.filter((n) => !existingChildrenIds.includes(n.id)),
-          ...newNodes,
-        ],
-        links: [
-          ...prevData.links.filter((link) => link.source !== node.id),
-          ...newLinks,
-        ],
-      };
-    });
+  const deleteMindMap = useCallback(async (mindMapId: string) => {
+    await mindMapActions.deleteMindMap(mindMapId);
+    setMindMap(null);
+    setNodes([]);
+    setLinks([]);
   }, []);
 
   const value = {
-    graphData,
-    setGraphData,
-    handleDeleteNode,
-    handleEditNode,
-    handleGenerateChildren,
-    editingNode,
-    setEditingNode,
-    handleConfirmEdit,
+    mindMap,
+    nodes,
+    links,
+    loadMindMap,
+    createMindMap,
+    addNode,
+    updateNode,
+    deleteNode,
+    addLink,
+    generateRelatedWords,
+    deleteMindMap,
   };
 
   return (
