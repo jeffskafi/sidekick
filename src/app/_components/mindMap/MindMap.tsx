@@ -1,346 +1,227 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useCallback } from "react";
-import { Stage, Layer, Circle, Line, Text } from "react-konva";
-import type Konva from "konva";
-import type { KonvaEventObject } from 'konva/lib/Node';
-import { Html } from "react-konva-utils";
-
-interface Node {
-  id: string;
-  x: number;
-  y: number;
-  text: string;
-}
-
-interface Link {
-  from: string;
-  to: string;
-}
-
-interface TextInputProps {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  fontSize: number;
-  align: 'left' | 'center' | 'right';
-  defaultValue: string;
-  onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
-}
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { generateRelatedWords } from "~/server/actions/mindMapActions";
+import type { Link, GraphData } from "./DynamicForceGraph";
+import NodeContextMenu from "./NodeContextMenu";
+import type { Node } from "./types";
+import ForceGraphComponent from "./DynamicForceGraph";
+import type { ForceGraphMethods } from "react-force-graph-2d";
 
 const MindMap: React.FC = () => {
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId: string } | null>(null);
-  const [nodes, setNodes] = useState<Node[]>([
-    { id: "root", x: 400, y: 300, text: "Root" }
-  ]);
-  const [links, setLinks] = useState<Link[]>([]);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [scale, setScale] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const stageRef = useRef<Konva.Stage>(null);
-  const [editingNode, setEditingNode] = useState<string | null>(null);
+  const [graphData, setGraphData] = useState<GraphData>({
+    nodes: [],
+    links: [],
+  });
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    node: Node;
+  } | null>(null);
+  const graphRef = useRef<ForceGraphMethods>(null);
 
   useEffect(() => {
-    const updateDimensions = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    window.addEventListener("resize", updateDimensions);
-    updateDimensions();
-
-    return () => window.removeEventListener("resize", updateDimensions);
-  }, []);
-
-  const handleWheel = useCallback((e: KonvaEventObject<WheelEvent>) => {
-    e.evt.preventDefault();
-    const stage = e.target.getStage();
-    
-    if (!stage) {
-      return; // Exit the function if stage is null
-    }
-
-    const oldScale = stage.scaleX();
-    const pointerPosition = stage.getPointerPosition();
-
-    if (!pointerPosition) {
-      return; // Exit the function if pointerPosition is null
-    }
-
-    const mousePointTo = {
-      x: (pointerPosition.x - stage.x()) / oldScale,
-      y: (pointerPosition.y - stage.y()) / oldScale,
-    };
-
-    // Adjust the scale change based on the delta
-    const zoomSensitivity = 0.01; // Lower value for less sensitivity
-    const newScale = e.evt.deltaY < 0 
-      ? oldScale * (1 + zoomSensitivity) 
-      : oldScale / (1 + zoomSensitivity);
-
-    setScale(newScale);
-    setPosition({
-      x: pointerPosition.x - mousePointTo.x * newScale,
-      y: pointerPosition.y - mousePointTo.y * newScale,
+    setGraphData({
+      nodes: [{ id: "root", label: "Root", name: "Root" }],
+      links: [],
     });
   }, []);
 
-  const handleDragStart = useCallback(() => {
+  const handleNodeClick = (node: Node, event: MouseEvent) => {
+    event.preventDefault();
+    setContextMenu({ x: event.clientX, y: event.clientY, node });
+  };
+
+  const handleBackgroundClick = () => {
     setContextMenu(null);
-    setSelectedNode(null);
-  }, []);
+  };
 
-  const handleNodeClick = useCallback((node: Node, e: KonvaEventObject<MouseEvent>) => {
-    e.cancelBubble = true;
-    setSelectedNode(node);
-    const stage = e.target.getStage();
-    const pointerPosition = stage?.getPointerPosition();
-    if (pointerPosition) {
-      setContextMenu({ 
-        x: pointerPosition.x, 
-        y: pointerPosition.y, 
-        nodeId: node.id  // Add this line
-      });
-    }
-  }, []);
-
-  const handleStageClick = useCallback(() => {
+  const handleZoomPan = () => {
     setContextMenu(null);
-    setSelectedNode(null);
-  }, []);
+  };
 
-  const handleGenerate = useCallback(() => {
-    if (selectedNode) {
-      const newNodes: Node[] = [];
-      const newLinks: Link[] = [];
-      for (let i = 0; i < 3; i++) {
-        const angle = (Math.PI * 2 / 3) * i;
-        const newNode: Node = {
-          id: `${selectedNode.id}-${i}`,
-          x: selectedNode.x + Math.cos(angle) * 100,
-          y: selectedNode.y + Math.sin(angle) * 100,
-          text: `Child ${i + 1}`
-        };
-        newNodes.push(newNode);
-        newLinks.push({ from: selectedNode.id, to: newNode.id });
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        contextMenu &&
+        event.target instanceof Element &&
+        !event.target.closest(".context-menu")
+      ) {
+        setContextMenu(null);
       }
-      setNodes(prevNodes => [...prevNodes, ...newNodes]);
-      setLinks(prevLinks => [...prevLinks, ...newLinks]);
-    }
-    setContextMenu(null);
-  }, [selectedNode]);
+    };
 
-  const handleDelete = useCallback(() => {
-    if (selectedNode && selectedNode.id !== "root") {
+    document.addEventListener("click", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, [contextMenu]);
+
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    setGraphData((prevData) => {
       const nodesToDelete = new Set<string>();
+      const linksToDelete = new Set<string>();
 
-      const recursivelyFindNodesToDelete = (nodeId: string) => {
-        nodesToDelete.add(nodeId);
-        links.forEach(link => {
-          if (link.from === nodeId) {
-            recursivelyFindNodesToDelete(link.to);
+      const deleteRecursively = (id: string) => {
+        nodesToDelete.add(id);
+        prevData.links.forEach((link) => {
+          const sourceId =
+            typeof link.source === "object" ? link.source.id : link.source;
+          const targetId =
+            typeof link.target === "object" ? link.target.id : link.target;
+
+          // Delete link to parent
+          if (targetId === id) {
+            const linkId = `${sourceId}-${targetId}`;
+            linksToDelete.add(linkId);
+          }
+
+          // Delete links to children
+          if (sourceId === id) {
+            const linkId = `${sourceId}-${targetId}`;
+            linksToDelete.add(linkId);
+            deleteRecursively(targetId);
           }
         });
       };
 
-      recursivelyFindNodesToDelete(selectedNode.id);
+      deleteRecursively(nodeId);
 
-      setNodes(prevNodes => prevNodes.filter(node => !nodesToDelete.has(node.id)));
-      setLinks(prevLinks => prevLinks.filter(link => !nodesToDelete.has(link.from) && !nodesToDelete.has(link.to)));
-    }
-    setContextMenu(null);
-    setSelectedNode(null);
-  }, [selectedNode, links]);
-
-  const handleMenuClick = useCallback((node: Node, e: KonvaEventObject<MouseEvent>) => {
-    e.cancelBubble = true;
-    setSelectedNode(node);
-    const stage = e.target.getStage();
-    if (stage) {
-      const menuButtonPosition = {
-        x: node.x - 25, // This is the x position of the menu button
-        y: node.y - 25, // This is the y position of the menu button
-      };
-      // Remove the unused stagePosition variable
-      setContextMenu({
-        x: menuButtonPosition.x,
-        y: menuButtonPosition.y,
-        nodeId: node.id
+      const newNodes = prevData.nodes.filter(
+        (node) => !nodesToDelete.has(node.id),
+      );
+      const newLinks = prevData.links.filter((link) => {
+        const sourceId =
+          typeof link.source === "object" ? link.source.id : link.source;
+        const targetId =
+          typeof link.target === "object" ? link.target.id : link.target;
+        return !linksToDelete.has(`${sourceId}-${targetId}`);
       });
-    }
+
+      return {
+        nodes: newNodes,
+        links: newLinks,
+      };
+    });
+    setContextMenu(null);
   }, []);
 
-  const handleTextEdit = useCallback((nodeId: string, newText: string) => {
-    setNodes(prevNodes =>
-      prevNodes.map(node =>
-        node.id === nodeId ? { ...node, text: newText } : node
-      )
-    );
-    setEditingNode(null);
+  const handleEditNode = useCallback((node: Node) => {
+    console.log("Edit node:", node);
+    setContextMenu(null);
   }, []);
 
-  const TextInput: React.FC<TextInputProps> = ({ x, y, width, height, fontSize, align, defaultValue, onBlur }) => {
-    const inputRef = useRef<HTMLInputElement>(null);
+  const handleGenerateChildren = useCallback(async (node: Node) => {
+    const relatedWords = await generateRelatedWords(node.label);
 
-    useEffect(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
+    setGraphData((prevData) => {
+      const newNodes: Node[] = relatedWords.map((word, index) => ({
+        id: `${node.id}-${index}`,
+        label: word,
+        name: word,
+      }));
+
+      const newLinks: Link[] = newNodes.map((newNode) => ({
+        source: node.id,
+        target: newNode.id,
+      }));
+
+      // Remove existing children
+      const existingChildrenIds = prevData.links
+        .filter((link) => link.source === node.id)
+        .map((link) => link.target as string);
+
+      return {
+        nodes: [
+          ...prevData.nodes.filter((n) => !existingChildrenIds.includes(n.id)),
+          ...newNodes,
+        ],
+        links: [
+          ...prevData.links.filter((link) => link.source !== node.id),
+          ...newLinks,
+        ],
+      };
+    });
+
+    setContextMenu(null);
+  }, []);
+
+  const nodeCanvasObject = useCallback(
+    (node: Node, ctx: CanvasRenderingContext2D, globalScale: number) => {
+      const label = node.label;
+      const fontSize = 16 / globalScale;
+      ctx.font = `${fontSize}px Inter, sans-serif`;
+      const textWidth = ctx.measureText(label).width;
+      const bckgDimensions: [number, number] = [textWidth, fontSize].map(
+        (n) => n + fontSize * 0.8,
+      ) as [number, number];
+
+      ctx.fillStyle = "#FF7247";
+      ctx.beginPath();
+      ctx.roundRect(
+        (node.x ?? 0) - bckgDimensions[0] / 2,
+        (node.y ?? 0) - bckgDimensions[1] / 2,
+        bckgDimensions[0],
+        bckgDimensions[1],
+        5,
+      );
+      ctx.fill();
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#4A3000";
+      ctx.fillText(label, node.x ?? 0, node.y ?? 0);
+
+      node.__bckgDimensions = bckgDimensions;
+    },
+    [],
+  );
+
+  const nodePointerAreaPaint = useCallback(
+    (node: Node, color: string, ctx: CanvasRenderingContext2D) => {
+      const bckgDimensions = node.__bckgDimensions;
+      if (bckgDimensions) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.roundRect(
+          (node.x ?? 0) - bckgDimensions[0] / 2,
+          (node.y ?? 0) - bckgDimensions[1] / 2,
+          bckgDimensions[0],
+          bckgDimensions[1],
+          5,
+        );
+        ctx.fill();
       }
-    }, []);
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        inputRef.current?.blur();
-      }
-    };
-
-    return (
-      <Html>
-        <input
-          ref={inputRef}
-          style={{
-            position: 'absolute',
-            top: `${y}px`,
-            left: `${x}px`,
-            width: `${width}px`,
-            height: `${height}px`,
-            fontSize: `${fontSize}px`,
-            textAlign: align,
-            border: 'none',
-            background: 'transparent',
-            outline: 'none',
-          }}
-          defaultValue={defaultValue}
-          onBlur={onBlur}
-          onKeyDown={handleKeyDown}
-        />
-      </Html>
-    );
-  };
+    },
+    [],
+  );
 
   return (
-    <>
-      <Stage
-        width={dimensions.width}
-        height={dimensions.height}
-        onWheel={handleWheel}
-        scaleX={scale}
-        scaleY={scale}
-        x={position.x}
-        y={position.y}
-        draggable
-        onDragStart={handleDragStart}
-        onDragEnd={(e: KonvaEventObject<DragEvent>) => {
-          const stage = e.target.getStage();
-          if (stage) {
-            setPosition({ x: stage.x(), y: stage.y() });
-          }
-        }}
-        onClick={handleStageClick}
-        ref={stageRef}
-      >
-        <Layer>
-          {links.map(link => {
-            const fromNode = nodes.find(n => n.id === link.from);
-            const toNode = nodes.find(n => n.id === link.to);
-            if (fromNode && toNode) {
-              return (
-                <Line
-                  key={`${link.from}-${link.to}`}
-                  points={[fromNode.x, fromNode.y, toNode.x, toNode.y]}
-                  stroke="black"
-                  strokeWidth={1}
-                />
-              );
-            }
-            return null;
-          })}
-          {nodes.map(node => (
-            <React.Fragment key={node.id}>
-              <Circle
-                x={node.x}
-                y={node.y}
-                radius={30}
-                fill={node.id === "root" ? "lightblue" : "lightgreen"}
-                stroke="black"
-                strokeWidth={2}
-                onClick={(e: KonvaEventObject<MouseEvent>) => {
-                  console.log('Circle clicked:', node.id); // Add this line
-                  e.cancelBubble = true;
-                  handleNodeClick(node, e);
-                }}
-              />
-              {editingNode === node.id ? (
-                <TextInput
-                  x={node.x - 25}
-                  y={node.y - 6}
-                  width={50}
-                  height={12}
-                  fontSize={12}
-                  align="center"
-                  defaultValue={node.text}
-                  onBlur={(e) => handleTextEdit(node.id, e.target.value)}
-                />
-              ) : (
-                <Text
-                  x={node.x - 25}
-                  y={node.y - 6}
-                  text={node.text}
-                  fontSize={12}
-                  fill="black"
-                  width={50}
-                  align="center"
-                  onDblClick={() => setEditingNode(node.id)}
-                />
-              )}
-              {/* Menu button */}
-              <Circle
-                x={node.x - 25}
-                y={node.y - 25}
-                radius={8}
-                fill="white"
-                stroke="black"
-                strokeWidth={1}
-                onClick={(e: KonvaEventObject<MouseEvent>) => handleMenuClick(node, e)}
-              />
-              <Text
-                x={node.x - 29}
-                y={node.y - 29}
-                text="☰"
-                fontSize={10}
-                fill="black"
-                onClick={(e: KonvaEventObject<MouseEvent>) => handleMenuClick(node, e)}
-              />
-            </React.Fragment>
-          ))}
-        </Layer>
-      </Stage>
-      {contextMenu && selectedNode && (
-        <div
-          style={{
-            position: 'absolute',
-            top: (contextMenu.y * scale) + position.y,
-            left: (contextMenu.x * scale) + position.x,
-            background: 'white',
-            border: '1px solid black',
-            borderRadius: '5px',
-            padding: '5px',
-            transformOrigin: 'top left',
-          }}
-        >
-          <button onClick={handleGenerate}>Generate</button>
-          <button onClick={() => setEditingNode(selectedNode.id)}>Edit</button>
-          {selectedNode.id !== "root" && (
-            <button onClick={handleDelete}>Delete</button>
-          )}
-        </div>
+    <div className="relative h-screen w-screen bg-background-light dark:bg-background-dark">
+      <ForceGraphComponent
+        ref={graphRef}
+        graphData={graphData}
+        nodeId="id"
+        nodeLabel="label"
+        nodeCanvasObject={nodeCanvasObject}
+        nodePointerAreaPaint={nodePointerAreaPaint}
+        onNodeClick={handleNodeClick}
+        onBackgroundClick={handleBackgroundClick}
+        onZoomEnd={handleZoomPan}
+        linkColor={() => "#FFA07A"}
+        linkWidth={2}
+      />
+      {contextMenu && (
+        <NodeContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onDelete={() => handleDeleteNode(contextMenu.node.id)}
+          onEdit={() => handleEditNode(contextMenu.node)}
+          onGenerate={() => handleGenerateChildren(contextMenu.node)}
+        />
       )}
-    </>
+    </div>
   );
 };
 

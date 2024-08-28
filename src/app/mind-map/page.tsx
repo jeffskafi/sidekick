@@ -1,12 +1,10 @@
-import { MindMapProvider } from '~/app/_contexts/MindMapContext';
-import MindMap from '~/app/_components/mindMap/MindMap';
+import dynamic from 'next/dynamic';
+
+const DynamicMindMap = dynamic(() => import('~/app/_components/mindMap/MindMap'), { 
+  ssr: false,
+  loading: () => <div>Loading...</div>
+});
 
 export default function MindMapPage() {
-  return (
-    <div className="h-screen w-screen">
-      <MindMapProvider>
-        <MindMap />
-      </MindMapProvider>
-    </div>
-  );
+  return <DynamicMindMap />;
 }

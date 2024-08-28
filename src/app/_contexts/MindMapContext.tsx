@@ -2,26 +2,10 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { generateRelatedWords as generateRelatedWordsAction } from "~/server/actions/mindMapActions";
-
-interface Node {
-  id: string;
-  name: string;
-  isRoot?: boolean;
-  isLoading?: boolean;
-}
-
-interface Link {
-  source: string;
-  target: string;
-}
-
-interface Data {
-  nodes: Node[];
-  links: Link[];
-}
+import type { GraphData } from "~/app/_components/mindMap/types";
 
 interface MindMapContextType {
-  data: Data;
+  data: GraphData;
   addNode: (parentId: string, words: string[]) => void;
   removeNode: (nodeId: string) => void;
   generateRelatedWords: (word: string) => Promise<string[]>;
@@ -30,33 +14,36 @@ interface MindMapContextType {
 const MindMapContext = createContext<MindMapContextType | undefined>(undefined);
 
 export function MindMapProvider({ children }: { children: React.ReactNode }) {
-  const [data, setData] = useState<Data>({
-    nodes: [{ id: "0", name: "Central Idea", isRoot: true }],
-    links: []
+  const [data, setData] = useState<GraphData>({
+    nodes: [{ id: "0", name: "Central Idea", isRoot: true, label: "Central Idea" }],
+    links: [],
   });
 
   const addNode = useCallback((parentId: string, words: string[]) => {
-    setData(prevData => {
+    setData((prevData) => {
       const newNodes = words.map((word, index) => ({
         id: `${parentId}-${index}`,
-        name: word
+        name: word,
+        label: word,
       }));
-      const newLinks = newNodes.map(node => ({
+      const newLinks = newNodes.map((node) => ({
         source: parentId,
-        target: node.id
+        target: node.id,
       }));
 
       return {
         nodes: [...prevData.nodes, ...newNodes],
-        links: [...prevData.links, ...newLinks]
+        links: [...prevData.links, ...newLinks],
       };
     });
   }, []);
 
   const removeNode = useCallback((nodeId: string) => {
-    setData(prevData => {
-      const nodes = prevData.nodes.filter(n => n.id !== nodeId);
-      const links = prevData.links.filter(l => l.source !== nodeId && l.target !== nodeId);
+    setData((prevData) => {
+      const nodes = prevData.nodes.filter((n) => n.id !== nodeId);
+      const links = prevData.links.filter(
+        (l) => l.source !== nodeId && l.target !== nodeId,
+      );
       return { nodes, links };
     });
   }, []);
@@ -65,7 +52,7 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
     try {
       return await generateRelatedWordsAction(word);
     } catch (error) {
-      console.error('Failed to generate related words:', error);
+      console.error("Failed to generate related words:", error);
       throw error;
     }
   }, []);
@@ -77,7 +64,9 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
     generateRelatedWords,
   };
 
-  return <MindMapContext.Provider value={value}>{children}</MindMapContext.Provider>;
+  return (
+    <MindMapContext.Provider value={value}>{children}</MindMapContext.Provider>
+  );
 }
 
 export function useMindMapContext() {
