@@ -9,40 +9,46 @@ import { z } from 'zod';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import { db } from '~/server/db';
 import { mindMaps, mindMapNodes, mindMapLinks } from '~/server/db/schema';
+import type { MindMap, MindMapNode, MindMapLink } from '~/server/db/schema';
 import { eq, and, or } from 'drizzle-orm';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function createMindMap(name: string) {
+export async function createMindMap(name: string): Promise<MindMap> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
   const [newMindMap] = await db.insert(mindMaps).values({ userId, name }).returning();
+  
+  if (!newMindMap) {
+    throw new Error('Failed to create mind map');
+  }
+
   return newMindMap;
 }
 
-export async function getUserMindMaps() {
+export async function getUserMindMaps(): Promise<MindMap[]> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
   return db.select().from(mindMaps).where(eq(mindMaps.userId, userId));
 }
 
-export async function getMindMap(mindMapId: string) {
+export async function getMindMap(mindMapId: string): Promise<{ mindMap: MindMap; nodes: MindMapNode[]; links: MindMapLink[] }> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
-  const mindMap = await db.select().from(mindMaps).where(and(eq(mindMaps.id, mindMapId), eq(mindMaps.userId, userId))).limit(1);
-  if (!mindMap.length) throw new Error('Mind map not found or access denied');
+  const [mindMap] = await db.select().from(mindMaps).where(and(eq(mindMaps.id, mindMapId), eq(mindMaps.userId, userId))).limit(1);
+  if (!mindMap) throw new Error('Mind map not found or access denied');
 
   const nodes = await db.select().from(mindMapNodes).where(eq(mindMapNodes.mindMapId, mindMapId));
   const links = await db.select().from(mindMapLinks).where(eq(mindMapLinks.mindMapId, mindMapId));
-  return { mindMap: mindMap[0], nodes, links };
+  return { mindMap, nodes, links };
 }
 
-export async function addNodeToMindMap(mindMapId: string, label: string, x?: number, y?: number) {
+export async function addNodeToMindMap(mindMapId: string, label: string, x?: number, y?: number): Promise<MindMapNode> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -55,7 +61,7 @@ export async function addNodeToMindMap(mindMapId: string, label: string, x?: num
   return newNode;
 }
 
-export async function addLinkToMindMap(mindMapId: string, sourceId: string, targetId: string) {
+export async function addLinkToMindMap(mindMapId: string, sourceId: string, targetId: string): Promise<MindMapLink> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -68,7 +74,7 @@ export async function addLinkToMindMap(mindMapId: string, sourceId: string, targ
   return newLink;
 }
 
-export async function updateNode(nodeId: string, label: string, x?: number, y?: number) {
+export async function updateNode(nodeId: string, label: string, x?: number, y?: number): Promise<MindMapNode> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -89,7 +95,7 @@ export async function updateNode(nodeId: string, label: string, x?: number, y?: 
   return updatedNode;
 }
 
-export async function deleteNode(nodeId: string) {
+export async function deleteNode(nodeId: string): Promise<void> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -105,7 +111,7 @@ export async function deleteNode(nodeId: string) {
   await db.delete(mindMapNodes).where(eq(mindMapNodes.id, nodeId));
 }
 
-export async function deleteMindMap(mindMapId: string) {
+export async function deleteMindMap(mindMapId: string): Promise<void> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 

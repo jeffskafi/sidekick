@@ -87,3 +87,7 @@ export const mindMapLinks = pgTable('mind_map_links', {
   targetId: uuid('target_id').references(() => mindMapNodes.id).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+export type MindMap = InferSelectModel<typeof mindMaps>;
+export type MindMapNode = InferSelectModel<typeof mindMapNodes>;
+export type MindMapLink = InferSelectModel<typeof mindMapLinks>;
