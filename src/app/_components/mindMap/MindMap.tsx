@@ -38,6 +38,11 @@ const MindMap: React.FC = () => {
     setContextMenu(null);
   };
 
+  // Add this new function to dismiss the context menu
+  const dismissContextMenu = () => {
+    setContextMenu(null);
+  };
+
   const nodeCanvasObject = useCallback(
     (node: Node, ctx: CanvasRenderingContext2D, globalScale: number) => {
       const label = node.label;
@@ -111,16 +116,31 @@ const MindMap: React.FC = () => {
         <NodeContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
-          onDelete={() => handleDeleteNode(contextMenu.node.id)}
-          onEdit={() => handleEditNode(contextMenu.node)}
-          onGenerate={() => handleGenerateChildren(contextMenu.node)}
+          onDelete={() => {
+            handleDeleteNode(contextMenu.node.id);
+            dismissContextMenu();
+          }}
+          onEdit={() => {
+            handleEditNode(contextMenu.node);
+            dismissContextMenu();
+          }}
+          onGenerate={() => {
+            void handleGenerateChildren(contextMenu.node);
+            dismissContextMenu();
+          }}
         />
       )}
       {editingNode && (
         <EditNodeModal
           node={editingNode}
-          onConfirm={(newLabel) => handleConfirmEdit(editingNode.id, newLabel)}
-          onCancel={() => setEditingNode(null)}
+          onConfirm={(newLabel) => {
+            handleConfirmEdit(editingNode.id, newLabel);
+            dismissContextMenu();
+          }}
+          onCancel={() => {
+            setEditingNode(null);
+            dismissContextMenu();
+          }}
         />
       )}
     </div>
