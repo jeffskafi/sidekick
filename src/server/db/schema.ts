@@ -61,3 +61,29 @@ export type TaskSearchParams = {
 export type TaskNode = Omit<Task, 'children'> & {
   children: TaskNode[];
 };
+
+export const mindMaps = pgTable('mind_maps', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').notNull(),
+  name: text('name').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const mindMapNodes = pgTable('mind_map_nodes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  mindMapId: uuid('mind_map_id').references(() => mindMaps.id).notNull(),
+  label: text('label').notNull(),
+  x: text('x'),
+  y: text('y'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const mindMapLinks = pgTable('mind_map_links', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  mindMapId: uuid('mind_map_id').references(() => mindMaps.id).notNull(),
+  sourceId: uuid('source_id').references(() => mindMapNodes.id).notNull(),
+  targetId: uuid('target_id').references(() => mindMapNodes.id).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
