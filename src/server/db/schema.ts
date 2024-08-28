@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, boolean, uniqueIndex, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean, uniqueIndex, pgEnum, numeric } from 'drizzle-orm/pg-core';
 import type { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 
 // Define enums
@@ -74,8 +74,8 @@ export const mindMapNodes = pgTable('mind_map_nodes', {
   id: uuid('id').defaultRandom().primaryKey(),
   mindMapId: uuid('mind_map_id').references(() => mindMaps.id).notNull(),
   label: text('label').notNull(),
-  x: text('x'),
-  y: text('y'),
+  x: numeric('x', { precision: 10, scale: 6 }).notNull(),
+  y: numeric('y', { precision: 10, scale: 6 }).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
