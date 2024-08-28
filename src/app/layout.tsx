@@ -5,7 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import dynamic from "next/dynamic";
 import { CSPostHogProvider } from "~/app/_analytics/provider";
 import { DarkModeProvider } from "~/app/_contexts/DarkModeContext";
-import Script from 'next/script';
+import Script from "next/script";
 
 // Dynamically import the Header component
 const Header = dynamic(() => import("~/app/_components/Header"), {
@@ -58,9 +58,9 @@ export default function RootLayout({
         <DarkModeProvider>
           <html lang="en" className={`${GeistSans.variable}`}>
             <head>
-            <script dangerouslySetInnerHTML={{ __html: themeScript() }} />
+              <script dangerouslySetInnerHTML={{ __html: themeScript() }} />
             </head>
-            <body className="flex flex-col min-h-screen bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
+            <body className="flex min-h-screen flex-col bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
               <Header />
               <Script
                 src="https://www.googletagmanager.com/gtag/js?id=AW-16680016187"
