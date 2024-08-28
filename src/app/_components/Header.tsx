@@ -22,31 +22,48 @@ const Header = () => {
   const { isSignedIn } = useAuth();
   const { isDarkMode } = useDarkMode();
   const subscriptionsFlagEnabled = useFeatureFlagEnabled("subscriptions");
-  const mindMapFlagEnabled = useFeatureFlagEnabled("mind-map");
+  const mindMapFlagEnabled = true;
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 mb-0 h-16 bg-white dark:bg-dark-bg shadow-sm">
-      <nav
-        className="container mx-auto flex items-center justify-between px-4 py-2"
-        style={{ width: "100%" }}
-      >
-        <div className="flex items-center">
-          <Link href="/" className="flex items-center mr-6">
-            <h1
-              className={`text-[2rem] font-bold ${isDarkMode ? "text-white" : "text-black"}`}
-              style={{
-                background: "linear-gradient(90deg, #ff7247 0%, #e63b00 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                filter: "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))",
-              }}
-            >
-              Sidekick
-            </h1>
-          </Link>
+    <header className="sticky top-0 z-50 mb-0 bg-white dark:bg-dark-bg shadow-sm">
+      <nav className="container mx-auto px-4 py-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center justify-between w-full sm:w-auto">
+            <Link href="/" className="flex items-center">
+              <h1
+                className={`text-[2rem] font-bold ${isDarkMode ? "text-white" : "text-black"}`}
+                style={{
+                  background: "linear-gradient(90deg, #ff7247 0%, #e63b00 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))",
+                }}
+              >
+                Sidekick
+              </h1>
+            </Link>
+            <div className="flex items-center space-x-4 sm:hidden">
+              {isSignedIn ? (
+                <UserButton
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-10 h-10",
+                    },
+                  }}
+                />
+              ) : (
+                <SignInButton mode="modal">
+                  <button className="rounded-full bg-primary-light px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-secondary-light dark:bg-primary-dark dark:hover:bg-secondary-dark">
+                    Sign In
+                  </button>
+                </SignInButton>
+              )}
+            </div>
+          </div>
           {isSignedIn && mindMapFlagEnabled && (
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-6 mt-4 sm:mt-0 sm:ml-6">
               <Link
                 href="/tasks"
                 className={`text-sm font-medium transition-colors duration-200 ${
@@ -70,7 +87,7 @@ const Header = () => {
             </div>
           )}
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="hidden sm:flex items-center justify-end space-x-4 mt-4 sm:mt-0">
           {isSignedIn ? (
             <>
               <a

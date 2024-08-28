@@ -27,7 +27,7 @@ const MindMap: React.FC = () => {
 
   const handleNodeClick = (node: Node, event: MouseEvent) => {
     event.preventDefault();
-    setContextMenu({ x: event.clientX - 20 , y: event.clientY - 40, node });
+    setContextMenu({ x: event.clientX, y: event.clientY - 84, node });
   };
 
   const handleBackgroundClick = () => {
@@ -103,7 +103,7 @@ const MindMap: React.FC = () => {
         ref={graphRef}
         graphData={graphData}
         nodeId="id"
-        nodeLabel="label"
+        nodeLabel=""
         nodeCanvasObject={nodeCanvasObject}
         nodePointerAreaPaint={nodePointerAreaPaint}
         onNodeClick={handleNodeClick}
