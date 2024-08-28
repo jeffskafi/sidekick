@@ -82,7 +82,7 @@ const Header = () => {
                     : "text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
                 }`}
               >
-                Mind Map
+                Mind Maps
               </Link>
             </div>
           )}
