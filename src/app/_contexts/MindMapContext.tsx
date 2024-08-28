@@ -1,67 +1,112 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { generateRelatedWords as generateRelatedWordsAction } from "~/server/actions/mindMapActions";
-import type { GraphData } from "~/app/_components/mindMap/types";
+import type { GraphData, Node, Link } from "~/app/_components/mindMap/types";
 
 interface MindMapContextType {
-  data: GraphData;
-  addNode: (parentId: string, words: string[]) => void;
-  removeNode: (nodeId: string) => void;
-  generateRelatedWords: (word: string) => Promise<string[]>;
+  graphData: GraphData;
+  setGraphData: React.Dispatch<React.SetStateAction<GraphData>>;
+  handleDeleteNode: (nodeId: string) => void;
+  handleEditNode: (node: Node) => void;
+  handleGenerateChildren: (node: Node) => Promise<void>;
 }
 
 const MindMapContext = createContext<MindMapContextType | undefined>(undefined);
 
 export function MindMapProvider({ children }: { children: React.ReactNode }) {
-  const [data, setData] = useState<GraphData>({
-    nodes: [{ id: "0", name: "Central Idea", isRoot: true, label: "Central Idea" }],
+  const [graphData, setGraphData] = useState<GraphData>({
+    nodes: [],
     links: [],
   });
 
-  const addNode = useCallback((parentId: string, words: string[]) => {
-    setData((prevData) => {
-      const newNodes = words.map((word, index) => ({
-        id: `${parentId}-${index}`,
-        name: word,
-        label: word,
-      }));
-      const newLinks = newNodes.map((node) => ({
-        source: parentId,
-        target: node.id,
-      }));
+  useEffect(() => {
+    setGraphData({
+      nodes: [{ id: "root", label: "Root", name: "Root" }],
+      links: [],
+    });
+  }, []);
+
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    setGraphData((prevData) => {
+      const nodesToDelete = new Set<string>();
+      const linksToDelete = new Set<string>();
+
+      const deleteRecursively = (id: string) => {
+        nodesToDelete.add(id);
+        prevData.links.forEach((link) => {
+          const sourceId = typeof link.source === "object" ? link.source.id : link.source;
+          const targetId = typeof link.target === "object" ? link.target.id : link.target;
+
+          if (targetId === id) {
+            const linkId = `${sourceId}-${targetId}`;
+            linksToDelete.add(linkId);
+          }
+
+          if (sourceId === id) {
+            const linkId = `${sourceId}-${targetId}`;
+            linksToDelete.add(linkId);
+            deleteRecursively(targetId);
+          }
+        });
+      };
+
+      deleteRecursively(nodeId);
 
       return {
-        nodes: [...prevData.nodes, ...newNodes],
-        links: [...prevData.links, ...newLinks],
+        nodes: prevData.nodes.filter((node) => !nodesToDelete.has(node.id)),
+        links: prevData.links.filter((link) => {
+          const sourceId = typeof link.source === "object" ? link.source.id : link.source;
+          const targetId = typeof link.target === "object" ? link.target.id : link.target;
+          return !linksToDelete.has(`${sourceId}-${targetId}`);
+        }),
       };
     });
   }, []);
 
-  const removeNode = useCallback((nodeId: string) => {
-    setData((prevData) => {
-      const nodes = prevData.nodes.filter((n) => n.id !== nodeId);
-      const links = prevData.links.filter(
-        (l) => l.source !== nodeId && l.target !== nodeId,
-      );
-      return { nodes, links };
+  const handleEditNode = useCallback((node: Node) => {
+    console.log("Edit node:", node);
+    // Implement edit functionality here
+  }, []);
+
+  const handleGenerateChildren = useCallback(async (node: Node) => {
+    const relatedWords = await generateRelatedWordsAction(node.label);
+
+    setGraphData((prevData) => {
+      const newNodes: Node[] = relatedWords.map((word, index) => ({
+        id: `${node.id}-${index}`,
+        label: word,
+        name: word,
+      }));
+
+      const newLinks: Link[] = newNodes.map((newNode) => ({
+        source: node.id,
+        target: newNode.id,
+      }));
+
+      const existingChildrenIds = prevData.links
+        .filter((link) => link.source === node.id)
+        .map((link) => link.target as string);
+
+      return {
+        nodes: [
+          ...prevData.nodes.filter((n) => !existingChildrenIds.includes(n.id)),
+          ...newNodes,
+        ],
+        links: [
+          ...prevData.links.filter((link) => link.source !== node.id),
+          ...newLinks,
+        ],
+      };
     });
   }, []);
 
-  const generateRelatedWords = useCallback(async (word: string) => {
-    try {
-      return await generateRelatedWordsAction(word);
-    } catch (error) {
-      console.error("Failed to generate related words:", error);
-      throw error;
-    }
-  }, []);
-
   const value = {
-    data,
-    addNode,
-    removeNode,
-    generateRelatedWords,
+    graphData,
+    setGraphData,
+    handleDeleteNode,
+    handleEditNode,
+    handleGenerateChildren,
   };
 
   return (
