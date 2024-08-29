@@ -135,7 +135,7 @@ const MindMap: React.FC = () => {
   }, [fetchMindMaps]);
 
   return (
-    <div className="relative flex h-screen w-screen bg-background-light dark:bg-background-dark">
+    <div className="relative flex h-full w-full bg-background-light dark:bg-background-dark">
       <MindMapSidebar
         mindMaps={mindMaps}
         onSelectMindMap={(mindMap) => {
@@ -144,7 +144,7 @@ const MindMap: React.FC = () => {
         }}
         selectedMindMapId={selectedMindMapId}
       />
-      <div className="flex-grow">
+      <div className="flex-grow relative">
         <Button
           className="absolute right-4 top-4 z-10"
           onClick={() => setIsNewMindMapModalOpen(true)}
@@ -163,6 +163,7 @@ const MindMap: React.FC = () => {
           onZoomEnd={handleZoomPan}
           linkColor={() => "#FFA07A"}
           linkWidth={2}
+          height={window.innerHeight - 56} // Subtract header height (14 * 4 = 56px)
         />
         {contextMenu && (
           <NodeContextMenu

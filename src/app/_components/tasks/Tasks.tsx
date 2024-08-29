@@ -10,24 +10,28 @@ interface TasksProps {
   userId: string;
 }
 
-export default function Tasks({ initialTasks, userId }: TasksProps) {
+const Tasks: React.FC<TasksProps> = ({ initialTasks, userId }) => {
   return (
-    <TaskProvider initialTasks={initialTasks}>
-      <div className="flex flex-col h-[calc(100vh-4rem)] bg-gray-50 dark:bg-dark-bg">
-        <div 
-          id="task-list"
-          className="flex-grow overflow-y-auto pt-0 px-6 sm:px-8 md:px-12 scrollbar-hide"
-        >
-          <div className="w-full max-w-3xl mx-auto h-full">
-            <TaskList />
+    <div className="h-full overflow-auto">
+      <TaskProvider initialTasks={initialTasks}>
+        <div className="flex flex-col h-[calc(100vh-4rem)] bg-gray-50 dark:bg-dark-bg">
+          <div 
+            id="task-list"
+            className="flex-grow overflow-y-auto pt-0 px-6 sm:px-8 md:px-12 scrollbar-hide"
+          >
+            <div className="w-full max-w-3xl mx-auto h-full">
+              <TaskList />
+            </div>
+          </div>
+          <div className="sticky bottom-0 bg-gray-50 dark:bg-dark-bg p-4">
+            <div className="max-w-3xl mx-auto">
+              <AddTaskForm userId={userId} />
+            </div>
           </div>
         </div>
-        <div className="sticky bottom-0 bg-gray-50 dark:bg-dark-bg p-4">
-          <div className="max-w-3xl mx-auto">
-            <AddTaskForm userId={userId} />
-          </div>
-        </div>
-      </div>
-    </TaskProvider>
+      </TaskProvider>
+    </div>
   );
-}
+};
+
+export default Tasks;

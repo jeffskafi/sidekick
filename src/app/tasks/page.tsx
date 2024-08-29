@@ -13,7 +13,7 @@ export default async function TasksPage() {
   const initialTasks = await getTopLevelTasks();
 
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-full">
       <Tasks initialTasks={initialTasks} userId={userId} />
     </div>
   );

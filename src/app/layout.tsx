@@ -56,11 +56,11 @@ export default function RootLayout({
     <ClerkProvider>
       <CSPostHogProvider>
         <DarkModeProvider>
-          <html lang="en" className={`${GeistSans.variable}`}>
+          <html lang="en" className={`${GeistSans.variable} h-full`}>
             <head>
               <script dangerouslySetInnerHTML={{ __html: themeScript() }} />
             </head>
-            <body className="flex min-h-screen flex-col bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
+            <body className="flex flex-col min-h-screen bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
               <Header />
               <Script
                 src="https://www.googletagmanager.com/gtag/js?id=AW-16680016187"
@@ -74,7 +74,7 @@ export default function RootLayout({
                   gtag('config', 'AW-16680016187');
                 `}
               </Script>
-              <main className="flex-grow">{children}</main>
+              <main className="flex-1 overflow-hidden">{children}</main>
             </body>
           </html>
         </DarkModeProvider>
