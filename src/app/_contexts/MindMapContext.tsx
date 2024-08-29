@@ -10,8 +10,8 @@ interface MindMapContextType {
   links: MindMapLink[];
   loadMindMap: (mindMapId: string) => Promise<void>;
   createMindMap: (name: string) => Promise<MindMap>;
-  addNode: (label: string, x: number, y: number) => Promise<MindMapNode>;
-  updateNode: (nodeId: string, label: string, x: number, y: number) => Promise<MindMapNode>;
+  addNode: (label: string) => Promise<MindMapNode>;
+  updateNode: (nodeId: string, label: string) => Promise<MindMapNode>;
   deleteNode: (nodeId: string) => Promise<void>;
   addLink: (sourceId: string, targetId: string) => Promise<MindMapLink>;
   generateRelatedWords: (word: string) => Promise<string[]>;
@@ -40,15 +40,15 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
     return newMindMap;
   }, []);
 
-  const addNode = useCallback(async (label: string, x: number, y: number) => {
+  const addNode = useCallback(async (label: string) => {
     if (!mindMap) throw new Error('No mind map loaded');
-    const newNode = await mindMapActions.addNodeToMindMap(mindMap.id, label, x, y);
+    const newNode = await mindMapActions.addNodeToMindMap(mindMap.id, label);
     setNodes(prev => [...prev, newNode]);
     return newNode;
   }, [mindMap]);
 
-  const updateNode = useCallback(async (nodeId: string, label: string, x: number, y: number) => {
-    const updatedNode = await mindMapActions.updateNode(nodeId, label, x, y);
+  const updateNode = useCallback(async (nodeId: string, label: string) => {
+    const updatedNode = await mindMapActions.updateNode(nodeId, label);
     setNodes(prev => prev.map(node => node.id === nodeId ? updatedNode : node));
     return updatedNode;
   }, []);
@@ -68,7 +68,7 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
 
   const generateRelatedWords = useCallback(async (word: string) => {
     if (!mindMap) throw new Error('No mind map loaded');
-    const relatedWords = await mindMapActions.generateRelatedWords(word, mindMap.id);
+    const relatedWords = await mindMapActions.generateRelatedWords(word);
     await loadMindMap(mindMap.id); // Refresh the mind map data after generating related words
     return relatedWords;
   }, [mindMap, loadMindMap]);
