@@ -233,3 +233,17 @@ export async function batchAddLinksToMindMap(mindMapId: string, sourceId: string
   if (insertedLinks.length === 0) throw new Error('Failed to add links');
   return insertedLinks;
 }
+
+// Add this new function
+export async function renameMindMap(mindMapId: string, newName: string): Promise<MindMap> {
+  const { userId } = auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  const [updatedMindMap] = await db.update(mindMaps)
+    .set({ name: newName, updatedAt: new Date() })
+    .where(and(eq(mindMaps.id, mindMapId), eq(mindMaps.userId, userId)))
+    .returning();
+
+  if (!updatedMindMap) throw new Error('Mind map not found or access denied');
+  return updatedMindMap;
+}

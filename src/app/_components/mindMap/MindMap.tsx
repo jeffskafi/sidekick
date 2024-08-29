@@ -35,7 +35,7 @@ const MindMap: React.FC = () => {
     loadMindMap,
     createMindMap,
     fetchMindMaps,
-    mindMaps,  // Add this
+    mindMaps,
   } = useMindMapContext();
 
   const transformedGraphData = useMemo(() => ({
@@ -58,7 +58,7 @@ const MindMap: React.FC = () => {
 
   const handleNodeClick = (node: UIMindMapNode, event: MouseEvent) => {
     event.preventDefault();
-    setContextMenu({ x: event.clientX, y: event.clientY + 20, node });
+    setContextMenu({ x: event.clientX, y: event.clientY - 100, node });
   };
 
   const handleBackgroundClick = () => {
@@ -69,7 +69,6 @@ const MindMap: React.FC = () => {
     setContextMenu(null);
   };
 
-  // Add this new function to dismiss the context menu
   const dismissContextMenu = () => {
     setContextMenu(null);
   };
@@ -138,7 +137,7 @@ const MindMap: React.FC = () => {
   return (
     <div className="relative flex h-screen w-screen bg-background-light dark:bg-background-dark">
       <MindMapSidebar
-        mindMaps={mindMaps}  // Pass mindMaps to the sidebar
+        mindMaps={mindMaps}
         onSelectMindMap={(mindMap) => {
           void loadMindMap(mindMap.id);
           setSelectedMindMapId(mindMap.id);
