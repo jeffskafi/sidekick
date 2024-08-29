@@ -48,7 +48,7 @@ export async function getMindMap(mindMapId: string): Promise<{ mindMap: MindMap;
   return { mindMap, nodes, links };
 }
 
-export async function addNodeToMindMap(mindMapId: string, label: string, x: string, y: string): Promise<MindMapNode> {
+export async function addNodeToMindMap(mindMapId: string, label: string): Promise<MindMapNode> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -58,9 +58,7 @@ export async function addNodeToMindMap(mindMapId: string, label: string, x: stri
 
   const [newNode] = await db.insert(mindMapNodes).values({ 
     mindMapId: mindMapId,
-    label, 
-    x: x.toString(),
-    y: y.toString()
+    label
   }).returning();
   
   if (!newNode) throw new Error('Failed to add node');
@@ -80,7 +78,7 @@ export async function addLinkToMindMap(mindMapId: string, sourceId: string, targ
   return newLink;
 }
 
-export async function updateNode(nodeId: string, label: string, x: number, y: number): Promise<MindMapNode> {
+export async function updateNode(nodeId: string, label: string): Promise<MindMapNode> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -94,16 +92,14 @@ export async function updateNode(nodeId: string, label: string, x: number, y: nu
 
   const [updatedNode] = await db.update(mindMapNodes)
     .set({ 
-      label, 
-      x: x.toString(),
-      y: y.toString(),
+      label,
       updatedAt: new Date() 
     })
     .where(eq(mindMapNodes.id, nodeId))
     .returning();
 
   if (!updatedNode) throw new Error('Failed to update node');
-  return updatedNode;  // No need for conversion
+  return updatedNode;
 }
 
 export async function deleteNode(nodeId: string): Promise<void> {
