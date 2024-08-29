@@ -16,11 +16,11 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function createMindMap(name: string): Promise<MindMap> {
+export async function createMindMap(rootNodeLabel: string): Promise<MindMap> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
-  const [newMindMap] = await db.insert(mindMaps).values({ userId, name }).returning();
+  const [newMindMap] = await db.insert(mindMaps).values({ userId, name: rootNodeLabel }).returning();
   
   if (!newMindMap) {
     throw new Error('Failed to create mind map');
@@ -114,8 +114,28 @@ export async function deleteNode(nodeId: string): Promise<void> {
 
   if (!node) throw new Error('Node not found or access denied');
 
-  await db.delete(mindMapLinks).where(or(eq(mindMapLinks.sourceId, nodeId), eq(mindMapLinks.targetId, nodeId)));
-  await db.delete(mindMapNodes).where(eq(mindMapNodes.id, nodeId));
+  // Recursive function to delete a node and its children
+  async function deleteNodeRecursive(id: string) {
+    // Get all child nodes
+    const childLinks = await db.select()
+      .from(mindMapLinks)
+      .where(eq(mindMapLinks.sourceId, id));
+
+    // Recursively delete each child node
+    for (const childLink of childLinks) {
+      await deleteNodeRecursive(childLink.targetId);
+    }
+
+    // Delete all links associated with this node
+    await db.delete(mindMapLinks)
+      .where(or(eq(mindMapLinks.sourceId, id), eq(mindMapLinks.targetId, id)));
+
+    // Delete the node itself
+    await db.delete(mindMapNodes).where(eq(mindMapNodes.id, id));
+  }
+
+  // Start the recursive deletion
+  await deleteNodeRecursive(nodeId);
 }
 
 export async function deleteMindMap(mindMapId: string): Promise<void> {
@@ -173,4 +193,43 @@ export async function generateRelatedWords(word: string): Promise<string[]> {
     console.error('Failed to parse OpenAI response:', error);
     throw new Error('Invalid response format from OpenAI');
   }
+}
+
+export async function batchAddNodesToMindMap(mindMapId: string, labels: string[]): Promise<MindMapNode[]> {
+  const { userId } = auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  // Verify the mind map belongs to the user
+  const [mindMap] = await db.select().from(mindMaps).where(and(eq(mindMaps.id, mindMapId), eq(mindMaps.userId, userId)));
+  if (!mindMap) throw new Error('Mind map not found or access denied');
+
+  const newNodes = labels.map(label => ({
+    mindMapId,
+    label,
+  }));
+
+  const insertedNodes = await db.insert(mindMapNodes).values(newNodes).returning();
+  
+  if (insertedNodes.length === 0) throw new Error('Failed to add nodes');
+  return insertedNodes;
+}
+
+export async function batchAddLinksToMindMap(mindMapId: string, sourceId: string, targetIds: string[]): Promise<MindMapLink[]> {
+  const { userId } = auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  // Verify the mind map belongs to the user
+  const [mindMap] = await db.select().from(mindMaps).where(and(eq(mindMaps.id, mindMapId), eq(mindMaps.userId, userId)));
+  if (!mindMap) throw new Error('Mind map not found or access denied');
+
+  const newLinks = targetIds.map(targetId => ({
+    mindMapId,
+    sourceId,
+    targetId,
+  }));
+
+  const insertedLinks = await db.insert(mindMapLinks).values(newLinks).returning();
+  
+  if (insertedLinks.length === 0) throw new Error('Failed to add links');
+  return insertedLinks;
 }

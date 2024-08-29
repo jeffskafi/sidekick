@@ -4,26 +4,38 @@ import React, { createContext, useContext, useState, useCallback } from "react";
 import * as mindMapActions from "~/server/actions/mindMapActions";
 import type { MindMap, MindMapNode, MindMapLink } from "~/server/db/schema";
 
-interface MindMapContextType {
+export interface MindMapContextType {
+  mindMaps: MindMap[];
   mindMap: MindMap | null;
   nodes: MindMapNode[];
   links: MindMapLink[];
   loadMindMap: (mindMapId: string) => Promise<void>;
-  createMindMap: (name: string) => Promise<MindMap>;
+  createMindMap: (rootNodeLabel: string) => Promise<MindMap>;
   addNode: (label: string) => Promise<MindMapNode>;
   updateNode: (nodeId: string, label: string) => Promise<MindMapNode>;
   deleteNode: (nodeId: string) => Promise<void>;
   addLink: (sourceId: string, targetId: string) => Promise<MindMapLink>;
   generateRelatedWords: (word: string) => Promise<string[]>;
   deleteMindMap: (mindMapId: string) => Promise<void>;
+  setMindMap: React.Dispatch<React.SetStateAction<MindMap | null>>;
+  graphData: { nodes: MindMapNode[]; links: MindMapLink[] };
+  handleDeleteNode: (nodeId: string) => Promise<void>;
+  handleEditNode: (node: MindMapNode) => void;
+  handleGenerateChildren: (node: MindMapNode) => Promise<void>;
+  editingNode: MindMapNode | null;
+  setEditingNode: (node: MindMapNode | null) => void;
+  handleConfirmEdit: (nodeId: string, newLabel: string) => Promise<void>;
+  fetchMindMaps: () => Promise<void>;
 }
 
 const MindMapContext = createContext<MindMapContextType | undefined>(undefined);
 
 export function MindMapProvider({ children }: { children: React.ReactNode }) {
+  const [mindMaps, setMindMaps] = useState<MindMap[]>([]);
   const [mindMap, setMindMap] = useState<MindMap | null>(null);
   const [nodes, setNodes] = useState<MindMapNode[]>([]);
   const [links, setLinks] = useState<MindMapLink[]>([]);
+  const [editingNode, setEditingNode] = useState<MindMapNode | null>(null);
 
   const loadMindMap = useCallback(async (mindMapId: string) => {
     const data = await mindMapActions.getMindMap(mindMapId);
@@ -32,10 +44,11 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
     setLinks(data.links);
   }, []);
 
-  const createMindMap = useCallback(async (name: string) => {
-    const newMindMap = await mindMapActions.createMindMap(name);
+  const createMindMap = useCallback(async (rootNodeLabel: string) => {
+    const newMindMap = await mindMapActions.createMindMap(rootNodeLabel);
     setMindMap(newMindMap);
-    setNodes([]);
+    const rootNode = await mindMapActions.addNodeToMindMap(newMindMap.id, rootNodeLabel);
+    setNodes([rootNode]);
     setLinks([]);
     return newMindMap;
   }, []);
@@ -80,7 +93,51 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
     setLinks([]);
   }, []);
 
+  const handleDeleteNode = useCallback(async (nodeId: string) => {
+    try {
+      await mindMapActions.deleteNode(nodeId);
+      // After successful deletion, reload the entire mind map
+      if (mindMap) {
+        await loadMindMap(mindMap.id);
+      }
+    } catch (error) {
+      console.error("Failed to delete node:", error);
+      // Optionally, show an error message to the user
+    }
+  }, [mindMap, loadMindMap]);
+
+  const handleEditNode = useCallback((node: MindMapNode) => {
+    setEditingNode(node);
+  }, []);
+
+  const handleGenerateChildren = useCallback(async (node: MindMapNode) => {
+    if (!mindMap) return;
+    const relatedWords = await mindMapActions.generateRelatedWords(node.label);
+    
+    // Batch add nodes
+    const newNodes = await mindMapActions.batchAddNodesToMindMap(mindMap.id, relatedWords);
+    
+    // Batch add links
+    const newNodeIds = newNodes.map(n => n.id);
+    const newLinks = await mindMapActions.batchAddLinksToMindMap(mindMap.id, node.id, newNodeIds);
+    
+    // Update local state
+    setNodes(prevNodes => [...prevNodes, ...newNodes]);
+    setLinks(prevLinks => [...prevLinks, ...newLinks]);
+  }, [mindMap]);
+
+  const handleConfirmEdit = useCallback(async (nodeId: string, newLabel: string) => {
+    await updateNode(nodeId, newLabel);
+    setEditingNode(null);
+  }, [updateNode]);
+
+  const fetchMindMaps = useCallback(async () => {
+    const fetchedMindMaps = await mindMapActions.getUserMindMaps();
+    setMindMaps(fetchedMindMaps);
+  }, []);
+
   const value: MindMapContextType = {
+    mindMaps,
     mindMap,
     nodes,
     links,
@@ -92,6 +149,15 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
     addLink,
     generateRelatedWords,
     deleteMindMap,
+    setMindMap,
+    graphData: { nodes, links },
+    handleDeleteNode,
+    handleEditNode,
+    handleGenerateChildren,
+    editingNode,
+    setEditingNode,
+    handleConfirmEdit,
+    fetchMindMaps,
   };
 
   return (

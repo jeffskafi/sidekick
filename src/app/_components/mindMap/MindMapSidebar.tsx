@@ -1,60 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { getUserMindMaps, createMindMap } from '~/server/actions/mindMapActions';
-import type { MindMap } from '~/server/db/schema';
+import React from "react";
+import type { MindMap } from "~/server/db/schema";
 
 interface MindMapSidebarProps {
+  mindMaps: MindMap[];
   onSelectMindMap: (mindMap: MindMap) => void;
-  selectedMindMapId?: string;
+  selectedMindMapId: string | undefined;
 }
 
-const MindMapSidebar: React.FC<MindMapSidebarProps> = ({ onSelectMindMap, selectedMindMapId }) => {
-  const [mindMaps, setMindMaps] = useState<MindMap[]>([]);
-  const [newMapName, setNewMapName] = useState('');
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  useEffect(() => {
-    void loadMindMaps();
-  }, []);
-
-  const loadMindMaps = async () => {
-    const maps = await getUserMindMaps();
-    setMindMaps(maps);
-  };
-
-  const handleCreateMap = async () => {
-    if (newMapName.trim()) {
-      const newMap = await createMindMap(newMapName);
-      setNewMapName('');
-      setMindMaps([...mindMaps, newMap]);
-    }
-  };
-
+const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
+  mindMaps,
+  onSelectMindMap,
+  selectedMindMapId,
+}) => {
   return (
-    <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-      <button onClick={() => setIsCollapsed(!isCollapsed)} className="toggle-btn">
-        {isCollapsed ? '>' : '<'}
-      </button>
-      {!isCollapsed && (
-        <>
-          <h2>Your Mind Maps</h2>
-          <ul>
-            {mindMaps.map(map => (
-              <li key={map.id} className={map.id === selectedMindMapId ? 'selected' : ''}>
-                <button onClick={() => onSelectMindMap(map)}>{map.name}</button>
-              </li>
-            ))}
-          </ul>
-          <div>
-            <input
-              type="text"
-              value={newMapName}
-              onChange={(e) => setNewMapName(e.target.value)}
-              placeholder="New mind map name"
-            />
-            <button onClick={handleCreateMap}>Create</button>
-          </div>
-        </>
-      )}
+    <div className="w-64 bg-gray-100 p-4 dark:bg-gray-800">
+      <h2 className="mb-4 text-xl font-bold">Mind Maps</h2>
+      <ul>
+        {mindMaps.map((mindMap) => (
+          <li
+            key={mindMap.id}
+            className={`mb-2 cursor-pointer rounded p-2 ${
+              selectedMindMapId === mindMap.id
+                ? "bg-blue-100 dark:bg-blue-900"
+                : ""
+            }`}
+            onClick={() => onSelectMindMap(mindMap)}
+          >
+            {mindMap.name}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
