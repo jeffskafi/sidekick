@@ -91,3 +91,8 @@ export const mindMapLinks = pgTable('mind_map_links', {
 export type MindMap = InferSelectModel<typeof mindMaps>;
 export type MindMapNode = InferSelectModel<typeof mindMapNodes>;
 export type MindMapLink = InferSelectModel<typeof mindMapLinks>;
+
+// You might want to add these types if they're not already present
+export type MindMapInsert = InferInsertModel<typeof mindMaps>;
+export type MindMapNodeInsert = InferInsertModel<typeof mindMapNodes>;
+export type MindMapLinkInsert = InferInsertModel<typeof mindMapLinks>;

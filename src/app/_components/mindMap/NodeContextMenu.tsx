@@ -1,10 +1,11 @@
 import React from "react";
 import { Trash2, Pen, Zap } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import type{ MindMapNode } from "~/server/db/schema";
 
 interface NodeContextMenuProps {
-  x: number;
-  y: number;
+  x: MindMapNode['x'];
+  y: MindMapNode['y'];
   onDelete: () => void;
   onEdit: () => void;
   onGenerate: () => void;

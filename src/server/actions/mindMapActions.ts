@@ -48,7 +48,7 @@ export async function getMindMap(mindMapId: string): Promise<{ mindMap: MindMap;
   return { mindMap, nodes, links };
 }
 
-export async function addNodeToMindMap(mindMapId: string, label: string, x?: number, y?: number): Promise<MindMapNode> {
+export async function addNodeToMindMap(mindMapId: string, label: string, x: string, y: string): Promise<MindMapNode> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -56,7 +56,13 @@ export async function addNodeToMindMap(mindMapId: string, label: string, x?: num
   const [mindMap] = await db.select().from(mindMaps).where(and(eq(mindMaps.id, mindMapId), eq(mindMaps.userId, userId)));
   if (!mindMap) throw new Error('Mind map not found or access denied');
 
-  const [newNode] = await db.insert(mindMapNodes).values({ mindMapId, label, x: x?.toString(), y: y?.toString() }).returning();
+  const [newNode] = await db.insert(mindMapNodes).values({ 
+    mindMapId: mindMapId,
+    label, 
+    x: x.toString(),
+    y: y.toString()
+  }).returning();
+  
   if (!newNode) throw new Error('Failed to add node');
   return newNode;
 }
@@ -74,7 +80,7 @@ export async function addLinkToMindMap(mindMapId: string, sourceId: string, targ
   return newLink;
 }
 
-export async function updateNode(nodeId: string, label: string, x?: number, y?: number): Promise<MindMapNode> {
+export async function updateNode(nodeId: string, label: string, x: number, y: number): Promise<MindMapNode> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
 
@@ -87,12 +93,17 @@ export async function updateNode(nodeId: string, label: string, x?: number, y?: 
   if (!node) throw new Error('Node not found or access denied');
 
   const [updatedNode] = await db.update(mindMapNodes)
-    .set({ label, x: x?.toString(), y: y?.toString(), updatedAt: new Date() })
+    .set({ 
+      label, 
+      x: x.toString(),
+      y: y.toString(),
+      updatedAt: new Date() 
+    })
     .where(eq(mindMapNodes.id, nodeId))
     .returning();
 
   if (!updatedNode) throw new Error('Failed to update node');
-  return updatedNode;
+  return updatedNode;  // No need for conversion
 }
 
 export async function deleteNode(nodeId: string): Promise<void> {
@@ -124,13 +135,9 @@ export async function deleteMindMap(mindMapId: string): Promise<void> {
   await db.delete(mindMaps).where(eq(mindMaps.id, mindMapId));
 }
 
-export async function generateRelatedWords(word: string, mindMapId: string): Promise<string[]> {
+export async function generateRelatedWords(word: string): Promise<string[]> {
   const { userId } = auth();
   if (!userId) throw new Error('Unauthorized');
-
-  // Verify the mind map belongs to the user
-  const [mindMap] = await db.select().from(mindMaps).where(and(eq(mindMaps.id, mindMapId), eq(mindMaps.userId, userId)));
-  if (!mindMap) throw new Error('Mind map not found or access denied');
 
   const { success } = await rateLimit.limit(userId);
   if (!success) {
@@ -164,16 +171,6 @@ export async function generateRelatedWords(word: string, mindMapId: string): Pro
   try {
     const parsedResponse = RelatedWordsSchema.parse(JSON.parse(message));
     const relatedWords = parsedResponse.related_words;
-
-    // Save generated words to the database
-    for (const relatedWord of relatedWords) {
-      const newNode = await addNodeToMindMap(mindMapId, relatedWord);
-      if (newNode) {
-        await addLinkToMindMap(mindMapId, word, newNode.id);
-      } else {
-        console.error(`Failed to add node for word: ${relatedWord}`);
-      }
-    }
 
     return relatedWords;
   } catch (error) {
