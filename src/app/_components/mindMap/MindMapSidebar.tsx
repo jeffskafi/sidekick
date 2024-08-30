@@ -82,18 +82,27 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
   return (
     <motion.div
       className="absolute left-0 top-0 z-10 flex h-full flex-col bg-surface-light dark:bg-surface-dark"
-      animate={{ width: isCollapsed ? "48px" : "256px" }}
+      animate={{ width: isCollapsed ? "0px" : "256px" }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       style={{ boxShadow: isCollapsed ? "none" : "4px 0 6px rgba(0,0,0,0.1)" }}
     >
-      <Button
-        variant="ghost"
-        size="icon"
-        className="absolute -right-0 top-2 z-20 mr-1 rounded-full"
-        onClick={() => setIsCollapsed(!isCollapsed)}
-      >
-        {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-      </Button>
+      <div className="flex items-center justify-between p-4">
+        {!isCollapsed && (
+          <h2 className="text-xl font-bold text-text-light dark:text-text-dark">
+            Mind Maps
+          </h2>
+        )}
+        <div className="flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full p-0 mr-2"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          </Button>
+        </div>
+      </div>
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div
@@ -103,9 +112,6 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
             transition={{ duration: 0.2 }}
             className="flex flex-grow flex-col overflow-hidden"
           >
-            <h2 className="p-4 text-xl font-bold text-text-light dark:text-text-dark">
-              Mind Maps
-            </h2>
             <div className="flex-grow overflow-y-auto">
               <ul className="px-4 pb-4">
                 {mindMaps.map((mindMap) => (
