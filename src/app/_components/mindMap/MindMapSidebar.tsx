@@ -72,7 +72,7 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        className="absolute -right-4 top-2 z-20"
+        className="absolute -right-0 top-2 z-20 mr-1"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
