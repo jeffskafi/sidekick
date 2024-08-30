@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useCallback, useRef, useState, useMemo, useEffect } from "react";
+import React, {
+  useCallback,
+  useRef,
+  useState,
+  useMemo,
+  useEffect,
+} from "react";
 import ForceGraphComponent from "./DynamicForceGraph";
 import type { ForceGraphMethods } from "react-force-graph-2d";
 import NodeContextMenu from "./NodeContextMenu";
@@ -20,7 +26,7 @@ interface UIMindMapNode extends MindMapNode {
   __bckgDimensions?: [number, number];
 }
 
-interface UIMindMapLink extends Omit<MindMapLink, 'sourceId' | 'targetId'> {
+interface UIMindMapLink extends Omit<MindMapLink, "sourceId" | "targetId"> {
   source: string;
   target: string;
 }
@@ -41,27 +47,38 @@ const MindMap: React.FC = () => {
   } = useMindMapContext();
   const { isDarkMode } = useDarkMode();
 
-  const transformedGraphData = useMemo(() => ({
-    nodes: graphData.nodes as UIMindMapNode[],
-    links: graphData.links.map((link: MindMapLink) => ({
-      ...link,
-      source: link.sourceId,
-      target: link.targetId
-    })) as UIMindMapLink[]
-  }), [graphData]);
+  const transformedGraphData = useMemo(
+    () => ({
+      nodes: graphData.nodes as UIMindMapNode[],
+      links: graphData.links.map((link: MindMapLink) => ({
+        ...link,
+        source: link.sourceId,
+        target: link.targetId,
+      })) as UIMindMapLink[],
+    }),
+    [graphData],
+  );
 
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     node: MindMapNode;
+    isOpen: boolean;
   } | null>(null);
   const graphRef = useRef<ForceGraphMethods>(null);
   const [isNewMindMapModalOpen, setIsNewMindMapModalOpen] = useState(false);
-  const [selectedMindMapId, setSelectedMindMapId] = useState<string | undefined>(undefined);
+  const [selectedMindMapId, setSelectedMindMapId] = useState<
+    string | undefined
+  >(undefined);
 
   const handleNodeClick = (node: UIMindMapNode, event: MouseEvent) => {
     event.preventDefault();
-    setContextMenu({ x: event.clientX, y: event.clientY - 100, node });
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY - 100,
+      node,
+      isOpen: true,
+    });
   };
 
   const handleBackgroundClick = () => {
@@ -73,16 +90,24 @@ const MindMap: React.FC = () => {
   };
 
   const dismissContextMenu = () => {
-    setContextMenu(null);
+    if (contextMenu) {
+      setContextMenu({ ...contextMenu, isOpen: false });
+    }
   };
 
   const nodeCanvasObject = useCallback(
-    (node: UIMindMapNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
+    (
+      node: UIMindMapNode,
+      ctx: CanvasRenderingContext2D,
+      globalScale: number,
+    ) => {
       const label = node.label;
       const fontSize = 16 / globalScale;
       ctx.font = `${fontSize}px Inter, sans-serif`;
       const textWidth = ctx.measureText(label).width;
-      const bckgDimensions = [textWidth, fontSize].map((n) => n + fontSize * 0.8) as [number, number];
+      const bckgDimensions = [textWidth, fontSize].map(
+        (n) => n + fontSize * 0.8,
+      ) as [number, number];
 
       ctx.fillStyle = "#FF7247";
       ctx.beginPath();
@@ -92,7 +117,7 @@ const MindMap: React.FC = () => {
           node.y - bckgDimensions[1] / 2,
           bckgDimensions[0],
           bckgDimensions[1],
-          5
+          5,
         );
       }
       ctx.fill();
@@ -118,7 +143,7 @@ const MindMap: React.FC = () => {
           node.y - bckgDimensions[1] / 2,
           bckgDimensions[0],
           bckgDimensions[1],
-          5
+          5,
         );
         ctx.fill();
       }
@@ -138,6 +163,13 @@ const MindMap: React.FC = () => {
   }, [fetchMindMaps]);
 
   const graphBackgroundColor = isDarkMode ? colors.gray[900] : colors.gray[50];
+
+  const handleAddNode = (parentNode: UIMindMapNode) => {
+    // Implement the logic to add a new node
+    console.log("Adding new node to parent:", parentNode.id);
+    // You'll need to implement this function in your MindMapContext
+    // addNewNode(parentNode.id);
+  };
 
   return (
     <div className="relative h-full w-full bg-gray-50 dark:bg-gray-900">
@@ -187,6 +219,12 @@ const MindMap: React.FC = () => {
               void handleGenerateChildren(contextMenu.node);
               dismissContextMenu();
             }}
+            onAddNode={() => {
+              handleAddNode(contextMenu.node);
+              dismissContextMenu();
+            }}
+            isOpen={contextMenu.isOpen}
+            onClose={dismissContextMenu}
           />
         )}
         {editingNode && (
