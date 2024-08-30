@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import type { MindMap } from "~/server/db/schema";
 import { Button } from "~/components/ui/button";
-import { MoreHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Zap, Pen, Trash2 } from "lucide-react";
 import { useMindMapContext } from "~/app/_contexts/MindMapContext";
-import MindMapContextMenu from "./MindMapContextMenu";
 import { motion, AnimatePresence } from "framer-motion";
+import ContextMenu from "~/components/ui/context-menu";
 
 interface MindMapSidebarProps {
   mindMaps: MindMap[];
@@ -20,18 +20,15 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
   const { deleteMindMap, renameMindMap } = useMindMapContext();
   const [renamingMindMapId, setRenamingMindMapId] = useState<string | null>(null);
   const [newMindMapName, setNewMindMapName] = useState("");
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; mindMapId: string } | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleDelete = async (mindMapId: string) => {
     await deleteMindMap(mindMapId);
-    setContextMenu(null);
   };
 
   const handleRename = async (mindMapId: string) => {
     setRenamingMindMapId(mindMapId);
     setNewMindMapName(mindMaps.find(m => m.id === mindMapId)?.name ?? "");
-    setContextMenu(null);
   };
 
   const confirmRename = async (mindMapId: string) => {
@@ -41,16 +38,41 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
     }
   };
 
+  const getContextMenuActions = (mindMap: MindMap) => [
+    {
+      icon: <Zap size={20} />,
+      label: "Auto-name",
+      onClick: () => {
+        // Implement auto-naming logic here
+        console.log("Auto-naming mind map:", mindMap.id);
+      },
+      className: "text-amber-500 hover:bg-amber-500 hover:text-white dark:text-amber-400 dark:hover:bg-amber-500 dark:hover:text-white",
+    },
+    {
+      icon: <Pen size={20} />,
+      label: "Rename",
+      onClick: () => handleRename(mindMap.id),
+      className: "text-amber-600 hover:bg-amber-600 hover:text-white dark:text-amber-300 dark:hover:bg-amber-500 dark:hover:text-white",
+    },
+    {
+      icon: <Trash2 size={20} />,
+      label: "Delete",
+      onClick: () => handleDelete(mindMap.id),
+      className: "text-amber-500 hover:bg-red-100 hover:text-red-600 dark:text-amber-400 dark:hover:bg-red-900 dark:hover:text-red-400",
+    },
+  ];
+
   return (
     <motion.div
-      className="bg-surface-light dark:bg-surface-dark flex flex-col h-full relative"
+      className="bg-surface-light dark:bg-surface-dark flex flex-col h-full absolute left-0 top-0 z-10"
       animate={{ width: isCollapsed ? "48px" : "256px" }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
+      style={{ boxShadow: isCollapsed ? "none" : "4px 0 6px rgba(0,0,0,0.1)" }}
     >
       <Button
         variant="ghost"
         size="icon"
-        className="absolute -right-4 top-2 z-10"
+        className="absolute -right-4 top-2 z-20"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -91,22 +113,7 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
                         {mindMap.name}
                       </span>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 p-0"
-                      onClick={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        setContextMenu({
-                          x: rect.left,
-                          y: rect.bottom,
-                          mindMapId: mindMap.id,
-                        });
-                      }}
-                    >
-                      <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+                    <ContextMenu actions={getContextMenuActions(mindMap)} />
                   </li>
                 ))}
               </ul>
@@ -114,14 +121,6 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-      {contextMenu && (
-        <MindMapContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          onDelete={() => handleDelete(contextMenu.mindMapId)}
-          onRename={() => handleRename(contextMenu.mindMapId)}
-        />
-      )}
     </motion.div>
   );
 };
