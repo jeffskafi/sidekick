@@ -11,6 +11,8 @@ import MindMapSidebar from "./MindMapSidebar";
 import { Button } from "~/components/ui/button";
 import { Plus } from "lucide-react";
 import NewMindMapModal from "./NewMindMapModal";
+import { useDarkMode } from "~/app/_contexts/DarkModeContext";
+import colors from "tailwindcss/colors";
 
 interface UIMindMapNode extends MindMapNode {
   x?: number;
@@ -37,6 +39,7 @@ const MindMap: React.FC = () => {
     fetchMindMaps,
     mindMaps,
   } = useMindMapContext();
+  const { isDarkMode } = useDarkMode();
 
   const transformedGraphData = useMemo(() => ({
     nodes: graphData.nodes as UIMindMapNode[],
@@ -134,8 +137,10 @@ const MindMap: React.FC = () => {
     void fetchMindMaps();
   }, [fetchMindMaps]);
 
+  const graphBackgroundColor = isDarkMode ? colors.gray[900] : colors.gray[50];
+
   return (
-    <div className="relative flex h-full w-full bg-background-light dark:bg-background-dark">
+    <div className="relative h-full w-full bg-gray-50 dark:bg-gray-900">
       <MindMapSidebar
         mindMaps={mindMaps}
         onSelectMindMap={(mindMap) => {
@@ -144,7 +149,7 @@ const MindMap: React.FC = () => {
         }}
         selectedMindMapId={selectedMindMapId}
       />
-      <div className="flex-grow relative">
+      <div className="h-full w-full">
         <Button
           className="absolute right-4 top-4 z-10"
           onClick={() => setIsNewMindMapModalOpen(true)}
@@ -161,9 +166,10 @@ const MindMap: React.FC = () => {
           onNodeClick={handleNodeClick}
           onBackgroundClick={handleBackgroundClick}
           onZoomEnd={handleZoomPan}
-          linkColor={() => "#FFA07A"}
+          linkColor={() => colors.orange[300]} // Using Tailwind's color palette
           linkWidth={2}
           height={window.innerHeight - 56} // Subtract header height (14 * 4 = 56px)
+          backgroundColor={graphBackgroundColor}
         />
         {contextMenu && (
           <NodeContextMenu
