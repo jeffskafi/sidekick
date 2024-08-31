@@ -61,3 +61,36 @@ export type TaskSearchParams = {
 export type TaskNode = Omit<Task, 'children'> & {
   children: TaskNode[];
 };
+
+export const mindMaps = pgTable('mind_maps', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').notNull(),
+  name: text('name').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const mindMapNodes = pgTable('mind_map_nodes', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  mindMapId: uuid('mind_map_id').references(() => mindMaps.id).notNull(),
+  label: text('label').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const mindMapLinks = pgTable('mind_map_links', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  mindMapId: uuid('mind_map_id').references(() => mindMaps.id).notNull(),
+  sourceId: uuid('source_id').references(() => mindMapNodes.id).notNull(),
+  targetId: uuid('target_id').references(() => mindMapNodes.id).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export type MindMap = InferSelectModel<typeof mindMaps>;
+export type MindMapNode = InferSelectModel<typeof mindMapNodes>;
+export type MindMapLink = InferSelectModel<typeof mindMapLinks>;
+
+// You might want to add these types if they're not already present
+export type MindMapInsert = InferInsertModel<typeof mindMaps>;
+export type MindMapNodeInsert = InferInsertModel<typeof mindMapNodes>;
+export type MindMapLinkInsert = InferInsertModel<typeof mindMapLinks>;
