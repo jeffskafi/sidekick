@@ -17,17 +17,20 @@ interface MindMapSidebarProps {
   mindMaps: MindMap[];
   onSelectMindMap: (mindMap: MindMap | null) => void;
   selectedMindMapId: string | undefined;
+  isCollapsed: boolean;
+  setIsCollapsed: (isCollapsed: boolean) => void;
 }
 
 const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
   mindMaps,
   onSelectMindMap,
   selectedMindMapId,
+  isCollapsed,
+  setIsCollapsed,
 }) => {
   const { deleteMindMap, renameMindMap, fetchMindMaps } = useMindMapContext();
   const [renamingMindMapId, setRenamingMindMapId] = useState<string | null>(null);
   const [newMindMapName, setNewMindMapName] = useState("");
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -91,6 +94,11 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
     },
   ];
 
+  const handleMindMapSelect = (mindMap: MindMap) => {
+    onSelectMindMap(mindMap);
+    setIsCollapsed(true);
+  };
+
   return (
     <motion.div
       className="absolute left-0 top-0 z-10 flex h-full flex-col bg-surface-light dark:bg-surface-dark"
@@ -150,7 +158,7 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
                     ) : (
                       <>
                         <span
-                          onClick={() => onSelectMindMap(mindMap)}
+                          onClick={() => handleMindMapSelect(mindMap)}
                           className="flex-grow cursor-pointer"
                         >
                           {mindMap.name}

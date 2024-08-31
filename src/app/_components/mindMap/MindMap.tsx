@@ -20,6 +20,7 @@ import NewMindMapModal from "./NewMindMapModal";
 import { useDarkMode } from "~/app/_contexts/DarkModeContext";
 import colors from "tailwindcss/colors";
 import type { MindMap } from "~/server/db/schema"; // Make sure this import is correct
+import { useWindowSize } from "~/app/_hooks/useWindowSize"; // Add this import
 
 interface UIMindMapNode extends MindMapNode {
   x?: number;
@@ -49,6 +50,9 @@ const MindMap: React.FC = () => {
     setSelectedMindMapId,
   } = useMindMapContext();
   const { isDarkMode } = useDarkMode();
+  const { width, height } = useWindowSize();
+
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const transformedGraphData = useMemo(
     () => ({
@@ -70,6 +74,7 @@ const MindMap: React.FC = () => {
   } | null>(null);
   const graphRef = useRef<ForceGraphMethods>(null);
   const [isNewMindMapModalOpen, setIsNewMindMapModalOpen] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const handleNodeClick = (node: UIMindMapNode, event: MouseEvent) => {
     event.preventDefault();
@@ -168,9 +173,10 @@ const MindMap: React.FC = () => {
     : colors.white;
 
   const handleSelectMindMap = (mindMap: MindMap | null) => {
+    setSelectedMindMapId(mindMap?.id);
+    setIsCollapsed(true); // Collapse sidebar when a mind map is selected
     if (mindMap) {
       void loadMindMap(mindMap.id);
-      setSelectedMindMapId(mindMap.id);
     } else {
       setSelectedMindMapId(undefined);
       // Optionally, clear the graph data or load a default mind map
@@ -178,14 +184,31 @@ const MindMap: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setIsCollapsed(true);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="relative h-full w-full bg-white dark:bg-dark-bg">
-      <MindMapSidebar
-        mindMaps={mindMaps}
-        onSelectMindMap={handleSelectMindMap}
-        selectedMindMapId={selectedMindMapId}
-      />
-      <div className="h-full w-full">
+    <div className="relative flex h-full w-full bg-white dark:bg-dark-bg">
+      <div ref={sidebarRef}>
+        <MindMapSidebar
+          mindMaps={mindMaps}
+          onSelectMindMap={handleSelectMindMap}
+          selectedMindMapId={selectedMindMapId}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+        />
+      </div>
+      <div className="flex-1 overflow-hidden">
         <Button
           className="absolute right-4 top-4 z-10"
           onClick={() => setIsNewMindMapModalOpen(true)}
@@ -204,7 +227,8 @@ const MindMap: React.FC = () => {
           onZoomEnd={handleZoomPan}
           linkColor={() => colors.orange[300]} // Using Tailwind's color palette
           linkWidth={2}
-          height={window.innerHeight - 56} // Subtract header height (14 * 4 = 56px)
+          width={width - (isCollapsed ? 0 : 256)} // Subtract sidebar width when expanded
+          height={height - 56} // Subtract header height
           backgroundColor={graphBackgroundColor}
         />
         {contextMenu && (

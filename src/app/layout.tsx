@@ -60,7 +60,7 @@ export default function RootLayout({
             <head>
               <script dangerouslySetInnerHTML={{ __html: themeScript() }} />
             </head>
-            <body className="flex min-h-screen flex-col bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
+            <body className="flex h-screen flex-col bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
               <Header />
               <Script
                 src="https://www.googletagmanager.com/gtag/js?id=AW-16680016187"
