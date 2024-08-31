@@ -27,6 +27,8 @@ export interface MindMapContextType {
   handleConfirmEdit: (nodeId: string, newLabel: string) => Promise<void>;
   fetchMindMaps: () => Promise<void>;
   renameMindMap: (mindMapId: string, newName: string) => Promise<void>;
+  selectedMindMapId: string | undefined;
+  setSelectedMindMapId: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
 const MindMapContext = createContext<MindMapContextType | undefined>(undefined);
@@ -37,6 +39,7 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
   const [nodes, setNodes] = useState<MindMapNode[]>([]);
   const [links, setLinks] = useState<MindMapLink[]>([]);
   const [editingNode, setEditingNode] = useState<MindMapNode | null>(null);
+  const [selectedMindMapId, setSelectedMindMapId] = useState<string | undefined>(undefined);
 
   const loadMindMap = useCallback(async (mindMapId: string) => {
     const data = await mindMapActions.getMindMap(mindMapId);
@@ -165,6 +168,8 @@ export function MindMapProvider({ children }: { children: React.ReactNode }) {
     handleConfirmEdit,
     fetchMindMaps,
     renameMindMap,
+    selectedMindMapId,
+    setSelectedMindMapId,
   };
 
   return (

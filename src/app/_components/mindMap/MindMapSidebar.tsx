@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { MindMap } from "~/server/db/schema";
 import { Button } from "~/components/ui/button";
 import {
@@ -15,7 +15,7 @@ import ContextMenu from "~/components/ui/context-menu";
 
 interface MindMapSidebarProps {
   mindMaps: MindMap[];
-  onSelectMindMap: (mindMap: MindMap) => void;
+  onSelectMindMap: (mindMap: MindMap | null) => void;
   selectedMindMapId: string | undefined;
 }
 
@@ -24,16 +24,28 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
   onSelectMindMap,
   selectedMindMapId,
 }) => {
-  const { deleteMindMap, renameMindMap } = useMindMapContext();
-  const [renamingMindMapId, setRenamingMindMapId] = useState<string | null>(
-    null,
-  );
+  const { deleteMindMap, renameMindMap, fetchMindMaps } = useMindMapContext();
+  const [renamingMindMapId, setRenamingMindMapId] = useState<string | null>(null);
   const [newMindMapName, setNewMindMapName] = useState("");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
+  useEffect(() => {
+    void fetchMindMaps();
+  }, [fetchMindMaps]);
+
+  useEffect(() => {
+    // This effect will run whenever mindMaps prop changes
+  }, [mindMaps]);
+
   const handleDelete = async (mindMapId: string) => {
     await deleteMindMap(mindMapId);
+    // After deleting, fetch the updated list of mind maps
+    await fetchMindMaps();
+    // If the deleted mind map was selected, clear the selection
+    if (selectedMindMapId === mindMapId) {
+      onSelectMindMap(null);
+    }
   };
 
   const handleRename = async (mindMapId: string) => {
@@ -96,7 +108,7 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-full p-0 mr-2"
+            className="h-8 w-8 rounded-full p-0 mr-2 text-text-light dark:text-text-dark hover:bg-surface-light dark:hover:bg-surface-dark"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -119,8 +131,8 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
                     key={mindMap.id}
                     className={`mb-2 flex items-center justify-between rounded p-2 ${
                       selectedMindMapId === mindMap.id
-                        ? "bg-primary-light text-white dark:bg-primary-dark"
-                        : "text-text-light dark:text-text-dark"
+                        ? "bg-primary-light dark:bg-primary-dark text-white"
+                        : "text-text-light dark:text-text-dark hover:bg-surface-light dark:hover:bg-surface-dark"
                     }`}
                   >
                     {renamingMindMapId === mindMap.id ? (
@@ -146,7 +158,7 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 p-0 rounded-full"
+                          className="h-8 w-8 p-0 rounded-full text-text-light dark:text-text-dark hover:bg-surface-light dark:hover:bg-surface-dark"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleMenuToggle(mindMap.id);

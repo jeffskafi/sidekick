@@ -1,5 +1,5 @@
 import React from "react";
-import { Trash2, Pen, Zap, Plus } from "lucide-react";
+import { Trash2, Pen, Zap } from "lucide-react";
 import CommonContextMenu from "~/components/ui/context-menu";
 
 interface NodeContextMenuProps {
@@ -8,7 +8,6 @@ interface NodeContextMenuProps {
   onDelete: () => void;
   onEdit: () => void;
   onGenerate: () => void;
-  onAddNode: () => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -19,7 +18,6 @@ const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
   onDelete,
   onEdit,
   onGenerate,
-  onAddNode,
   isOpen,
   onClose,
 }) => {
@@ -30,13 +28,6 @@ const NodeContextMenu: React.FC<NodeContextMenuProps> = ({
       onClick: onGenerate,
       className:
         "text-amber-500 hover:bg-amber-500 hover:text-white dark:text-amber-400 dark:hover:bg-amber-500 dark:hover:text-white",
-    },
-    {
-      icon: <Plus size={20} />,
-      label: "Add Node",
-      onClick: onAddNode,
-      className:
-        "text-green-500 hover:bg-green-500 hover:text-white dark:text-green-400 dark:hover:bg-green-500 dark:hover:text-white",
     },
     {
       icon: <Pen size={20} />,

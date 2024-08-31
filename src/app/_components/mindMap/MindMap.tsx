@@ -19,6 +19,7 @@ import { Plus } from "lucide-react";
 import NewMindMapModal from "./NewMindMapModal";
 import { useDarkMode } from "~/app/_contexts/DarkModeContext";
 import colors from "tailwindcss/colors";
+import type { MindMap } from "~/server/db/schema"; // Make sure this import is correct
 
 interface UIMindMapNode extends MindMapNode {
   x?: number;
@@ -44,6 +45,8 @@ const MindMap: React.FC = () => {
     createMindMap,
     fetchMindMaps,
     mindMaps,
+    selectedMindMapId,
+    setSelectedMindMapId,
   } = useMindMapContext();
   const { isDarkMode } = useDarkMode();
 
@@ -67,9 +70,6 @@ const MindMap: React.FC = () => {
   } | null>(null);
   const graphRef = useRef<ForceGraphMethods>(null);
   const [isNewMindMapModalOpen, setIsNewMindMapModalOpen] = useState(false);
-  const [selectedMindMapId, setSelectedMindMapId] = useState<
-    string | undefined
-  >(undefined);
 
   const handleNodeClick = (node: UIMindMapNode, event: MouseEvent) => {
     event.preventDefault();
@@ -155,6 +155,7 @@ const MindMap: React.FC = () => {
     const newMindMap = await createMindMap(rootNodeLabel);
     await loadMindMap(newMindMap.id);
     setSelectedMindMapId(newMindMap.id);
+    await fetchMindMaps(); // Add this line to refresh the list of mind maps
     setIsNewMindMapModalOpen(false);
   };
 
@@ -162,23 +163,26 @@ const MindMap: React.FC = () => {
     void fetchMindMaps();
   }, [fetchMindMaps]);
 
-  const graphBackgroundColor = isDarkMode ? colors.gray[900] : colors.gray[50];
+  const graphBackgroundColor = isDarkMode
+    ? "rgb(var(--dark-bg))"
+    : colors.white;
 
-  const handleAddNode = (parentNode: UIMindMapNode) => {
-    // Implement the logic to add a new node
-    console.log("Adding new node to parent:", parentNode.id);
-    // You'll need to implement this function in your MindMapContext
-    // addNewNode(parentNode.id);
+  const handleSelectMindMap = (mindMap: MindMap | null) => {
+    if (mindMap) {
+      void loadMindMap(mindMap.id);
+      setSelectedMindMapId(mindMap.id);
+    } else {
+      setSelectedMindMapId(undefined);
+      // Optionally, clear the graph data or load a default mind map
+      // setGraphData({ nodes: [], links: [] });
+    }
   };
 
   return (
-    <div className="relative h-full w-full bg-gray-50 dark:bg-gray-900">
+    <div className="relative h-full w-full bg-white dark:bg-dark-bg">
       <MindMapSidebar
         mindMaps={mindMaps}
-        onSelectMindMap={(mindMap) => {
-          void loadMindMap(mindMap.id);
-          setSelectedMindMapId(mindMap.id);
-        }}
+        onSelectMindMap={handleSelectMindMap}
         selectedMindMapId={selectedMindMapId}
       />
       <div className="h-full w-full">
@@ -217,10 +221,6 @@ const MindMap: React.FC = () => {
             }}
             onGenerate={() => {
               void handleGenerateChildren(contextMenu.node);
-              dismissContextMenu();
-            }}
-            onAddNode={() => {
-              handleAddNode(contextMenu.node);
               dismissContextMenu();
             }}
             isOpen={contextMenu.isOpen}
