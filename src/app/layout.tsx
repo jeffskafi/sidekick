@@ -42,13 +42,6 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/images/logo.svg" }],
 };
 
-export const viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -56,11 +49,11 @@ export default function RootLayout({
     <ClerkProvider>
       <CSPostHogProvider>
         <DarkModeProvider>
-          <html lang="en" className={`${GeistSans.variable} h-full`}>
+          <html lang="en" className={`${GeistSans.variable}`}>
             <head>
               <script dangerouslySetInnerHTML={{ __html: themeScript() }} />
             </head>
-            <body className="flex h-screen flex-col bg-gray-50 transition-colors duration-300 dark:bg-dark-bg">
+            <body className="bg-gray-50 dark:bg-dark-bg">
               <Header />
               <Script
                 src="https://www.googletagmanager.com/gtag/js?id=AW-16680016187"
@@ -74,7 +67,7 @@ export default function RootLayout({
                   gtag('config', 'AW-16680016187');
                 `}
               </Script>
-              <main className="flex-1 overflow-hidden">{children}</main>
+              <main>{children}</main>
             </body>
           </html>
         </DarkModeProvider>
