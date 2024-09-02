@@ -51,6 +51,10 @@ export default async function IntegrationsPage() {
             <p>{integration.available ? "Connected" : "Not connected"}</p>
           </Link>
           <p>{googleCalendarEvents?.length}</p>
+          <p>{googleCalendarEvents[0]?.summary}</p>
+          {googleCalendarEvents.map((event) => (
+            <p key={event.id}>{event.summary}</p>
+          ))}
           </div>
         ))}
       </div>
