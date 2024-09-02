@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { getIntegrations } from "~/server/actions/integrations/integrationGlobalActions";
+import { getGoogleCalendarEvents } from "~/server/actions/integrations/googleActions";
 
 const INTEGRATIONS_CONFIG = [
   { name: "Google", provider: "oauth_google", url: "https://developers.google.com/docs" },
@@ -21,7 +22,7 @@ const INTEGRATIONS_CONFIG = [
 
 export default async function IntegrationsPage() {
   const connectedIntegrations = await getIntegrations();
-  console.log("connectedIntegrations", connectedIntegrations)
+  const googleCalendarEvents = await getGoogleCalendarEvents();
 
   const integrationsList = INTEGRATIONS_CONFIG.map(({ name, provider, url }) => ({
     name,
@@ -37,8 +38,9 @@ export default async function IntegrationsPage() {
       </p>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {integrationsList.map((integration) => (
-          <Link
-            href={integration.url}
+          <div key={integration.name}>
+            <Link
+              href={integration.url}
             key={integration.name}
             className="block rounded-lg border p-6 transition-shadow hover:shadow-md"
             target="_blank"
@@ -48,6 +50,8 @@ export default async function IntegrationsPage() {
             <p className="text-gray-600">{integration.description}</p>
             <p>{integration.available ? "Connected" : "Not connected"}</p>
           </Link>
+          <p>{googleCalendarEvents?.length}</p>
+          </div>
         ))}
       </div>
     </div>
