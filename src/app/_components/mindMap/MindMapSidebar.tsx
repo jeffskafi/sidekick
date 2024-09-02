@@ -4,7 +4,6 @@ import { Button } from "~/components/ui/button";
 import {
   ChevronLeft,
   ChevronRight,
-  Zap,
   Pen,
   Trash2,
   MoreHorizontal,
@@ -68,16 +67,6 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
   };
 
   const getContextMenuActions = (mindMap: MindMap) => [
-    {
-      icon: <Zap size={20} />,
-      label: "Auto-name",
-      onClick: () => {
-        // Implement auto-naming logic here
-        console.log("Auto-naming mind map:", mindMap.id);
-      },
-      className:
-        "text-amber-500 hover:bg-amber-500 hover:text-white dark:text-amber-400 dark:hover:bg-amber-500 dark:hover:text-white",
-    },
     {
       icon: <Pen size={20} />,
       label: "Rename",
