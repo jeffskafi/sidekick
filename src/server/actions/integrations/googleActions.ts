@@ -22,12 +22,7 @@ export async function getGoogleCalendarEvents() {
     if (!userId) throw new Error('Unauthorized');
 
     const googleAuthInfo = await clerkClient().users.getUserOauthAccessToken(userId, "oauth_google")
-    console.log("googleAuthInfo", googleAuthInfo)
     const token = googleAuthInfo.data[0]?.token
-
-    const scopes = googleAuthInfo.data[0]?.scopes
-    console.log("scopes", scopes)
-
     try {
         // const token = await getGoogleTokenForUser(userId);
         const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?${new URLSearchParams({
@@ -62,7 +57,6 @@ export async function getGoogleUserProfile() {
 
         if (!response.ok) throw new Error('Failed to fetch Google user profile');
         const data = await response.json() as GoogleUserProfile;
-        console.log("data", data)
         return data;
     } catch (error) {
         console.error("Error fetching Google user profile:", error);
