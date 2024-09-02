@@ -23,7 +23,19 @@ const Header = () => {
   const { isDarkMode } = useDarkMode();
   const subscriptionsFlagEnabled = useFeatureFlagEnabled("subscriptions");
   const mindMapFlagEnabled = useFeatureFlagEnabled("mind-map");
+  const integrationsFlagEnabled = useFeatureFlagEnabled("integrations");
   const pathname = usePathname();
+
+  const navItems = [
+    { href: "/tasks", label: "Tasks" },
+    { href: "/mind-map", label: "Mind Maps", enabled: mindMapFlagEnabled },
+    { href: "/integrations", label: "Integrations", enabled: integrationsFlagEnabled },
+    {
+      href: "https://chatgpt.com/g/g-DMgdGagJK-sidekick",
+      label: "ChatGPT",
+      external: true,
+    },
+  ];
 
   return (
     <header className="bg-white shadow-sm dark:bg-dark-bg">
@@ -46,41 +58,35 @@ const Header = () => {
                 </h1>
               </Link>
               <div className="hidden space-x-4 sm:flex">
-                {isSignedIn && (
-                  <>
-                    <Link
-                      href="/tasks"
-                      className={`text-sm font-medium transition-colors duration-200 ${
-                        pathname === "/tasks"
-                          ? "border-b-2 border-amber-500 text-amber-500"
-                          : "text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
-                      }`}
-                    >
-                      Tasks
-                    </Link>
-                    {mindMapFlagEnabled && (
-                      <Link
-                        href="/mind-map"
-                        className={`text-sm font-medium transition-colors duration-200 ${
-                          pathname === "/mind-map"
-                            ? "border-b-2 border-amber-500 text-amber-500"
-                            : "text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
-                        }`}
-                      >
-                        Mind Maps
-                      </Link>
-                    )}
-                    <a
-                      href="https://chatgpt.com/g/g-DMgdGagJK-sidekick"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
-                    >
-                      ChatGPT
-                      <ExternalLink size={14} className="ml-1" />
-                    </a>
-                  </>
-                )}
+                {isSignedIn &&
+                  navItems.map(
+                    (item, index) =>
+                      item.enabled !== false &&
+                      (item.external ? (
+                        <a
+                          key={index}
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
+                        >
+                          {item.label}
+                          <ExternalLink size={14} className="ml-1" />
+                        </a>
+                      ) : (
+                        <Link
+                          key={index}
+                          href={item.href}
+                          className={`text-sm font-medium transition-colors duration-200 ${
+                            pathname === item.href
+                              ? "border-b-2 border-amber-500 text-amber-500"
+                              : "text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                      )),
+                  )}
               </div>
             </div>
             {isSignedIn ? (
@@ -118,41 +124,35 @@ const Header = () => {
             )}
           </div>
           <div className="flex space-x-4 sm:hidden">
-            {isSignedIn && (
-              <>
-                <Link
-                  href="/tasks"
-                  className={`text-sm font-medium transition-colors duration-200 ${
-                    pathname === "/tasks"
-                      ? "border-b-2 border-amber-500 text-amber-500"
-                      : "text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
-                  }`}
-                >
-                  Tasks
-                </Link>
-                {mindMapFlagEnabled && (
-                  <Link
-                    href="/mind-map"
-                    className={`text-sm font-medium transition-colors duration-200 ${
-                      pathname === "/mind-map"
-                        ? "border-b-2 border-amber-500 text-amber-500"
-                        : "text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
-                    }`}
-                  >
-                    Mind Maps
-                  </Link>
-                )}
-                <a
-                  href="https://chatgpt.com/g/g-DMgdGagJK-sidekick"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
-                >
-                  ChatGPT
-                  <ExternalLink size={14} className="ml-1" />
-                </a>
-              </>
-            )}
+            {isSignedIn &&
+              navItems.map(
+                (item, index) =>
+                  item.enabled !== false &&
+                  (item.external ? (
+                    <a
+                      key={index}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center text-sm font-medium text-gray-600 transition-colors duration-200 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
+                    >
+                      {item.label}
+                      <ExternalLink size={14} className="ml-1" />
+                    </a>
+                  ) : (
+                    <Link
+                      key={index}
+                      href={item.href}
+                      className={`text-sm font-medium transition-colors duration-200 ${
+                        pathname === item.href
+                          ? "border-b-2 border-amber-500 text-amber-500"
+                          : "text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  )),
+              )}
           </div>
         </div>
       </nav>
