@@ -22,13 +22,12 @@ const Header = () => {
   const { isSignedIn } = useAuth();
   const { isDarkMode } = useDarkMode();
   const subscriptionsFlagEnabled = useFeatureFlagEnabled("subscriptions");
-  const mindMapFlagEnabled = useFeatureFlagEnabled("mind-map");
   const integrationsFlagEnabled = useFeatureFlagEnabled("integrations");
   const pathname = usePathname();
 
   const navItems = [
     { href: "/tasks", label: "Tasks" },
-    { href: "/mind-map", label: "Mind Maps", enabled: mindMapFlagEnabled },
+    { href: "/mind-map", label: "Mind Maps" },
     { href: "/integrations", label: "Integrations", enabled: integrationsFlagEnabled },
     {
       href: "https://chatgpt.com/g/g-DMgdGagJK-sidekick",
