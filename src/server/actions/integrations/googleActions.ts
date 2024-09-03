@@ -24,7 +24,6 @@ export async function getGoogleCalendarEvents() {
     const googleAuthInfo = await clerkClient().users.getUserOauthAccessToken(userId, "oauth_google")
     const token = googleAuthInfo.data[0]?.token
     try {
-        // const token = await getGoogleTokenForUser(userId);
         const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?${new URLSearchParams({
             timeMin: new Date().toISOString(),
             maxResults: '10',
