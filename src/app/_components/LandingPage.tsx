@@ -150,6 +150,9 @@ export default function LandingPage() {
           <p className="text-sm text-text-light dark:text-text-dark">
             Made with ❤️ in Santa Monica | © {new Date().getFullYear()} Sidekick
           </p>
+          <p className="text-sm text-text-light dark:text-text-dark mt-2">
+            <a href="/privacy" className="hover:underline">Privacy Policy</a>
+          </p>
         </div>
       </footer>
     </div>
