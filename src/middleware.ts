@@ -2,7 +2,7 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export default clerkMiddleware((auth, req) => {
-  const publicPaths = ["/", "/privacy", "/chatgpt-connect"];
+  const publicPaths = ["/", "/privacy", "/chatgpt-connect", "/terms-of-service"];
   const isPublicPath = publicPaths.includes(req.nextUrl.pathname);
 
   if (isPublicPath) {
