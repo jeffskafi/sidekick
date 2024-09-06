@@ -21,7 +21,7 @@ export default function PrivacyPolicy() {
         </h1>
         <div className="rounded-lg bg-surface-light p-8 shadow-md dark:bg-surface-dark">
           <p className="mb-6 text-text-light-light dark:text-text-light-dark">
-            Last updated: August 6, 2024
+            Last updated: September 6, 2024
           </p>
           <p className="mb-6 text-text-light dark:text-text-dark">
             Sidekick (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) is
