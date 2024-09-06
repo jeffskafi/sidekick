@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 export default function PrivacyPolicy() {
   const [isClient, setIsClient] = useState(false);
@@ -29,6 +29,17 @@ export default function PrivacyPolicy() {
             how we collect, use, disclose, and safeguard your information when
             you use our application.
           </p>
+
+          <h2 className="mb-4 mt-8 text-2xl font-semibold text-text-light dark:text-text-dark">
+            Use of Google Workspace APIs
+          </h2>
+          <p className="mb-6 text-text-light dark:text-text-dark">
+            We want to explicitly affirm that any data obtained through Google
+            Workspace APIs is not used to develop, improve, or train generalized
+            AI and/or ML models. We respect your privacy and the intended use of
+            these APIs as outlined in Google&apos;s developer policies.
+          </p>
+
           <h2 className="mb-4 mt-8 text-2xl font-semibold text-text-light dark:text-text-dark">
             Information We Collect
           </h2>
