@@ -59,11 +59,21 @@ export default function PrivacyPolicy() {
           <ul className="mb-6 list-inside list-disc text-text-light dark:text-text-dark">
             <li>https://www.googleapis.com/auth/userinfo.email</li>
             <li>https://www.googleapis.com/auth/userinfo.profile</li>
-            {/* Add any other scopes you're using here */}
+            <li>https://www.googleapis.com/auth/calendar.events</li>
+            <li>https://www.googleapis.com/auth/calendar.events.owned</li>
+            <li>https://www.googleapis.com/auth/gmail.send</li>
+            <li>https://www.googleapis.com/auth/gmail.modify</li>
+            <li>https://www.googleapis.com/auth/gmail.compose</li>
+            <li>https://www.googleapis.com/auth/gmail.readonly</li>
           </ul>
           <p className="mb-6 text-text-light dark:text-text-dark">
-            These scopes allow us to access basic profile information and email address to provide our services. We only access the minimum amount of data necessary for the functioning of our application.
+            These scopes allow us to access your email, profile information, and calendar data to provide our services. We only access the minimum amount of data necessary for the functioning of our application. Here&apos;s a brief explanation of what each scope allows:
           </p>
+          <ul className="mb-6 list-inside list-disc text-text-light dark:text-text-dark">
+            <li>Email and profile information: To identify you and communicate with you</li>
+            <li>Calendar events: To manage and schedule events on your behalf</li>
+            <li>Gmail access: To send, modify, compose, and read emails as part of our service functionality</li>
+          </ul>
 
           <h2 className="mb-4 mt-8 text-2xl font-semibold text-text-light dark:text-text-dark">
             Information We Collect
