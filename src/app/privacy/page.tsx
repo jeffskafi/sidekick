@@ -34,10 +34,35 @@ export default function PrivacyPolicy() {
             Use of Google Workspace APIs
           </h2>
           <p className="mb-6 text-text-light dark:text-text-dark">
-            We want to explicitly affirm that any data obtained through Google
-            Workspace APIs is not used to develop, improve, or train generalized
-            AI and/or ML models. We respect your privacy and the intended use of
-            these APIs as outlined in Google&apos;s developer policies.
+            We want to explicitly affirm that any data obtained through Google Workspace APIs is not used to develop, improve, or train generalized AI and/or ML models. We respect your privacy and the intended use of these APIs as outlined in Google&apos;s developer policies.
+          </p>
+
+          <h2 className="mb-4 mt-8 text-2xl font-semibold text-text-light dark:text-text-dark">
+            Data Sharing and Disclosure
+          </h2>
+          <p className="mb-6 text-text-light dark:text-text-dark">
+            We do not share, transfer, or disclose Google user data to any third parties, except in the following limited circumstances:
+          </p>
+          <ul className="mb-6 list-inside list-disc text-text-light dark:text-text-dark">
+            <li>With your explicit consent</li>
+            <li>To comply with legal obligations</li>
+            <li>To protect our rights, privacy, safety, or property</li>
+            <li>In connection with the sale or transfer of all or part of our business</li>
+          </ul>
+
+          <h2 className="mb-4 mt-8 text-2xl font-semibold text-text-light dark:text-text-dark">
+            Google API Scopes
+          </h2>
+          <p className="mb-6 text-text-light dark:text-text-dark">
+            Our application requests the following Google API scopes:
+          </p>
+          <ul className="mb-6 list-inside list-disc text-text-light dark:text-text-dark">
+            <li>https://www.googleapis.com/auth/userinfo.email</li>
+            <li>https://www.googleapis.com/auth/userinfo.profile</li>
+            {/* Add any other scopes you're using here */}
+          </ul>
+          <p className="mb-6 text-text-light dark:text-text-dark">
+            These scopes allow us to access basic profile information and email address to provide our services. We only access the minimum amount of data necessary for the functioning of our application.
           </p>
 
           <h2 className="mb-4 mt-8 text-2xl font-semibold text-text-light dark:text-text-dark">
