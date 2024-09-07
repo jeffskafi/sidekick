@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth, UserButton, SignInButton } from "@clerk/nextjs";
-import { Palette, CreditCard, ExternalLink } from "lucide-react";
+import { Palette, CreditCard, ExternalLink, Shield } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useDarkMode } from "~/app/_contexts/DarkModeContext";
 import { useFeatureFlagEnabled } from "posthog-js/react";
@@ -28,7 +28,11 @@ const Header = () => {
   const navItems = [
     { href: "/tasks", label: "Tasks" },
     { href: "/mind-map", label: "Mind Maps" },
-    { href: "/integrations", label: "Integrations", enabled: integrationsFlagEnabled },
+    {
+      href: "/integrations",
+      label: "Integrations",
+      enabled: integrationsFlagEnabled,
+    },
     {
       href: "https://chatgpt.com/g/g-DMgdGagJK-sidekick",
       label: "ChatGPT",
@@ -113,6 +117,23 @@ const Header = () => {
                     <SubscriptionPage />
                   </UserButton.UserProfilePage>
                 )}
+                <UserButton.UserProfilePage
+                  label="Privacy Policy"
+                  url="privacy"
+                  labelIcon={<Shield size={16} />}
+                >
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      // Close the UserButton modal
+                      document.body.click();
+                    }}
+                  >
+                    Privacy Policy <ExternalLink size={14} className="inline-block ml-1" />
+                  </a>
+                </UserButton.UserProfilePage>
               </UserButton>
             ) : (
               <SignInButton mode="modal">
