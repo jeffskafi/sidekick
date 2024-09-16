@@ -26,7 +26,7 @@ function themeScript() {
         if (hasMediaQueryPreference) {
           return mql.matches ? 'dark' : 'light';
         }
-        return 'light';
+        return 'dark';
       }
 
       const theme = getInitialTheme();
