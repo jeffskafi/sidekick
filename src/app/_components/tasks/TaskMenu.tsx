@@ -113,7 +113,7 @@ export default function TaskMenu({
         {isGeneratingSubtasks ? (
           <Button
             variant="ghost"
-            className={`${iconButtonClass} text-amber-500 dark:text-amber-400`}
+            className={`${iconButtonClass} text-primary-light dark:text-primary-dark`}
             disabled
           >
             <Loader2 className="animate-spin" size={20} />
@@ -127,7 +127,7 @@ export default function TaskMenu({
             }}
             transition={{ duration: 0.1, ease: "easeInOut" }}
             className={`no-highlight flex items-center overflow-hidden ${
-              showMenu ? "bg-amber-100 dark:bg-amber-900" : "bg-transparent"
+              showMenu ? "bg-primary-light/10 dark:bg-primary-dark/10" : "bg-transparent"
             }`}
           >
             <AnimatePresence initial={false}>
@@ -147,7 +147,7 @@ export default function TaskMenu({
                     }}
                     disabled={isFocusTrapped}
                     className={getButtonClass(
-                      "text-amber-500 hover:bg-amber-500 hover:text-white dark:text-amber-400 dark:hover:bg-amber-500 dark:hover:text-white",
+                      "text-primary-light hover:bg-primary-light hover:text-white dark:text-primary-dark dark:hover:bg-primary-dark dark:hover:text-white",
                     )}
                   >
                     <Plus size={20} />
@@ -160,7 +160,7 @@ export default function TaskMenu({
                     }}
                     disabled={isGeneratingSubtasks || isFocusTrapped}
                     className={getButtonClass(
-                      "text-amber-500 hover:bg-amber-500 hover:text-white dark:text-amber-400 dark:hover:bg-amber-500 dark:hover:text-white",
+                      "text-primary-light hover:bg-primary-light hover:text-white dark:text-primary-dark dark:hover:bg-primary-dark dark:hover:text-white",
                     )}
                   >
                     {isGeneratingSubtasks ? (
@@ -179,7 +179,7 @@ export default function TaskMenu({
                     }}
                     disabled={isFocusTrapped}
                     className={getButtonClass(
-                      "text-amber-600 hover:bg-amber-600 hover:text-white dark:text-amber-300 dark:hover:bg-amber-500 dark:hover:text-white",
+                      "text-secondary-light hover:bg-secondary-light hover:text-white dark:text-secondary-dark dark:hover:bg-secondary-dark dark:hover:text-white",
                     )}
                   >
                     <Pen size={20} />
@@ -192,7 +192,7 @@ export default function TaskMenu({
                     }}
                     disabled={isFocusTrapped}
                     className={getButtonClass(
-                      "text-amber-500 hover:bg-red-100 hover:text-red-600 dark:text-amber-400 dark:hover:bg-red-900 dark:hover:text-red-400",
+                      "text-red-500 hover:bg-red-500 hover:text-white dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-white",
                     )}
                   >
                     <Trash2 size={20} />
@@ -202,7 +202,7 @@ export default function TaskMenu({
                     onClick={toggleMenu}
                     disabled={isFocusTrapped}
                     className={getButtonClass(
-                      "text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300",
+                      "text-primary-light hover:bg-primary-light/10 hover:text-primary-dark dark:text-primary-dark dark:hover:bg-primary-dark/10 dark:hover:text-primary-light",
                     )}
                   >
                     <X size={20} />
@@ -214,7 +214,7 @@ export default function TaskMenu({
               <Button
                 variant="ghost"
                 onClick={toggleMenu}
-                className={`${iconButtonClass} text-amber-500 hover:bg-amber-100 hover:text-amber-600 dark:text-amber-400 dark:hover:bg-amber-900 dark:hover:text-amber-300`}
+                className={`${iconButtonClass} text-primary-light hover:bg-primary-light/10 hover:text-primary-dark dark:text-primary-dark dark:hover:bg-primary-dark/10 dark:hover:text-primary-light`}
               >
                 <MoreHorizontal size={20} />
               </Button>

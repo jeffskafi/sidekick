@@ -14,7 +14,7 @@ const Tasks: React.FC<TasksProps> = ({ initialTasks, userId }) => {
   return (
     <div className="h-full overflow-auto">
       <TaskProvider initialTasks={initialTasks}>
-        <div className="flex h-[calc(100vh-4rem)] flex-col bg-gray-50 dark:bg-dark-bg">
+        <div className="flex h-[calc(100vh-4rem)] flex-col bg-background-light dark:bg-background-dark">
           <div
             id="task-list"
             className="scrollbar-hide flex-grow overflow-y-auto px-6 pt-0 sm:px-8 md:px-12"
@@ -23,7 +23,8 @@ const Tasks: React.FC<TasksProps> = ({ initialTasks, userId }) => {
               <TaskList />
             </div>
           </div>
-          <div className="sticky bottom-0 bg-gray-50 p-4 dark:bg-dark-bg">
+          {/* Updated background classes here */}
+          <div className="sticky bottom-0 bg-background-light p-4 dark:bg-background-dark">
             <div className="mx-auto max-w-3xl">
               <AddTaskForm userId={userId} />
             </div>

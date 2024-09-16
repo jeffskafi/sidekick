@@ -19,8 +19,9 @@ import { Plus } from "lucide-react";
 import NewMindMapModal from "./NewMindMapModal";
 import { useDarkMode } from "~/app/_contexts/DarkModeContext";
 import colors from "tailwindcss/colors";
-import type { MindMap } from "~/server/db/schema"; // Make sure this import is correct
-import { useWindowSize } from "~/app/_hooks/useWindowSize"; // Add this import
+import type { MindMap } from "~/server/db/schema";
+import { useWindowSize } from "~/app/_hooks/useWindowSize";
+import { usePrevious } from "~/app/_hooks/usePrevious"; // Import the usePrevious hook
 
 interface UIMindMapNode extends MindMapNode {
   x?: number;
@@ -53,6 +54,7 @@ const MindMap: React.FC = () => {
   const { width, height } = useWindowSize();
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const prevIsCollapsed = usePrevious(isCollapsed);
 
   const transformedGraphData = useMemo(
     () => ({
@@ -114,7 +116,7 @@ const MindMap: React.FC = () => {
         (n) => n + fontSize * 0.8,
       ) as [number, number];
 
-      ctx.fillStyle = "#FF7247";
+      ctx.fillStyle = isDarkMode ? "#E63B00" : "#FF7247";
       ctx.beginPath();
       if (node.x !== undefined && node.y !== undefined) {
         ctx.roundRect(
@@ -129,12 +131,12 @@ const MindMap: React.FC = () => {
 
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = "#4A3000";
+      ctx.fillStyle = isDarkMode ? "#FFFFFF" : "#4A3000";
       ctx.fillText(label, node.x ?? 0, node.y ?? 0);
 
       node.__bckgDimensions = bckgDimensions;
     },
-    [],
+    [isDarkMode],
   );
 
   const nodePointerAreaPaint = useCallback(
@@ -160,7 +162,7 @@ const MindMap: React.FC = () => {
     const newMindMap = await createMindMap(rootNodeLabel);
     await loadMindMap(newMindMap.id);
     setSelectedMindMapId(newMindMap.id);
-    await fetchMindMaps(); // Add this line to refresh the list of mind maps
+    await fetchMindMaps();
     setIsNewMindMapModalOpen(false);
   };
 
@@ -169,18 +171,16 @@ const MindMap: React.FC = () => {
   }, [fetchMindMaps]);
 
   const graphBackgroundColor = isDarkMode
-    ? "rgb(var(--dark-bg))"
-    : colors.white;
+    ? "rgb(0, 0, 0)"
+    : "rgb(255, 255, 255)";
 
   const handleSelectMindMap = (mindMap: MindMap | null) => {
     setSelectedMindMapId(mindMap?.id);
-    setIsCollapsed(true); // Collapse sidebar when a mind map is selected
+    setIsCollapsed(true);
     if (mindMap) {
       void loadMindMap(mindMap.id);
     } else {
       setSelectedMindMapId(undefined);
-      // Optionally, clear the graph data or load a default mind map
-      // setGraphData({ nodes: [], links: [] });
     }
   };
 
@@ -197,8 +197,26 @@ const MindMap: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (prevIsCollapsed !== undefined && prevIsCollapsed !== isCollapsed) {
+      const sidebarWidth = 256;
+      const adjustment = isCollapsed ? sidebarWidth / 2 : -sidebarWidth / 2;
+
+      if (graphRef.current) {
+        const currentPosition = graphRef.current.centerAt();
+        if (currentPosition) {
+          graphRef.current.centerAt(
+            currentPosition.x + adjustment,
+            currentPosition.y,
+            300
+          );
+        }
+      }
+    }
+  }, [isCollapsed, prevIsCollapsed]);
+
   return (
-    <div className="relative flex h-full w-full bg-white dark:bg-dark-bg">
+    <div className="relative flex h-full w-full bg-background-light dark:bg-background-dark">
       <div ref={sidebarRef}>
         <MindMapSidebar
           mindMaps={mindMaps}
@@ -210,7 +228,7 @@ const MindMap: React.FC = () => {
       </div>
       <div className="flex-1 overflow-hidden">
         <Button
-          className="absolute right-4 top-4 z-10"
+          className="absolute right-4 top-4 z-10 bg-primary-light text-white hover:bg-secondary-light dark:bg-primary-dark dark:text-black dark:hover:bg-secondary-dark"
           onClick={() => setIsNewMindMapModalOpen(true)}
         >
           <Plus className="mr-2 h-4 w-4" /> New Mind Map
@@ -225,10 +243,10 @@ const MindMap: React.FC = () => {
           onNodeClick={handleNodeClick}
           onBackgroundClick={handleBackgroundClick}
           onZoomEnd={handleZoomPan}
-          linkColor={() => colors.orange[300]} // Using Tailwind's color palette
+          linkColor={() => isDarkMode ? colors.orange[500] : colors.orange[400]}
           linkWidth={2}
-          width={width - (isCollapsed ? 0 : 256)} // Subtract sidebar width when expanded
-          height={height - 56} // Subtract header height
+          width={width - (isCollapsed ? 0 : 256)}
+          height={height - 56}
           backgroundColor={graphBackgroundColor}
         />
         {contextMenu && (

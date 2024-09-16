@@ -31,7 +31,7 @@ export default function AddSubtaskInput({ onSave, onCancel }: AddSubtaskInputPro
 
   return (
     <div className="flex items-center">
-      <div className="w-7 h-7 rounded-full border-2 border-amber-400 mr-2"></div>
+      <div className="w-7 h-7 rounded-full border-2 border-primary-light dark:border-primary-dark mr-2"></div>
       <input
         ref={inputRef}
         type="text"
@@ -45,7 +45,7 @@ export default function AddSubtaskInput({ onSave, onCancel }: AddSubtaskInputPro
         variant="ghost"
         size="sm"
         onClick={handleSave}
-        className="p-1 text-green-500 hover:text-green-600 hover:bg-green-100"
+        className="p-1 text-green-500 hover:text-green-600 hover:bg-green-100 dark:hover:bg-green-900"
       >
         <Check size={20} />
       </Button>
@@ -53,7 +53,7 @@ export default function AddSubtaskInput({ onSave, onCancel }: AddSubtaskInputPro
         variant="ghost"
         size="sm"
         onClick={onCancel}
-        className="p-1 text-red-500 hover:text-red-600 hover:bg-red-100"
+        className="p-1 text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900"
       >
         <X size={20} />
       </Button>

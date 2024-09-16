@@ -105,7 +105,7 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-full p-0 mr-2 text-text-light dark:text-text-dark hover:bg-surface-light dark:hover:bg-surface-dark"
+            className="h-8 w-8 rounded-full p-0 text-primary-light hover:bg-primary-light hover:text-white dark:text-primary-dark dark:hover:bg-primary-dark dark:hover:text-white"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -128,8 +128,8 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
                     key={mindMap.id}
                     className={`mb-2 flex items-center justify-between rounded p-2 ${
                       selectedMindMapId === mindMap.id
-                        ? "bg-primary-light dark:bg-primary-dark text-white"
-                        : "text-text-light dark:text-text-dark hover:bg-surface-light dark:hover:bg-surface-dark"
+                        ? "bg-primary-light text-white dark:bg-primary-dark"
+                        : "text-text-light hover:bg-surface-light dark:text-text-dark dark:hover:bg-surface-dark"
                     }`}
                   >
                     {renamingMindMapId === mindMap.id ? (
@@ -155,7 +155,7 @@ const MindMapSidebar: React.FC<MindMapSidebarProps> = ({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 p-0 rounded-full text-text-light dark:text-text-dark hover:bg-surface-light dark:hover:bg-surface-dark"
+                          className="h-8 w-8 p-0 rounded-full text-primary-light hover:bg-primary-light hover:text-white dark:text-primary-dark dark:hover:bg-primary-dark dark:hover:text-white"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleMenuToggle(mindMap.id);

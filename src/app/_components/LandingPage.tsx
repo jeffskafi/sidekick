@@ -18,7 +18,7 @@ const LandingPage: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <h1 className="text-secondary-light dark:text-secondary-dark text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-6">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-6">
                 Meet Your Personal Task Manager
                 <span className="text-primary-light dark:text-primary-dark block mt-2">
                   Sidekick for ChatGPT
@@ -148,10 +148,10 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Call to Action Section */}
-      <section className="bg-primary-light dark:bg-primary-dark py-12 sm:py-16 text-white">
+      <section className="bg-surface-light dark:bg-surface-dark py-12 sm:py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.h2
-            className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-primary-light dark:text-primary-dark"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -160,7 +160,7 @@ const LandingPage: React.FC = () => {
           </motion.h2>
           <a href="https://chatgpt.com/g/g-DMgdGagJK-sidekick" target="_blank" rel="noopener noreferrer">
             <motion.button
-              className="inline-block px-8 py-3 text-lg font-semibold text-primary-light dark:text-primary-dark bg-white rounded-full shadow-lg hover:bg-secondary-light hover:text-white dark:hover:bg-secondary-dark transition-colors duration-300 ease-in-out"
+              className="inline-block px-8 py-3 text-lg font-semibold text-white bg-primary-light dark:bg-primary-dark rounded-full shadow-lg hover:bg-secondary-light dark:hover:bg-secondary-dark transition-colors duration-300 ease-in-out"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -174,7 +174,12 @@ const LandingPage: React.FC = () => {
       <footer className="bg-background-light dark:bg-background-dark py-6 mt-auto">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm text-text-light dark:text-text-dark">
-            Made with ❤️ by the Sidekick Team | © {new Date().getFullYear()} Sidekick
+            Made with ❤️ | © {new Date().getFullYear()} Sidekick
+          </p>
+          <p className="text-sm text-text-light dark:text-text-dark mt-2">
+            <a href="https://github.com/jeffskafi" target="_blank" rel="noopener noreferrer" className="hover:underline">
+              Check out my GitHub!
+            </a>
           </p>
           <p className="text-sm text-text-light dark:text-text-dark mt-2">
             <a href="/privacy" className="hover:underline">

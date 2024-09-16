@@ -31,18 +31,25 @@ const NewMindMapModal: React.FC<NewMindMapModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="bg-surface-light dark:bg-surface-dark">
         <DialogHeader>
-          <DialogTitle>Create New Mind Map</DialogTitle>
+          <DialogTitle className="text-text-light dark:text-text-dark">
+            Create New Mind Map
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <Input
             value={rootNodeLabel}
             onChange={(e) => setRootNodeLabel(e.target.value)}
             placeholder="Enter root node label"
-            className="mb-4"
+            className="mb-4 bg-background-light text-text-light dark:bg-background-dark dark:text-text-dark"
           />
-          <Button type="submit">Create</Button>
+          <Button
+            type="submit"
+            className="bg-primary-light text-white hover:bg-secondary-light dark:bg-primary-dark dark:text-black dark:hover:bg-secondary-dark"
+          >
+            Create
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

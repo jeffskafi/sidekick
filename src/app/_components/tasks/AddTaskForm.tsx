@@ -15,14 +15,17 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
   const [description, setDescription] = useState("");
   const { addTask } = useTaskContext();
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (description.trim() && userId) {
-      await addTask({ description, userId, status: "todo", parentId });
-      setDescription("");
-      onComplete?.();
-    }
-  }, [description, userId, addTask, parentId, onComplete]);
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (description.trim() && userId) {
+        await addTask({ description, userId, status: "todo", parentId });
+        setDescription("");
+        onComplete?.();
+      }
+    },
+    [description, userId, addTask, parentId, onComplete]
+  );
 
   const isButtonDisabled = !userId || description.trim() === "";
 
@@ -34,11 +37,11 @@ export default function AddTaskForm({ userId, parentId = null, onComplete }: Add
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Add a new task..."
-          className="pr-14 py-3 text-base w-full rounded-full"
+          className="pr-14 py-3 text-base w-full rounded-full bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark border border-primary-light dark:border-primary-dark focus:ring-primary-light dark:focus:ring-primary-dark"
         />
         <Button
           type="submit"
-          className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 p-0 rounded-full bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white flex items-center justify-center"
+          className="absolute right-1 top-1/2 -translate-y-1/2 w-10 h-10 p-0 rounded-full bg-primary-light hover:bg-secondary-light dark:bg-primary-dark dark:hover:bg-secondary-dark text-white flex items-center justify-center transition-colors duration-200"
           disabled={isButtonDisabled}
         >
           <Plus className="w-5 h-5" />

@@ -32,14 +32,14 @@ export default function TaskCheckbox({
             height: `${CHECKBOX_SIZE}rem`,
           }}
         >
-          <Loader2 className="animate-spin text-amber-500" size={20} />
+          <Loader2 className="animate-spin text-primary-light dark:text-primary-dark" size={20} />
         </div>
       ) : (
         <div
           className={`absolute left-0 top-0 h-full w-full rounded-full transition-all duration-200 ease-in-out ${
             task.status === "done"
-              ? "border-2 border-amber-500 bg-amber-500"
-              : "border-2 border-amber-400 bg-white hover:border-amber-500 dark:border-amber-600 dark:bg-gray-800 dark:hover:border-amber-500"
+              ? "border-2 border-primary-light bg-primary-light dark:border-primary-dark dark:bg-primary-dark"
+              : "border-2 border-primary-light bg-white hover:border-secondary-light dark:border-primary-dark dark:bg-gray-800 dark:hover:border-secondary-dark"
           }`}
           style={{
             boxShadow:
@@ -51,7 +51,7 @@ export default function TaskCheckbox({
       )}
       {task.status === "done" && (
         <svg
-          className="absolute left-1/2 top-1/2 h-2/3 w-2/3 -translate-x-1/2 -translate-y-1/2 text-black"
+          className="absolute left-1/2 top-1/2 h-2/3 w-2/3 -translate-x-1/2 -translate-y-1/2 text-white dark:text-black"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"

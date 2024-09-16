@@ -41,7 +41,7 @@ const Header = () => {
   ];
 
   return (
-    <header className="bg-white shadow-sm dark:bg-dark-bg">
+    <header className="bg-white shadow-sm dark:bg-black">
       <nav className="container mx-auto px-4 py-2">
         <div className="flex flex-col space-y-2 sm:space-y-0">
           <div className="flex items-center justify-between">
@@ -51,7 +51,7 @@ const Header = () => {
                   className={`text-[2rem] font-bold ${isDarkMode ? "text-white" : "text-black"}`}
                   style={{
                     background:
-                      "linear-gradient(90deg, #ff7247 0%, #e63b00 100%)",
+                      "linear-gradient(90deg, #FF7247 0%, #E63B00 100%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     filter: "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))",
@@ -82,8 +82,8 @@ const Header = () => {
                           href={item.href}
                           className={`text-sm font-medium transition-colors duration-200 ${
                             pathname === item.href
-                              ? "border-b-2 border-amber-500 text-amber-500"
-                              : "text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
+                              ? "border-b-2 border-primary-light text-primary-light dark:border-primary-dark dark:text-primary-dark"
+                              : "text-gray-600 hover:text-primary-light dark:text-gray-300 dark:hover:text-primary-dark"
                           }`}
                         >
                           {item.label}
@@ -165,8 +165,8 @@ const Header = () => {
                       href={item.href}
                       className={`text-sm font-medium transition-colors duration-200 ${
                         pathname === item.href
-                          ? "border-b-2 border-amber-500 text-amber-500"
-                          : "text-gray-600 hover:text-amber-500 dark:text-gray-300 dark:hover:text-amber-400"
+                          ? "border-b-2 border-primary-light text-primary-light dark:border-primary-dark dark:text-primary-dark"
+                          : "text-gray-600 hover:text-primary-light dark:text-gray-300 dark:hover:text-primary-dark"
                       }`}
                     >
                       {item.label}

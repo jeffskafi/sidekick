@@ -15,7 +15,7 @@ export default async function TasksPage() {
   const initialTasks = await getTopLevelTasks();
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full bg-background-light dark:bg-background-dark">
       <Tasks initialTasks={initialTasks} userId={userId} />
     </div>
   );
