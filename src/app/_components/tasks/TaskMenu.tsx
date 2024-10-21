@@ -26,6 +26,7 @@ interface TaskMenuProps {
 }
 
 export default function TaskMenu({
+  task,
   isGeneratingSubtasks,
   hasChildren,
   onGenerateSubtasks,
@@ -36,6 +37,7 @@ export default function TaskMenu({
 }: TaskMenuProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false); // New state variable
   const [isFocusTrapped] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -63,13 +65,13 @@ export default function TaskMenu({
     if (hasChildren) {
       setShowConfirmModal(true);
     } else {
-      void onGenerateSubtasks();
+      onGenerateSubtasks();
     }
   };
 
   const handleConfirmRegenerate = () => {
     setShowConfirmModal(false);
-    void onRefreshSubtasks();
+    onRefreshSubtasks();
   };
 
   const handleEdit = () => {
@@ -79,6 +81,11 @@ export default function TaskMenu({
 
   const handleDelete = () => {
     closeMenu();
+    setShowDeleteConfirmModal(true); // Show delete confirmation modal
+  };
+
+  const handleConfirmDelete = () => {
+    setShowDeleteConfirmModal(false);
     onDelete();
   };
 
@@ -104,7 +111,9 @@ export default function TaskMenu({
   }, [showMenu]);
 
   const getButtonClass = (baseClass: string) => {
-    return `${iconButtonClass} ${baseClass} ${isMenuOpen ? "" : "pointer-events-none"}`;
+    return `${iconButtonClass} ${baseClass} ${
+      isMenuOpen ? "" : "pointer-events-none"
+    }`;
   };
 
   return (
@@ -127,7 +136,9 @@ export default function TaskMenu({
             }}
             transition={{ duration: 0.1, ease: "easeInOut" }}
             className={`no-highlight flex items-center overflow-hidden ${
-              showMenu ? "bg-primary-light/10 dark:bg-primary-dark/10" : "bg-transparent"
+              showMenu
+                ? "bg-primary-light/10 dark:bg-primary-dark/10"
+                : "bg-transparent"
             }`}
           >
             <AnimatePresence initial={false}>
@@ -147,7 +158,7 @@ export default function TaskMenu({
                     }}
                     disabled={isFocusTrapped}
                     className={getButtonClass(
-                      "text-primary-light hover:bg-primary-light hover:text-white dark:text-primary-dark dark:hover:bg-primary-dark dark:hover:text-white",
+                      "text-primary-light hover:bg-primary-light hover:text-white dark:text-primary-dark dark:hover:bg-primary-dark dark:hover:text-white"
                     )}
                   >
                     <Plus size={20} />
@@ -160,7 +171,7 @@ export default function TaskMenu({
                     }}
                     disabled={isGeneratingSubtasks || isFocusTrapped}
                     className={getButtonClass(
-                      "text-primary-light hover:bg-primary-light hover:text-white dark:text-primary-dark dark:hover:bg-primary-dark dark:hover:text-white",
+                      "text-primary-light hover:bg-primary-light hover:text-white dark:text-primary-dark dark:hover:bg-primary-dark dark:hover:text-white"
                     )}
                   >
                     {isGeneratingSubtasks ? (
@@ -179,7 +190,7 @@ export default function TaskMenu({
                     }}
                     disabled={isFocusTrapped}
                     className={getButtonClass(
-                      "text-secondary-light hover:bg-secondary-light hover:text-white dark:text-secondary-dark dark:hover:bg-secondary-dark dark:hover:text-white",
+                      "text-secondary-light hover:bg-secondary-light hover:text-white dark:text-secondary-dark dark:hover:bg-secondary-dark dark:hover:text-white"
                     )}
                   >
                     <Pen size={20} />
@@ -192,7 +203,7 @@ export default function TaskMenu({
                     }}
                     disabled={isFocusTrapped}
                     className={getButtonClass(
-                      "text-red-500 hover:bg-red-500 hover:text-white dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-white",
+                      "text-red-500 hover:bg-red-500 hover:text-white dark:text-red-400 dark:hover:bg-red-400 dark:hover:text-white"
                     )}
                   >
                     <Trash2 size={20} />
@@ -202,7 +213,7 @@ export default function TaskMenu({
                     onClick={toggleMenu}
                     disabled={isFocusTrapped}
                     className={getButtonClass(
-                      "text-primary-light hover:bg-primary-light/10 hover:text-primary-dark dark:text-primary-dark dark:hover:bg-primary-dark/10 dark:hover:text-primary-light",
+                      "text-primary-light hover:bg-primary-light/10 hover:text-primary-dark dark:text-primary-dark dark:hover:bg-primary-dark/10 dark:hover:text-primary-light"
                     )}
                   >
                     <X size={20} />
@@ -222,6 +233,8 @@ export default function TaskMenu({
           </motion.div>
         )}
       </div>
+
+      {/* Existing confirm modal for regenerating subtasks */}
       <ConfirmModal
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
@@ -229,6 +242,17 @@ export default function TaskMenu({
         title="Regenerate Subtasks"
         message="This task already has subtasks. Do you want to replace them with new ones?"
         confirmText="Replace"
+        cancelText="Cancel"
+      />
+
+      {/* New confirm modal for deleting a task */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={() => setShowDeleteConfirmModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Task"
+        message={`Are you sure you want to delete the task "${task.description}"? This action cannot be undone.`}
+        confirmText="Delete"
         cancelText="Cancel"
       />
     </>

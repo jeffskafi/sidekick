@@ -1,5 +1,10 @@
 import React from "react";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "~/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "~/components/ui/dialog";
 import { Button } from "~/components/ui/button";
 
 interface ConfirmModalProps {
@@ -22,18 +27,30 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   cancelText,
 }) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <p>{message}</p>
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+        <p className="mt-2">{message}</p>
+        {/* Buttons Side by Side on All Screen Sizes */}
+        <div className="mt-4 flex justify-end space-x-2">
+          {/* Cancel Button */}
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 sm:flex-none"
+          >
             {cancelText}
           </Button>
-          <Button onClick={onConfirm}>{confirmText}</Button>
-        </DialogFooter>
+          {/* Confirm Button */}
+          <Button
+            onClick={onConfirm}
+            className="flex-1 sm:flex-none"
+          >
+            {confirmText}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
